@@ -3,7 +3,7 @@
         <div class="container">
             <!-- Logo -->
             <a class="navbar-brand" href="index.php">
-                <img src="./assets/img/logo.png" alt="Logo de la Empresa" style="height: 100px;">
+                <img src="./assets/img/logo.png" alt="Logo de la Empresa" style="height: 120px;">
             </a>
 
             <!-- Botón para colapsar en dispositivos pequeños -->
