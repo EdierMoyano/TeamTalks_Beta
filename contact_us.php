@@ -9,7 +9,6 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <link rel="stylesheet" href="styles/index.css">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 </head>
@@ -83,12 +82,12 @@
     <!-- Sección de ubicación -->
     <section class="ubicacion py-5 bg-light">
         <div class="container">
-            <div class="row">
+            <div class="row d-flex justify-content-center ">
                 <div class="col-12 text-center mb-4">
                     <h2 class="display-5">Nuestra ubicación</h2>
                 </div>
 
-                <div class="col-12">
+                <div class="col-12" style="width: 800px;" >
                     <div class="ratio ratio-16x9">
                         <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3978.048260414805!2d-75.15232398960484!3d4.402072895553596!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8e38daac36ef33ef%3A0xc4167c4b60b14a15!2sSENA%20Centro%20de%20Industria%20y%20de%20la%20Construcci%C3%B3n!5e0!3m2!1ses-419!2sco!4v1733783533842!5m2!1ses-419!2sco"
                             allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>

@@ -18,16 +18,31 @@
                         <a class="nav-link text-white" href="index.php">Inicio</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link text-white" href="about_we.php">Sobre Nosotros</a>
+                        <a class="nav-link text-white" href="about_we.php">Sobre nosotros</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link text-white" href="contactanos.php">Contáctanos</a>
+                        <a class="nav-link text-white" href="contact_us.php">Contáctanos</a>
                     </li>
                     <li class="nav-item">
-                        <a class="btn" href="login/login.php" style="background-color:white; color:#0E4A86; ">Iniciar Sesión</a>
+                        <a class="boton btn" href="login/login.php">Iniciar Sesión</a>
                     </li>
                 </ul>
             </div>
         </div>
     </nav>
 </header>
+
+<style>
+    .boton {
+        background-color: white; 
+        color: #0E4A86;
+        transition: box-shadow 0.5s ease; /* Añade una transición suave */
+        border-radius: 5px; /* Opcional: bordes redondeados */
+    }
+
+    .boton:hover {
+        background-color: white;
+        color: #0E4A86;
+        box-shadow: 0 4px 12px rgb(170, 168, 168); /* Sombra suave alrededor */
+    }
+</style>
