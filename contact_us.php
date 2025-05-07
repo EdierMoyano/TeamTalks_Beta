@@ -10,44 +10,14 @@
     <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <style>
-        .clickable-card {
-            transition: transform 0.2s, box-shadow 0.2s;
-            cursor: pointer;
-            border: none;
-            background: transparent;
-        }
-        .clickable-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
-        }
-        .help-section {
-            text-align: center;
-        }
-        .help-option {
-            display: inline-block;
-            margin: 15px;
-            width: 200px;
-        }
-        .help-option .card {
-            height: 100%;
-        }
-        .help-title {
-            font-size: 2rem;
-            margin-bottom: 30px;
-            font-weight: bold;
-        }
-        .card-title {
-            font-weight: bold;
-            margin-top: 15px;
-        }
-    </style>
+
 </head>
 <body>
 
     <?php
     include 'includes/header.php';
     ?>
+
 
 <div class="container-fluid py-4 py-lg-5">
         <!-- Sección de texto contacto -->
@@ -84,30 +54,31 @@
         </div>
 
         <!-- Sección de ayuda -->
-        <div class="row mb-5 justify-content-center">
+        <div class="row mb-5">
             <div class="col-12 text-center mb-4">
-                <h2 class="help-title">¿Cómo podemos ayudarte?</h2>
+                <h2 class="display-5">¿Cómo podemos ayudarte?</h2>
             </div>
 
+            <div class="row justify-content-center">
             <div class="col-12 col-md-5 col-lg-5 mb-4">
-            <a href="soporte.php" class="text-decoration-none">
-            <div class="card text-center p-4 shadow-sm h-100">
-                <img src="assets/img/soporte.webp" class="card-img-top mx-auto" style="max-width: 100px;" alt="Soporte Técnico">
-                <div class="card-body">
-                <h3 class="card-title">Soporte Técnico</h3>
+                <a href="soporte.php" class="text-decoration-none">
+                <div class="card text-center p-4 shadow-sm h-100">
+                    <img src="assets/img/soporte.webp" class="card-img-top mx-auto" style="max-width: 100px;" alt="Soporte Técnico">
+                    <div class="card-body">
+                    <h3 class="card-title">Soporte Técnico</h3>
+                    </div>
                 </div>
-            </div>
-            </a>
-
-            <a href="reportes.php" class="text-decoration-none">
-            <div class="card text-center p-4 shadow-sm h-100 style="max-width: 100px;> 
-                <img src="assets/img/seg.webp" class="card-img-top mx-auto" style="max-width: 100px;" alt="Realiza Reportes">
-                <div class="card-body">
-                <h3 class="card-title">Realiza Reportes</h3>
+                </a>
+            
+                <a href="reportes.php" class="text-decoration-none">
+                <div class="card text-center p-4 shadow-sm h-100">
+                    <img src="assets/img/seg.webp" class="card-img-top mx-auto" style="max-width: 100px;" alt="Realiza Reportes">
+                    <div class="card-body">
+                    <h3 class="card-title">Realiza Reportes</h3>
+                    </div>
                 </div>
+                </a>
             </div>
-            </a>
-        </div>
         </div>
 
         </div>
@@ -135,5 +106,7 @@
     include 'includes/footer.php';
     ?>
 
+
+    
 </body>
 </html>
