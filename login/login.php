@@ -70,10 +70,10 @@ $conex = $conexion->connect();
 
                             <div class="mb-3">
                                 <label for="documentType" class="form-label">Tipo de documento</label>
-                                <select name="role" class="form-select" required>
+                                <select name="tipo" class="form-select" required>
                                     <option value="">Selecciona</option>
                                     <?php
-                                        $sql = $conex->prepare("SELECT * FROM identidad");
+                                        $sql = $conex->prepare("SELECT * FROM tipo_docu");
                                         $sql->execute();
                                         while ($fila = $sql->fetch(PDO::FETCH_ASSOC)) {
                                             echo "<option value='" . $fila['id_docu'] . "'>" . $fila['docu'] . "</option>";
@@ -84,13 +84,13 @@ $conex = $conexion->connect();
 
                             <div class="mb-3">
                                 <label for="documentId" class="form-label">Documento de identidad</label>
-                                <input type="text" id="documentId" name="document" class="form-control" placeholder="Ingresa tu documento" required>
+                                <input type="number" id="documentId" name="documento" class="form-control" placeholder="Ingresa tu documento" required>
                                 <p class="docu_error" id="docu_error">¡Documento inválido!</p>
                             </div>
 
                             <div class="mb-3 position-relative">
                                 <label for="password" class="form-label">Contraseña</label>
-                                <input type="password" id="password" name="password" class="form-control" placeholder="Ingresa tu contraseña" required>
+                                <input type="password" id="password" name="contraseña" class="form-control" placeholder="Ingresa tu contraseña" required>
                                 <i class='bx bx-show' id="showpass" onclick="showpass()"></i>
                             </div>
 
@@ -100,7 +100,7 @@ $conex = $conexion->connect();
 
                             <div class="d-flex justify-content-between">
                                 <a href="../index.php" class="btn btn-secondary">Regresar</a>
-                                <button type="submit" class="btn btn-primary" name="submit">Iniciar sesión</button>
+                                <button type="submit" class="btn btn-primary" name="iniciar">Iniciar sesión</button>
                             </div>
 
                         </form>

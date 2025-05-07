@@ -1,6 +1,6 @@
 <header>
     <nav class="navbar navbar-expand-lg" style="background-color: #0E4A86 ;">
-        <div class="container">
+        <div class="container ">
             <!-- Logo -->
             <a class="navbar-brand" href="index.php">
                 <img src="./assets/img/logo.png" alt="Logo de la Empresa" style="height: 120px;">
@@ -12,7 +12,7 @@
             </button>
 
             <!-- Enlaces de navegación -->
-            <div class="collapse navbar-collapse" id="navbarNav">
+            <div class="collapse navbar-collapse " id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
                         <a class="nav-link text-white" href="index.php">Inicio</a>
@@ -52,12 +52,12 @@
     font-weight: normal;
     transition: transform 0.3s ease, color 0.3s ease;
     display: inline-block; /* Necesario para que transform funcione correctamente */
-}
+    }
 
-a:hover {
-    color: white;
-    transform: scale(1.05); /* Aumenta un poco el tamaño simulando negrilla */
-    font-weight: bold; /* Por si el navegador lo soporta, también lo aplicamos */
-}
+    a:hover {
+        color: white;
+        transform: scale(1.05); /* Aumenta un poco el tamaño simulando negrilla */
+        font-weight: bold; /* Por si el navegador lo soporta, también lo aplicamos */
+    }
 
 </style>

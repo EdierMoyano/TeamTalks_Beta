@@ -18,7 +18,7 @@
     ?>
 
 
-<main class="container-fluid py-4 py-lg-5">
+    <main class="container-fluid py-4 py-lg-5">
         <div class="row align-items-center">
             <!-- Contenido de texto -->
             <div class="col-lg-6 col-md-12 order-lg-2 order-2 px-4 px-md-5">
@@ -47,12 +47,12 @@
 
             <!-- Contenedor de imágenes -->
            <!-- filepath: c:\xampp\htdocs\TeamTalks_Beta\index.php -->
-<div class="col-lg-6 col-md-12 order-lg-2 order-1 mb-4 mb-lg-0">
-    <div class="images d-flex flex-wrap justify-content-center gap-3 px-2 px-md-0">
-        <img src="assets/img/img2.jpg" alt="Imagen Grande" class="img-fluid rounded shadow-lg" style="max-height: 300px; width: 48%;">
-        <img src="assets/img/img1.jpg" alt="Imagen Grande" class="img-fluid rounded shadow-lg" style="max-height: 300px; width: 48%;">
-    </div>
-</div>
+            <div class="col-lg-6 col-md-12 order-lg-2 order-1 mb-4 mb-lg-0">
+                <div class="images d-flex flex-wrap justify-content-center gap-3 px-2 px-md-0">
+                    <img src="assets/img/img2.jpg" alt="Imagen Grande" class="img-fluid rounded shadow-lg" style="max-height: 300px; width: 48%;">
+                    <img src="assets/img/img1.jpg" alt="Imagen Grande" class="img-fluid rounded shadow-lg" style="max-height: 300px; width: 48%;">
+                </div>
+            </div>
         </div>
         
     </main>
