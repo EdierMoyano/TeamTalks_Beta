@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Inicio</title>
     <link rel="icon" href="../styles/icon2.png">
-    <!-- CSS de Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
@@ -22,7 +21,7 @@
 <main class="container-fluid py-4 py-lg-5">
         <div class="row align-items-center">
             <!-- Contenido de texto -->
-            <div class="col-lg-6 col-md-12 order-lg-1 order-2 px-4 px-md-5">
+            <div class="col-lg-6 col-md-12 order-lg-2 order-2 px-4 px-md-5">
                 <div class="content text-center text-md-start">
                     <h5 class="mb-3 mb-lg-4" style="background-color: #0E4A86; border-radius:35px; padding: 20px; color:white; width: 60%;">
                         <i class='bx bxs-bell'></i> Trabajo en equipo con TeamTalks <br class="d-none d-md-block">  My WorkPlace

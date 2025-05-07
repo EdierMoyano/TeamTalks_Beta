@@ -45,4 +45,19 @@
         color: #0E4A86;
         box-shadow: 0 4px 12px rgb(170, 168, 168); /* Sombra suave alrededor */
     }
+
+    a {
+    color: white;
+    text-decoration: none;
+    font-weight: normal;
+    transition: transform 0.3s ease, color 0.3s ease;
+    display: inline-block; /* Necesario para que transform funcione correctamente */
+}
+
+a:hover {
+    color: white;
+    transform: scale(1.05); /* Aumenta un poco el tamaño simulando negrilla */
+    font-weight: bold; /* Por si el navegador lo soporta, también lo aplicamos */
+}
+
 </style>
