@@ -99,7 +99,7 @@ $conex = $conexion->connect();
                             </div>
 
                             <div class="mb-3 text-end">
-                                <a href="recovery.php" class="link-secondary">¿Olvidaste la contraseña?</a>
+                                <a href="../Recover_Password/recovery_form.php" class="link-secondary">¿Olvidaste la contraseña?</a>
                             </div>
 
                             <div class="d-flex justify-content-between">
