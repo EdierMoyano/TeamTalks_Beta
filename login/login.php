@@ -37,7 +37,6 @@ $conex = $conexion->connect();
             height: 45px;
         }
 
-        /* Estilo para ocultar los botones de incremento */
         input[type="text"][inputmode="numeric"] {
             -moz-appearance: textfield;
         }
