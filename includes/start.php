@@ -5,7 +5,7 @@ $conexion = new database();
 $conex = $conexion->connect();
 
 
-if (isset($_POST['iniciar'])) {
+if (isset($_POST['submit'])) {
     $documento = $_POST['documento']; 
     $tipo = $_POST['tipo'];
     $contra_desc = $_POST['contraseña']; 
@@ -26,7 +26,7 @@ if (isset($_POST['iniciar'])) {
     
     if ($fila) {
         
-        if (password_verify($contra_desc, $fila['contraseña']) && ($fila['id_estado'] == 1)) {
+        if (password_verify($contra_desc, $fila['contrasena']) && ($fila['id_estado'] == 1)) {
             
             $_SESSION ['documento'] = $fila ['id'];
             $_SESSION ['estado'] = $fila ['id_estado'];

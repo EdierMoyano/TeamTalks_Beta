@@ -4,9 +4,6 @@ require_once('../conexion/conexion.php');
 $conexion = new database();
 $conex = $conexion->connect();
 
-
-
-
 ?>
 
 <!DOCTYPE html>
@@ -104,7 +101,7 @@ $conex = $conexion->connect();
 
                             <div class="d-flex justify-content-between">
                                 <a href="../index.php" class="btn btn-secondary">Regresar</a>
-                                <button type="submit" class="btn btn-primary" name="iniciar">Iniciar sesión</button>
+                                <button type="submit" class="btn btn-primary" name="submit">Iniciar sesión</button>
                             </div>
 
                         </form>
