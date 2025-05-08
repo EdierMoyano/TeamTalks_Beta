@@ -16,7 +16,7 @@
     
 
     <?php
-    include 'includes/header.php';
+    include 'includes/design/header.php';
     ?>
 
     <div class="container-fluid py-4 py-lg-5">
@@ -103,7 +103,7 @@
     </section>
 
     <?php
-    include 'includes/footer.php';
+    include 'includes/design/footer.php';
     ?>
 
 
