@@ -3,6 +3,10 @@ session_start();
 require_once('../conexion/conexion.php');
 $conexion = new database();
 $conex = $conexion->connect();
+
+
+
+
 ?>
 
 <!DOCTYPE html>
@@ -73,10 +77,10 @@ $conex = $conexion->connect();
                                 <select name="tipo" class="form-select" required>
                                     <option value="">Selecciona</option>
                                     <?php
-                                        $sql = $conex->prepare("SELECT * FROM tipo_docu");
+                                        $sql = $conex->prepare("SELECT * FROM tipo_documento");
                                         $sql->execute();
                                         while ($fila = $sql->fetch(PDO::FETCH_ASSOC)) {
-                                            echo "<option value='" . $fila['id_docu'] . "'>" . $fila['docu'] . "</option>";
+                                            echo "<option value='" . $fila['id_tipo'] . "'>" . $fila['tipo_doc'] . "</option>";
                                         }
                                     ?>
                                 </select>
@@ -95,7 +99,7 @@ $conex = $conexion->connect();
                             </div>
 
                             <div class="mb-3 text-end">
-                                <a href="recovery.php" class="link-secondary">¿Olvidaste la contraseña?</a>
+                                <a href="../Recover_Password/recovery_form.php" class="link-secondary">¿Olvidaste la contraseña?</a>
                             </div>
 
                             <div class="d-flex justify-content-between">
