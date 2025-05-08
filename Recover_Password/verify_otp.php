@@ -8,6 +8,7 @@ if (!isset($_SESSION['recovery_email']) || !isset($_SESSION['recovery_user_id'])
     exit;
 }
 
+
 $email = $_SESSION['recovery_email'];
 $userId = $_SESSION['recovery_user_id'];
 

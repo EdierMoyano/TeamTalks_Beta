@@ -69,11 +69,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         // Contenido del correo con el código OTP
         $mail->isHTML(true);
         $mail->Body = "<h2>Recuperación de contraseña</h2>
-                       <p>Hola, has solicitado recuperar tu contraseña.</p>
-                       <p>Tu código de verificación es:</p>
-                       <h1 style='font-size: 32px; letter-spacing: 5px; text-align: center; padding: 10px; background-color: #f0f0f0; border-radius: 5px;'>$otp</h1>
-                       <p>Este código expirará en 15 minutos.</p>
-                       <p>Si no solicitaste este cambio, ignora este mensaje.</p>";
+                    <p>Hola, has solicitado recuperar tu contraseña.</p>
+                    <p>Tu código de verificación es:</p>
+                    <h1 style='font-size: 32px; letter-spacing: 5px; text-align: center; padding: 10px; background-color: #f0f0f0; border-radius: 5px;'>$otp</h1>
+                    <p>Este código expirará en 15 minutos.</p>
+                    <p>Si no solicitaste este cambio, ignora este mensaje.</p>";
 
         // Enviar correo
         $mail->send();
