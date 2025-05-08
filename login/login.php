@@ -3,12 +3,7 @@ session_start();
 require_once('../conexion/conexion.php');
 $conexion = new database();
 $conex = $conexion->connect();
-
-
-
-
 ?>
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -35,104 +30,120 @@ $conex = $conexion->connect();
             transform: translateY(-50%);
             cursor: pointer;
         }
-
         input {
             height: 45px;
         }
-
         select {
             height: 45px;
         }
-        
+
+        /* Estilo para ocultar los botones de incremento */
+        input[type="text"][inputmode="numeric"] {
+            -moz-appearance: textfield;
+        }
+        input[type="text"][inputmode="numeric"]::-webkit-inner-spin-button,
+        input[type="text"][inputmode="numeric"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
     </style>
 </head>
 <body style="background-image: url(../assets/img/background.jpg);">
     <br><br><br><br><br>
-
-<div class="container ">
-    <div class="row justify-content-center align-items-center">
-        <div class="col-lg-9">
-            <div class="card shadow-lg border-0 rounded-4">
-                <div class="row g-0">
-                    
-                    <!-- Lado Bienvenida -->
-                    <div class="col-md-6 d-flex flex-column justify-content-center   p-5 rounded-start" style="background: #8ac5fe;">
-                        <img src="../assets/img/icon2.png" alt="TeamTalks Logo" class="logo mb-3 mx-auto d-block" style="width:180px;">
-                        <h1 class="text-start">Hola</h1>
-                        <h2 class="text-start">¡Bienvenido!</h2>
-                        <p class="text-start">
-                            Gracias por preferir <strong>TeamTalks</strong>.<br>
-                            Estamos comprometidos con un ambiente<br>
-                            de estudio especial para nuestros usuarios.
-                        </p>
-                    </div>
-
-                    <!-- Lado Login -->
-                    <div class="col-md-6 p-5">
-                        <h3 class="mb-4">Iniciar sesión</h3>
-                        <form action="../includes/start.php" method="POST" autocomplete="off" id="formulario">
-
-                            <div class="mb-3">
-                                <label for="documentType" class="form-label">Tipo de documento</label>
-                                <select name="tipo" class="form-select" required>
-                                    <option value="">Selecciona</option>
-                                    <?php
+    <div class="container ">
+        <div class="row justify-content-center align-items-center">
+            <div class="col-lg-9">
+                <div class="card shadow-lg border-0 rounded-4">
+                    <div class="row g-0">
+                        <!-- Lado Bienvenida -->
+                        <div class="col-md-6 d-flex flex-column justify-content-center p-5 rounded-start" style="background: #8ac5fe;">
+                            <img src="../assets/img/icon2.png" alt="TeamTalks Logo" class="logo mb-3 mx-auto d-block" style="width:180px;">
+                            <h1 class="text-start">Hola</h1>
+                            <h2 class="text-start">¡Bienvenido!</h2>
+                            <p class="text-start">
+                                Gracias por preferir <strong>TeamTalks</strong>.<br>
+                                Estamos comprometidos con un ambiente<br>
+                                de estudio especial para nuestros usuarios.
+                            </p>
+                        </div>
+                        <!-- Lado Login -->
+                        <div class="col-md-6 p-5">
+                            <h3 class="mb-4">Iniciar sesión</h3>
+                            <form action="../includes/start.php" method="POST" autocomplete="off" id="formulario">
+                                <div class="mb-3">
+                                    <label for="documentType" class="form-label">Tipo de documento</label>
+                                    <select name="tipo" class="form-select" required>
+                                        <option value="">Selecciona</option>
+                                        <?php
                                         $sql = $conex->prepare("SELECT * FROM tipo_documento");
                                         $sql->execute();
                                         while ($fila = $sql->fetch(PDO::FETCH_ASSOC)) {
                                             echo "<option value='" . $fila['id_tipo'] . "'>" . $fila['tipo_doc'] . "</option>";
                                         }
-                                    ?>
-                                </select>
-                            </div>
-
-                            <div class="mb-3">
-                                <label for="documentId" class="form-label">Documento de identidad</label>
-                                <input type="number" id="documentId" name="documento" class="form-control" placeholder="Ingresa tu documento" required>
-                                <p class="docu_error" id="docu_error">¡Documento inválido!</p>
-                            </div>
-
-                            <div class="mb-3 position-relative">
-                                <label for="password" class="form-label">Contraseña</label>
-                                <input type="password" id="password" name="contraseña" class="form-control" placeholder="Ingresa tu contraseña" required>
-                                <i class='bx bx-show' id="showpass" onclick="showpass()"></i>
-                            </div>
-
-                            <div class="mb-3 text-end">
-                                <a href="../Recover_Password/recovery_form.php" class="link-secondary">¿Olvidaste la contraseña?</a>
-                            </div>
-
-                            <div class="d-flex justify-content-between">
-                                <a href="../index.php" class="btn btn-secondary">Regresar</a>
-                                <button type="submit" class="btn btn-primary" name="iniciar">Iniciar sesión</button>
-                            </div>
-
-                        </form>
+                                        ?>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="documentId" class="form-label">Documento de identidad</label>
+                                    <input 
+                                        type="text" 
+                                        inputmode="numeric" 
+                                        pattern="[0-9]*" 
+                                        id="documentId" 
+                                        name="documento" 
+                                        class="form-control" 
+                                        placeholder="Ingresa tu documento" 
+                                        required
+                                    >
+                                    <p class="docu_error" id="docu_error">¡Documento inválido!</p>
+                                </div>
+                                <div class="mb-3 position-relative">
+                                    <label for="password" class="form-label">Contraseña</label>
+                                    <input type="password" id="password" name="contraseña" class="form-control" placeholder="Ingresa tu contraseña" required>
+                                    <i class='bx bx-show' id="showpass" onclick="showpass()"></i>
+                                </div>
+                                <div class="mb-3 text-end">
+                                    <a href="../Recover_Password/recovery_form.php" class="link-secondary">¿Olvidaste la contraseña?</a>
+                                </div>
+                                <div class="d-flex justify-content-between">
+                                    <a href="../index.php" class="btn btn-secondary">Regresar</a>
+                                    <button type="submit" class="btn btn-primary" name="iniciar">Iniciar sesión</button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
-                    
                 </div>
             </div>
         </div>
     </div>
-</div>
 
-<!-- Scripts -->
-<script>
-    function showpass() {
-        const passw = document.getElementById("password");
-        const iconshow = document.getElementById("showpass");
-
-        if (passw.type === "password") {
-            passw.type = "text";
-            iconshow.classList.replace("bx-show", "bx-hide");
-        } else {
-            passw.type = "password";
-            iconshow.classList.replace("bx-hide", "bx-show");
+    <!-- Scripts -->
+    <script>
+        function showpass() {
+            const passw = document.getElementById("password");
+            const iconshow = document.getElementById("showpass");
+            if (passw.type === "password") {
+                passw.type = "text";
+                iconshow.classList.replace("bx-show", "bx-hide");
+            } else {
+                passw.type = "password";
+                iconshow.classList.replace("bx-hide", "bx-show");
+            }
         }
-    }
-</script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="../scripts/login.js"></script>
 
+        // Validación para el campo numérico
+        document.addEventListener('DOMContentLoaded', function() {
+            const documentoInput = document.getElementById('documentId');
+            
+            documentoInput.addEventListener('keypress', function(e) {
+                // Permitir solo números
+                if (!/\d/.test(String.fromCharCode(e.keyCode))) {
+                    e.preventDefault();
+                }
+            });
+        });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../scripts/login.js"></script>
 </body>
 </html>
