@@ -5,42 +5,25 @@
                 <h5 class="mb-4 font-weight-bold text-primary text-white">Nosotros</h5>
                 <hr class="text-white mb-4">
                 <p>
-                    <span style="color: white !important;">Lorem ipsum dolor sit amet consectetur adipisicing elit. Exercitationem quisquam laborum voluptatibus minima vitae, quod quia architecto amet unde doloremque eaque autem necessitatibus, ipsum et? Laudantium, quis! Officia, labore deleniti?</span>
+                    <span style="color: white !important;">Unimos a la comunidad en un solo lugar con un entorno educativo intuitivo, eficaz y cercano. Promovemos el aprendizaje colaborativo, el crecimiento personal y el bienestar de todos los usuarios, fortaleciendo la conexión entre compañeros, docentes y estudiantes.</span>
                 </p>
             </div>
             <div class="col-md-2 col-lg-2 col-xl-2 mx-auto mt-3">
                 <h5 class="mb-4 font-weight-bold text-primary text-white">Soporte</h5>
                 <hr class="text-white mb-4">
                 <p>
-                    <a href="#" class="text-white">Tu cuenta</a>
-                </p>
-                <p>
-                    <a href="#" class="text-white">Tus ordenes</a>
-                </p>
-                <p>
-                    <a href="#" class="text-white">Manejo de cuenta</a>
-                </p>
-                <p>
-                    <a href="#" class="text-white">Ayuda</a>
+                    <a href="soporte.php" class="text-white">Contacta Soporte Tecnico</a>
                 </p>
             </div>
             <div class="col-md-2 col-lg-2 col-xl-2 mx-auto mt-3">
-                <h5 class="mb-4 font-weight-bold text-primary text-white">Has dinero</h5>
+                <h5 class="mb-4 font-weight-bold text-primary text-white">Reportes</h5>
                 <hr class="text-white mb-4">
                 <p>
-                    <a href="#" class="text-white">Vende productos</a>
+                    <a href="reportes.php" class="text-white">Contacta Realizar Reportes</a>
                 </p>
-                <p>
-                    <a href="#" class="text-white">Anuncios</a>
-                </p>
-                <p>
-                    <a href="#" class="text-white">Afiliate</a>
-                </p>
-                <p>
-                    <a href="#" class="text-white">Publica</a>
-                </p>
+                
             </div>
-            <div class="col-md-2 col-lg-2 col-xl-2 mx-auto mt-3">
+            <div class="col-md-2 col-lg-2 col-xl-3 mx-auto mt-3">
                 <h5 class="mb-4 font-weight-bold text-primary text-white">Contacto</h5>
                 <hr class="text-white mb-4">
                 <p>
@@ -49,16 +32,13 @@
                 </p>
                 <p>
                     <li class="fas fa-envelope me-3 text-white"></li>
-                    <span style="color: white !important;">Test@gmail.com</span>
+                    <span style="color: white !important;">teamtalks39@gmail.com</span>
                 </p>
                 <p>
                     <li class="fas fa-phone me-3 text-white"></li>
-                    <span style="color: white !important;">+555555</span>
+                    <span style="color: white !important;">+57 3197666683</span>
                 </p>
-                <p>
-                    <li class="fas fa-print me-3 text-white"></li>
-                    <span style="color: white !important;">+555555</span>
-                </p>
+                
             </div>
             <hr class="text-white mb-4">
             <div class="text-center mb-2">
@@ -71,16 +51,14 @@
             <div class="text-center">
                 <ul class="list-unstyled list-inline">
                     <li class="list-inline-item">
-                        <a href="#" class="text-white social-link"><i class="fab fa-facebook"></i></a>
+                        <a href="https://www.facebook.com/share/16ACWTa46j/" class="text-white social-link"><i class="fab fa-facebook"></i></a>
                     </li>
                     <li class="list-inline-item">
-                        <a href="#" class="text-white social-link"><i class="fab fa-instagram"></i></a>
+                        <a href="https://www.instagram.com/teamtalks_educativo?igsh=YnprbjRqdGFrZW5x" class="text-white social-link"><i class="fab fa-instagram"></i></a>
                     </li>
                     <li class="list-inline-item">
-                        <a href="#" class="text-white social-link"><i class="fab fa-linkedin-in"></i></a>
+                        <a href="https://www.linkedin.com/in/teamtalks-educativo-855484364/?trk=public-profile-join-page" class="text-white social-link"><i class="fab fa-linkedin-in"></i></a>
                     </li>
                 </ul>
-            </div>
-        </div>
-    </div>
+            </div>
 </footer>
