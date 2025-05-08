@@ -11,7 +11,6 @@ if (!isset($_SESSION['otp_verified']) || $_SESSION['otp_verified'] !== true || !
 $userId = $_SESSION['recovery_user_id'];
 $conexion = new database();
 $conex = $conexion->connect();
-
 $error = "";
 $success = false;
 
