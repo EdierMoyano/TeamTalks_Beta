@@ -14,8 +14,8 @@ if (!isset($_SESSION['documento'])) {
 if (isset($_SESSION['afk']) && (time() - $_SESSION['afk']) > $timeout) {
     
     unset($_SESSION['documento']);
-    unset($_SESSION['tipo']);
     unset($_SESSION['estado']);
+    unset($_SESSION['empresa']);
     unset($_SESSION['rol']);
     session_destroy();
     session_write_close();

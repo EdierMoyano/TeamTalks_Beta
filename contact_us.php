@@ -13,13 +13,13 @@
 
 </head>
 <body>
+    
 
     <?php
     include 'includes/header.php';
     ?>
 
-
-<div class="container-fluid py-4 py-lg-5">
+    <div class="container-fluid py-4 py-lg-5">
         <!-- Sección de texto contacto -->
         <div class="row mb-5">
             <div class="col-12 text-center">
@@ -59,23 +59,28 @@
                 <h2 class="display-5">¿Cómo podemos ayudarte?</h2>
             </div>
 
-            <div class="col-md-6 mb-4 mb-md-0">
-                <div class="card h-100 text-center p-4 shadow-sm">
+            <div class="row justify-content-center">
+            <div class="col-12 col-md-5 col-lg-5 mb-4">
+                <a href="soporte.php" class="text-decoration-none">
+                <div class="card text-center p-4 shadow-sm h-100">
                     <img src="assets/img/soporte.webp" class="card-img-top mx-auto" style="max-width: 100px;" alt="Soporte Técnico">
                     <div class="card-body">
-                        <h3 class="card-title">Soporte Técnico</h3>
+                    <h3 class="card-title">Soporte Técnico</h3>
                     </div>
                 </div>
-            </div>
-
-            <div class="col-md-6">
-                <div class="card h-100 text-center p-4 shadow-sm">
+                </a>
+            
+                <a href="reportes.php" class="text-decoration-none">
+                <div class="card text-center p-4 shadow-sm h-100">
                     <img src="assets/img/seg.webp" class="card-img-top mx-auto" style="max-width: 100px;" alt="Realiza Reportes">
                     <div class="card-body">
-                        <h3 class="card-title">Realiza Reportes</h3>
+                    <h3 class="card-title">Realiza Reportes</h3>
                     </div>
                 </div>
+                </a>
             </div>
+        </div>
+
         </div>
     </div>
 

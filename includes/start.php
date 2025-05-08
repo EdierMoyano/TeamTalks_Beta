@@ -5,7 +5,7 @@ $conexion = new database();
 $conex = $conexion->connect();
 
 
-if (isset($_POST['submit'])) {
+if (isset($_POST['iniciar'])) {
     $documento = $_POST['documento']; 
     $tipo = $_POST['tipo'];
     $contra_desc = $_POST['contraseña']; 
@@ -18,7 +18,7 @@ if (isset($_POST['submit'])) {
 
 
     
-    $sql = $conex->prepare("SELECT * FROM usuarios WHERE id = $documento AND id_docu = '$tipo'");
+    $sql = $conex->prepare("SELECT * FROM usuarios WHERE id = $documento AND id_tipo = $tipo");
     $sql->execute();
 
     $fila = $sql->fetch(PDO::FETCH_ASSOC);
@@ -26,12 +26,12 @@ if (isset($_POST['submit'])) {
     
     if ($fila) {
         
-        if (password_verify($contra_desc, $fila['contrasena']) && ($fila['id_estado'] == 1)) {
+        if (password_verify($contra_desc, $fila['contraseña']) && ($fila['id_estado'] == 1)) {
             
             $_SESSION ['documento'] = $fila ['id'];
             $_SESSION ['estado'] = $fila ['id_estado'];
             $_SESSION ['rol'] = $fila ['id_rol'];
-            $_SESSION ['empresa'] = $fila['id_empresa'];
+            $_SESSION ['empresa'] = $fila['nit'];
 
             if ($_SESSION ['rol'] == 1) {
                 header("Location: ../s_admin/index.php");
