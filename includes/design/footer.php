@@ -12,14 +12,14 @@
                 <h5 class="mb-4 font-weight-bold text-primary text-white">Soporte</h5>
                 <hr class="text-white mb-4">
                 <p>
-                    <a href="soporte.php" class="text-white">Contacta Soporte Tecnico</a>
+                    <a href="soporte.php" class="l text-white">Contacta Soporte Tecnico</a>
                 </p>
             </div>
             <div class="col-md-2 col-lg-2 col-xl-2 mx-auto mt-3">
                 <h5 class="mb-4 font-weight-bold text-primary text-white">Reportes</h5>
                 <hr class="text-white mb-4">
                 <p>
-                    <a href="reportes.php" class="text-white">Contacta Realizar Reportes</a>
+                    <a href="reportes.php" class="l text-white">Contacta Realizar Reportes</a>
                 </p>
                 
             </div>
@@ -51,14 +51,14 @@
             <div class="text-center">
                 <ul class="list-unstyled list-inline">
                     <li class="list-inline-item">
-                        <a href="https://www.facebook.com/share/16ACWTa46j/" class="text-white social-link"><i class="fab fa-facebook"></i></a>
+                        <a target="_blank" href="https://www.facebook.com/share/16ACWTa46j/" class="text-white social-link"><i class="fab fa-facebook"></i></a>
                     </li>
                     <li class="list-inline-item">
-                        <a href="https://www.instagram.com/teamtalks_educativo?igsh=YnprbjRqdGFrZW5x" class="text-white social-link"><i class="fab fa-instagram"></i></a>
+                        <a target="_blank" href="https://www.instagram.com/teamtalks_educativo?igsh=YnprbjRqdGFrZW5x" class="text-white social-link"><i class="fab fa-instagram"></i></a>
                     </li>
                     <li class="list-inline-item">
-                        <a href="https://www.linkedin.com/in/teamtalks-educativo-855484364/?trk=public-profile-join-page" class="text-white social-link"><i class="fab fa-linkedin-in"></i></a>
+                        <a target="_blank" href="https://www.linkedin.com/in/teamtalks-educativo-855484364/?trk=public-profile-join-page" class="text-white social-link"><i class="fab fa-linkedin-in"></i></a>
                     </li>
                 </ul>
-            </div>
+            </div>
 </footer>

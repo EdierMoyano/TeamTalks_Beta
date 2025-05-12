@@ -15,17 +15,17 @@ body {
 
 .sidebar {
   position: fixed;
-  top: 145px; 
+  top: 138px; 
   left: 16px;
   width: 250px;
-  height: calc(110vh - 120px);
+  height: calc(95vh - 120px);
   border-radius: 16px;
   background: #ffffff;
   transition: all 0.4s ease;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
   z-index: 9;
   float: left;
-  transform: translate(-17px);
+  transform: translate(-17px, 28px);
 }
 
 
@@ -103,7 +103,7 @@ body {
 }
 
 .sidebar.collapsed .sidebar-nav .primary-nav {
-  transform: translateY(65px);
+  transform: translateY(45px);
 }
 
 .sidebar-nav .nav-link {

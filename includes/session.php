@@ -7,7 +7,7 @@ $timeout = 2000000;
 if (!isset($_SESSION['documento'])) {
     
     echo '<script>alert("Credenciales incorrectas.")</script>';
-    echo '<script>window.location = "../index.html"</script>';
+    echo '<script>window.location = "../index.php"</script>';
     exit();
 }
 
