@@ -3,7 +3,7 @@
         <div class="container">
             <!-- Logo -->
             <a class="navbar-brand" href="index.php">
-                <img src="assets/img/logo.png" alt="Logo de la Empresa" style="height: 120px;">
+                <img src="../assets/img/logo.png" alt="Logo de la Empresa" style="height: 120px;">
             </a>
             <!-- Botón para colapsar en dispositivos pequeños -->
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">

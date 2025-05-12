@@ -62,7 +62,7 @@
 <br>
 
     <?php
-    include 'includes/footer.php';
+    include 'includes/desing/footer.php';
     ?>
 
 

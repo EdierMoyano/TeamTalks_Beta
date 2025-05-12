@@ -87,10 +87,10 @@
 <body>
 
   <!-- Header -->
-  <?php include 'includes/header.php'; ?><br><br>
+  <?php include '../includes/desing/header.php'; ?><br><br>
 
   <!-- Sidebar -->
-  <?php include 'includes/sidebar.php'; ?>
+  <?php include '../includes/desing/sidebar.php'; ?>
 
   <!-- Contenido principal -->
   <main class="main-content">

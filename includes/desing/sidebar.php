@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Sidebar Menu | CodingNepal</title>
-  <link rel="stylesheet" href="style_side.css">
+  <link rel="stylesheet" href="../styles/style_side.css">
   <!-- Linking Google fonts for icons -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0">
 </head>
@@ -14,7 +14,7 @@
     <!-- Sidebar header -->
     <header class="sidebar-header">
       <a href="#" class="header-logo">
-        <img src="assets/img/logo.png" alt="CodingNepal">
+        <img src="../assets/img/logo.png" alt="CodingNepal">
       </a>
       <button class="toggler sidebar-toggler">
         <span class="material-symbols-rounded">chevron_left</span>
@@ -74,6 +74,6 @@
   </aside>
 
   <!-- Script -->
-  <script src="script.js"></script>
+  <script src="../js/script_sidebard.js"></script>
 </body>
 </html>
