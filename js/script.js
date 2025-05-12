@@ -10,7 +10,6 @@ let fullSidebarHeight = "calc(100vh - 32px)"; // Height in larger screen
 sidebarToggler.addEventListener("click", () => {
   sidebar.classList.toggle("collapsed");
   document.body.classList.toggle("sidebar-collapsed", sidebar.classList.contains("collapsed"));
-
 });
 
 // Update sidebar height and menu toggle text
@@ -34,5 +33,4 @@ window.addEventListener("resize", () => {
     toggleMenu(sidebar.classList.contains("menu-active"));
   }
 });
-
 

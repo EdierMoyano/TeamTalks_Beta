@@ -13,13 +13,13 @@
 
 </head>
 <body>
-    
 
     <?php
     include 'includes/design/header.php';
     ?>
 
-    <div class="container-fluid py-4 py-lg-5">
+
+<div class="container-fluid py-4 py-lg-5">
         <!-- Sección de texto contacto -->
         <div class="row mb-5">
             <div class="col-12 text-center">
