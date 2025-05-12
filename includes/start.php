@@ -49,7 +49,11 @@ if (isset($_POST['iniciar'])) {
             }
 
             if ($_SESSION ['rol'] == 4) {
+<<<<<<< HEAD
                 header("Location: ../aprendiz/index.php");
+=======
+                header("Location: ../aprendiz/mis_clases.php");
+>>>>>>> Alumnos_Clases
                 exit();
             }
 

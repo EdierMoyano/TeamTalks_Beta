@@ -14,7 +14,11 @@
 <body>
 
     <?php
+<<<<<<< HEAD
     include 'includes/header.php';
+=======
+    include 'includes/desing/header.php';
+>>>>>>> Alumnos_Clases
     ?>
 
 
@@ -62,7 +66,11 @@
 <br>
 
     <?php
+<<<<<<< HEAD
     include 'includes/footer.php';
+=======
+    include 'includes/desing/footer.php';
+>>>>>>> Alumnos_Clases
     ?>
 
 
