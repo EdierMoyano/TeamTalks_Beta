@@ -5,7 +5,7 @@ $conexion = new database();
 $conex = $conexion->connect();
 
 
-if (isset($_POST['iniciar'])) {
+if (isset($_POST['submit'])) {
     $documento = $_POST['documento']; 
     $tipo = $_POST['tipo'];
     $contra_desc = $_POST['contraseña']; 
@@ -49,11 +49,7 @@ if (isset($_POST['iniciar'])) {
             }
 
             if ($_SESSION ['rol'] == 4) {
-<<<<<<< HEAD
                 header("Location: ../aprendiz/index.php");
-=======
-                header("Location: ../aprendiz/mis_clases.php");
->>>>>>> Alumnos_Clases
                 exit();
             }
 
