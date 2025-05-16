@@ -14,7 +14,7 @@
 <body>
 
     <?php
-    include 'includes/header.php';
+    include 'includes/design/header.php';
     ?>
 
 
@@ -62,7 +62,7 @@
 <br>
 
     <?php
-    include 'includes/footer.php';
+    include 'includes/design/footer.php';
     ?>
 
 

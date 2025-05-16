@@ -64,15 +64,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         $mail->setFrom('teamtalks39@gmail.com', 'Soporte TeamTalks');
         $mail->addAddress($correo);
-        $mail->Subject = 'Código de verificación - TeamTalks';
+        $mail->Subject = 'Codigo de verificacion - TeamTalks';
 
         // Contenido del correo con el código OTP
         $mail->isHTML(true);
-        $mail->Body = "<h2>Recuperación de contraseña</h2>
+        $mail->Body = "<h2>Recuperacion de contrasena</h2>
                     <p>Hola, has solicitado recuperar tu contraseña.</p>
-                    <p>Tu código de verificación es:</p>
+                    <p>Tu codigo de verificacion es:</p>
                     <h1 style='font-size: 32px; letter-spacing: 5px; text-align: center; padding: 10px; background-color: #f0f0f0; border-radius: 5px;'>$otp</h1>
-                    <p>Este código expirará en 15 minutos.</p>
+                    <p>Este codigo expirará en 15 minutos.</p>
                     <p>Si no solicitaste este cambio, ignora este mensaje.</p>";
 
         // Enviar correo

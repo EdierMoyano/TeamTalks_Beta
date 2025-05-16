@@ -5,7 +5,7 @@ $conexion = new database();
 $conex = $conexion->connect();
 
 
-if (isset($_POST['iniciar'])) {
+if (isset($_POST['submit'])) {
     $documento = $_POST['documento']; 
     $tipo = $_POST['tipo'];
     $contra_desc = $_POST['contraseña']; 

@@ -1,6 +1,6 @@
 <?php
 session_start();
-unset($_SESSION['tipo']);
+unset($_SESSION['empresa']);
 unset($_SESSION['documento']);
 unset($_SESSION['estado']);
 unset($_SESSION['rol']);
