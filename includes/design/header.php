@@ -1,11 +1,16 @@
 <?php
+
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 $usuario_logueado = isset($_SESSION['documento']);
-$rol = $_SESSION['rol'] ?? null; // Por si aún no está definido
+$username = $_SESSION['nombres'] ?? 'Nombres';
+$lastname = $_SESSION['apellidos'] ?? 'Apellidos';  
+
+
 
 ?>
+
 
 
 <style>
@@ -21,7 +26,7 @@ $rol = $_SESSION['rol'] ?? null; // Por si aún no está definido
         transition: box-shadow 0.3s ease;
     }
 
-    .boton:hover, .boton:active {
+    .boton:hover {
         color: #0E4A86;
         background-color: white;
         box-shadow: 0 2px 8px white;
@@ -39,14 +44,79 @@ $rol = $_SESSION['rol'] ?? null; // Por si aún no está definido
       font-weight: bold;
     }
 
+    a {
+        text-decoration: none;
+    }
+
+    
+
+    li i {
+        position: relative;
+        cursor: pointer;
+        color: white;
+        top: 25px;
+        right: 30px;
+        font-size: 25px;
+        text-shadow: 0 0 0 0;
+        transition: text-shadow 0.2s ease;
+    }
+
+    li i:hover {
+        text-shadow: 0 2px 8px white; 
+    }
+
+    ul {
+        list-style: none;
+       
+    }
+    
+
+    .profile {
+        top: 8px;
+        background-color: none;
+        border-radius: 12px;
+        cursor: pointer;
+        color: white;
+        transition: background-color 0.2s ease;
+        width: auto;
+        height: 70px;
+    }
+
+    .options {
+        background-color: white;
+    }
+
+    .select-options {
+        color: #0E4A86;
+    }
+
+    .profile:hover {
+        background-color:rgba(255, 255, 255, 0.48);
+    }
+
+    .select-options:hover {
+        background-color: #0E4A86;
+        color: white;
+    }
+
+
 
 </style>
 
 <header style="position: fixed; top: 0; z-index:99; width:100%;">
+                        <div class="offcanvas offcanvas-start" data-bs-scroll="true" tabindex="-1" id="offcanvasWithBothOptions" aria-labelledby="offcanvasWithBothOptionsLabel">
+                            <div class="offcanvas-header">
+                                <h5 class="offcanvas-title" id="offcanvasWithBothOptionsLabel">Notificaciones</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                            </div>
+                            <div class="offcanvas-body">
+                                <p>Aqui se mostraran todas las notificaciones.</p>
+                            </div>
+                        </div>
     <nav class="navbar navbar-expand-lg" style="background-color: #0E4A86;">
         <div class="container">
             <!-- Logo -->
-            <a class="navbar-brand" href="<?php echo $usuario_logueado ? 'inicio_usuario.php' : 'index.php'; ?>">
+            <a class="navbar-brand" href="<?php echo $usuario_logueado ? 'index.php' : 'index.php'; ?>">
                 <img src="http://localhost/teamtalks/assets/img/logo.png" alt="Logo de la Empresa" style="height: 100px;">
             </a>
 
@@ -66,20 +136,28 @@ $rol = $_SESSION['rol'] ?? null; // Por si aún no está definido
                     <li class="nav-item"><a class="l nav-link text-white" href="contact_us.php">Contáctanos</a></li>
                     <li class="nav-item"><a class="boton btn btn" href="login/login.php">Iniciar Sesión</a></li>
                 <?php else: ?>
+                    <li>
+                        <i class="not bi bi-bell-fill" data-bs-toggle="offcanvas" data-bs-target="#offcanvasWithBothOptions" aria-controls="offcanvasWithBothOptions"></i>
+
+                    </li>
                     <!-- Menú para usuarios autenticados -->
-                    <li class="nav-item"><a class="l nav-link text-white" href="../perfil.php">Mi Perfil</a></li>
+                    <li class="nav-item"><a class="l nav-link text-white" href="index.php" style="position:relative; right: 15px; top:25px">Inicio</a></li>
 
-                    <?php if ($rol == 1): ?>
-                        <li class="nav-item"><a class="l nav-link text-white" href="../s_admin/dashboard.php">Panel Super Admin</a></li>
-                    <?php elseif ($rol == 2): ?>
-                        <li class="nav-item"><a class="l nav-link text-white" href="../admin/dashboard.php">Panel Admin</a></li>
-                    <?php elseif ($rol == 3): ?>
-                        <li class="nav-item"><a class="l nav-link text-white" href="../instructor/dashboard.php">Panel Instructor</a></li>
-                    <?php elseif ($rol == 4): ?>
-                        <li class="nav-item"><a class="l nav-link text-white" href="../aprendiz/dashboard.php">Panel Aprendiz</a></li>
-                    <?php endif; ?>
 
-                    <li class="nav-item"><a class="boton btn btn" href="http://localhost/teamtalks/includes/exit.php">Cerrar Sesión</a></li>
+                    <li class="nav-item dropdown profile">
+                    <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false" style="color: white;">
+                        <img src="http://localhost/teamtalks/assets/img/logo.png" alt="" style="max-width: 70px;">
+                        <p style="position: relative; top: 8px;">
+                            <?php echo htmlspecialchars($username);?>
+                        </p>
+                    </a>
+                    <ul class="dropdown-menu options" style="left: 80px;">
+                        <li><a class="dropdown-item select-options" href="/teamtalks/actions/edit.php">Editar perfil</a></li>
+                        <li><a class="dropdown-item select-options" href="/teamtalks/actions/config.php">Configuración</a></li>
+                        <li><a class="dropdown-item select-options" href="/teamtalks/includes/exit.php">Cerrar sesión</a></li>
+                    </ul>
+                </li>
+
                 <?php endif; ?>
 
                 </ul>
@@ -87,3 +165,4 @@ $rol = $_SESSION['rol'] ?? null; // Por si aún no está definido
         </div>
     </nav>
 </header>
+
