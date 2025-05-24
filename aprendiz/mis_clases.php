@@ -13,6 +13,8 @@
     crossorigin="anonymous" referrerpolicy="no-referrer" />
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0">
+
 
 
   <style>
@@ -84,22 +86,22 @@
     }
   </style>
 </head>
-<body>
+<body class="sidebar-collapsed">
 
   <!-- Header -->
-  <?php include '../includes/desing/header.php'; ?><br><br>
+  <?php include '../includes/design/header.php'; ?><br><br>
 
   <!-- Sidebar -->
-  <?php include '../includes/desing/sidebar.php'; ?>
+  <?php include '../includes/design/sidebar.php'; ?>
 
   <!-- Contenido principal -->
   <main class="main-content">
   <div class="container-fluid">
-    <form class="d-flex mb-4" role="search">
-      <input class="form-control me-2" type="search" placeholder="Buscar" aria-label="Search"/> 
-      <button class="btn btn-blue-dark" type="submit">
+    <form class="d-flex mb-4" role="search" style="max-width: 1000px; margin: 0 auto;">
+      <input class="form-control me-2" type="search" placeholder="Buscar" aria-label="Search" style="font-size: 0.9rem; height: 40px;"/>
+      <button class="btn btn-blue-dark" type="submit" style="height: 40px; padding: 0 12px;">
         <i class="bi bi-search"></i>
-      </button> 
+      </button>
     </form> 
     <br>
 
@@ -109,85 +111,7 @@
   </div>
 </main>
 
+<script src="../js/buscador.js"></script>
 
-
-  <!-- Script para cargar las clases -->
-  <script>
-  document.addEventListener("DOMContentLoaded", function () {
-    const ITEMS_POR_PAGINA = 6;
-    let clasesTotales = [];
-    let paginaActual = 1;
-
-    const contenedor = document.getElementById("contenedor-clases");
-    const paginacion = document.createElement("div");
-    paginacion.className = "d-flex justify-content-center mt-4";
-    contenedor.parentNode.appendChild(paginacion); // se pone después de las tarjetas
-
-    function renderizarPagina(pagina) {
-      contenedor.innerHTML = "";
-
-      const inicio = (pagina - 1) * ITEMS_POR_PAGINA;
-      const fin = inicio + ITEMS_POR_PAGINA;
-      const clasesPagina = clasesTotales.slice(inicio, fin);
-
-      clasesPagina.forEach(clase => {
-        const col = document.createElement("div");
-        col.className = "col-md-4 mb-4";
-
-        const card = document.createElement("div");
-        card.className = "card card-clase h-100";
-
-        card.innerHTML = `
-  <img src="${clase.imagen}" class="card-img-top" alt="Imagen de ${clase.nombre_clase}">
-  <div class="card-body">
-    <h5 class="card-title">${clase.nombre_clase}</h5>
-    <p class="card-text"><strong>Profesor:</strong> ${clase.nombre_profesor}</p>
-    <p class="card-text"><strong>Número de Ficha:</strong> ${clase.numero_fichas}</p>
-  </div>
-  <div class="card-footer bg-transparent border-top-0">
-    <a href="#" class="btn btn-blue-dark w-100">Ingresar a Clase</a>
-  </div>
-`;
-
-
-        col.appendChild(card);
-        contenedor.appendChild(col);
-      });
-
-      renderizarControles(clasesTotales.length);
-    }
-
-    function renderizarControles(totalItems) {
-      const totalPaginas = Math.ceil(totalItems / ITEMS_POR_PAGINA);
-      paginacion.innerHTML = "";
-
-      for (let i = 1; i <= totalPaginas; i++) {
-        const btn = document.createElement("button");
-        btn.textContent = i;
-        btn.className = `btn mx-1 ${i === paginaActual ? 'btn-blue-dark' : 'btn-outline-secondary'}`;
-        btn.addEventListener("click", () => {
-          paginaActual = i;
-          renderizarPagina(paginaActual);
-        });
-        paginacion.appendChild(btn);
-      }
-    }
-
-    fetch("api/clases.php")
-      .then(res => res.json())
-      .then(clases => {
-        clasesTotales = clases;
-        if (clasesTotales.length === 0) {
-          contenedor.innerHTML = "<p>No hay clases disponibles.</p>";
-          return;
-        }
-        renderizarPagina(paginaActual);
-      })
-      .catch(err => {
-        console.error("Error al cargar clases:", err);
-        contenedor.innerHTML = "<p>Error al cargar las clases.</p>";
-      });
-  });
-</script>
 </body>
 </html>

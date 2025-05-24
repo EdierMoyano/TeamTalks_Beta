@@ -1,4 +1,3 @@
-
 <aside class="sidebar collapsed" style="height: 620px;">
   <!-- Sidebar header -->
   <header class="sidebar-header">
@@ -56,13 +55,18 @@
 
       <!-- Solo para Aprendiz (rol 4) -->
       <?php if ($_SESSION['rol'] == 4): ?>
-        <li class="nav-item">
-          <a href="#" class="nav-link">
-            <i class="nav-icon material-symbols-rounded">group</i>
-            <span class="nav-label">Team</span>
+        <li class="nav-item has-submenu">
+          <a href="#" class="nav-link submenu-toggle">
+            <i class="side bi bi-people-fill"></i>
+            <span class="nav-label">Clases Inscritas</span>
+            <i class="bi bi-chevron-down submenu-arrow" style="position: relative; top: 0px; left: 0px; color: black;"></i>
           </a>
-          <span class="nav-tooltip">Team</span>
+          <ul class="submenu">
+            <li><a href="index.php" class="nav-link small">Actividades</a></li>
+            <li><a href="transversales.php" class="nav-link small">Calificaciones</a></li>
+          </ul>
         </li>
+
       <?php endif; ?>
 
       
@@ -71,5 +75,5 @@
   </nav>
 </aside>
 
-<script src="../js/side_bar.js"></script>
-
+<script src="../js/script.js"></script>
+  <link rel="stylesheet" href="../styles/style_side_cla.css">

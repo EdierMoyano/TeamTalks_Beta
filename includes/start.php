@@ -65,5 +65,5 @@ if (isset($_POST['submit'])) {
         else {
             echo '<script>alert ("No se encontró el usuario")</script>';
             echo '<script>window.location = "../login/login.php"</script>';
-        } 
+        }
 }
