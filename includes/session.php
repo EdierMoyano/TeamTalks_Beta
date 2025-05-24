@@ -17,6 +17,7 @@ if (isset($_SESSION['afk']) && (time() - $_SESSION['afk']) > $timeout) {
     unset($_SESSION['estado']);
     unset($_SESSION['empresa']);
     unset($_SESSION['rol']);
+    unset($_SESSION['nombre']);
     session_destroy();
     session_write_close();
 

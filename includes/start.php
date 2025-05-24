@@ -32,6 +32,8 @@ if (isset($_POST['submit'])) {
             $_SESSION ['estado'] = $fila ['id_estado'];
             $_SESSION ['rol'] = $fila ['id_rol'];
             $_SESSION ['empresa'] = $fila['nit'];
+            $_SESSION ['nombres'] = $fila['nombres'];
+
 
             if ($_SESSION ['rol'] == 1) {
                 header("Location: ../s_admin/index.php");

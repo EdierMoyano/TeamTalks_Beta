@@ -44,7 +44,7 @@
                         <textarea class="form-control" id="mensaje" rows="5" placeholder="Escribe tu mensaje aquí"></textarea>
                     </div>
 
-                    <button type="submit" class="btn btn-primary w-100">Enviar</button>
+                    <button type="submit" class="btn btn w-100" style="background-color:#0E4A86; color: white;" >Enviar</button>
                 </form>
             </div>
 
