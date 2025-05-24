@@ -5,7 +5,7 @@ $conexion = new database();
 $conex = $conexion->connect();
 
 
-if (isset($_POST['iniciar'])) {
+if (isset($_POST['submit'])) {
     $documento = $_POST['documento']; 
     $tipo = $_POST['tipo'];
     $contra_desc = $_POST['contraseña']; 
@@ -32,6 +32,8 @@ if (isset($_POST['iniciar'])) {
             $_SESSION ['estado'] = $fila ['id_estado'];
             $_SESSION ['rol'] = $fila ['id_rol'];
             $_SESSION ['empresa'] = $fila['nit'];
+            $_SESSION ['nombres'] = $fila['nombres'];
+
 
             if ($_SESSION ['rol'] == 1) {
                 header("Location: ../s_admin/index.php");
@@ -49,7 +51,7 @@ if (isset($_POST['iniciar'])) {
             }
 
             if ($_SESSION ['rol'] == 4) {
-                header("Location: ../aprendiz/mis_clases.php");
+                header("Location: ../aprendiz/index.php");
                 exit();
             }
 
@@ -63,5 +65,5 @@ if (isset($_POST['iniciar'])) {
         else {
             echo '<script>alert ("No se encontró el usuario")</script>';
             echo '<script>window.location = "../login/login.php"</script>';
-        } 
+        }
 }

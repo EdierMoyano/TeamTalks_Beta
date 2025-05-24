@@ -52,7 +52,8 @@
 <body>
 
 <header>
-  <?php include 'includes/header.php'; ?>
+  <?php include 'includes/design/header.php'; ?>
+  <?php include 'includes/designheader.php'; ?>
 </header>
 
 <section class="py-5">
@@ -94,7 +95,7 @@
   </div>
 </section>
 
-<?php include 'includes/footer.php'; ?>
+<?php include 'includes/design/footer.php'; ?>
 
 </body>
 </html>

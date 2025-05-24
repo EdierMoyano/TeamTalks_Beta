@@ -53,205 +53,98 @@ if (isset($_POST['submit'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nueva contraseña</title>
-    <link rel="stylesheet" href="../styles/change.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
     <link rel="icon" href="../assets/img/logo.png">
-    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <style>
-        /* Estilos adicionales para mantener consistencia */
-        .container {
-            display: flex;
-            height: 100vh;
-            background-color: #f5f5f5;
-        }
-        
-        .welcome {
-            flex: 1;
-            background-color: #007bff;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding: 2rem;
-            position: relative;
-        }
-        
-        .login {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            padding: 2rem;
-            background-color: white;
-        }
-        
-        .logo {
-            width: 120px;
-            margin-bottom: 2rem;
-        }
-        
-        .img1 {
-            max-width: 80%;
-            max-height: 60%;
-        }
-        
-        h2 {
-            color: #333;
-            margin-bottom: 1.5rem;
-        }
-        
-        form {
-            display: flex;
-            flex-direction: column;
-            width: 100%;
-        }
-        
-        label {
-            margin-bottom: 0.5rem;
-            color: #555;
-        }
-        
-        input {
-            padding: 0.8rem;
-            margin-bottom: 1.5rem;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-        }
-        
-        .buttons {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 1rem;
-        }
-        
-        .primary-btn {
-            background-color: #007bff;
-            color: white;
-            border: none;
-            padding: 0.8rem 1.5rem;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-        
-        .secondary-btn {
-            background-color: transparent;
-            color: #007bff;
-            border: 1px solid #007bff;
-            padding: 0.8rem 1.5rem;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-        
-        .coincide {
-            color: red;
-            margin-top: -1rem;
-            margin-bottom: 1rem;
-            display: none;
-        }
-        
-        i.bx {
+        .bx {
             position: absolute;
-            right: 10px;
-            transform: translateY(-38px);
+            font-size: 1.7rem;
+            left: 280px;
+            top: 75%;
+            transform: translateY(-50%);
             cursor: pointer;
-            color: #555;
-        }
-        
-        .error-message {
-            color: red;
-            margin-bottom: 1rem;
-        }
-        
-        .success-message {
-            color: green;
-            margin-bottom: 1rem;
         }
     </style>
 </head>
-<body>
-    <div class="container">
-        <div class="welcome">
-            <img src="../assets/img/logo.png" alt="TeamTalks Logo" class="logo">
-            <!-- Aquí puedes colocar la imagen que desees -->
-            <img src="../assets/img/2.png" alt="" class="img1">
-        </div>
-        <div class="login">
-            <?php if ($success): ?>
-                <h2>¡Contraseña actualizada!</h2>
-                <p class="success-message">Tu contraseña ha sido actualizada exitosamente.</p>
-                <div class="buttons" style="justify-content: center; margin-top: 20px;">
-                    <a href="../login/login.php"><button type="button" class="primary-btn">Iniciar sesión</button></a>
-                </div>
-            <?php else: ?>
-                <h2>Ingresa una nueva contraseña</h2>
-                
-                <?php if (!empty($error)): ?>
-                    <p class="error-message"><?php echo $error; ?></p>
-                <?php endif; ?>
-                
-                <form action="" method="POST" autocomplete="off">
-                    <label for="password1">Contraseña</label>
-                    <div style="position: relative;">
-                        <input type="password" id="password1" name="password1" placeholder="Ingresa la nueva contraseña" required>
-                        <i class='bx bx-show' id="showpass1" onclick="showpass1()"></i>
-                    </div>
+<body class="bg-light d-flex justify-content-center align-items-center vh-100" style="background-image: url(../assets/img/background.jpg); background-size: cover;">
 
-                    <label for="password2">Confirmar contraseña</label>
-                    <div style="position: relative;">
-                        <input type="password" id="password2" name="password2" placeholder="Vuelve a ingresar la nueva contraseña" required>
-                        <i class='bx bx-show' id="showpass2" onclick="showpass2()"></i>
+    <div class="card shadow-lg border-0" style="width: 55%; background-color: transparent;">
+        <div class="row g-0">
+
+            <!-- Logo arriba a la izquierda (posicionado absolutamente) -->
+            <div class="img" style="position:absolute; z-index: 1;">
+                <img src="../assets/img/logo.png" alt="Logo" style="width: 120px;" class="m-2">
+            </div>
+
+            <!-- Lado izquierdo: Imagen -->
+            <div class="col-md-6 p-5 d-flex justify-content-center align-items-center bg-white" style="border-top-left-radius: 10px; border-bottom-left-radius: 10px;">
+                <img src="../assets/img/2.png" alt="Imagen" class="img-fluid" style="max-height: 300px; width: 300px;">
+            </div>
+
+            <!-- Lado derecho: Formulario -->
+            <div class="col-md-6 p-5 d-flex flex-column justify-content-center" style="background: #8ac5fe; border-top-right-radius: 10px; border-bottom-right-radius: 10px;">
+                <?php if ($success): ?>
+                    <h2 class="mb-3">¡Contraseña actualizada!</h2>
+                    <p class="text-success">Tu contraseña ha sido actualizada exitosamente.</p>
+                    <div class="text-center mt-4">
+                        <a href="../login/login.php" class="btn btn-primary">Iniciar sesión</a>
                     </div>
-                    <p class="coincide" id="coincide">¡Las contraseñas no coinciden!</p>
-                
-                    <div class="buttons">
-                        <a href="verify_otp.php"><button type="button" class="secondary-btn">Regresar</button></a>
-                        <button name="submit" type="submit" class="primary-btn">Confirmar</button>
-                    </div>
-                </form>
-            <?php endif; ?>
+                <?php else: ?>
+                    <h2 class="mb-3">Ingresa una nueva contraseña</h2>
+
+                    <?php if (!empty($error)): ?>
+                        <div class="alert alert-danger"><?php echo $error; ?></div>
+                    <?php endif; ?>
+
+                    <form action="" method="POST" autocomplete="off">
+                        <div class="mb-3 position-relative">
+                            <label for="password1" class="form-label">Contraseña</label>
+                            <input type="password" class="form-control" id="password1" name="password1" placeholder="Ingresa la nueva contraseña" required>
+                            <i class='bx bx-show end-0 translate-middle-y me-3' id="showpass1" onclick="togglePass('password1', 'showpass1')"></i>
+                        </div>
+
+                        <div class="mb-2 position-relative">
+                            <label for="password2" class="form-label">Confirmar contraseña</label>
+                            <input type="password" class="form-control" id="password2" name="password2" placeholder="Vuelve a ingresar la nueva contraseña" required>
+                            <i class='bx bx-show end-0 translate-middle-y me-3' id="showpass2" onclick="togglePass('password2', 'showpass2')"></i>
+                        </div>
+
+                        <p class="text-danger" id="coincide" style="display: none;">¡Las contraseñas no coinciden!</p>
+
+                        <div class="d-flex justify-content-between mt-3">
+                            <a href="verify_otp.php" class="btn btn-secondary">Regresar</a>
+                            <button type="submit" name="submit" class="btn" style="background-color: #0E4A86; color: white;">Confirmar</button>
+                        </div>
+                    </form>
+                <?php endif; ?>
+            </div>
         </div>
     </div>
 
     <script>
-        function showpass1() {
-            const passw = document.getElementById("password1");
-            const iconshow = document.getElementById("showpass1");
-            
-            if (passw.type === "password") {
-                passw.type = "text";
-                iconshow.classList.replace("bx-show", "bx-hide");
-            } else {
-                passw.type = "password";
-                iconshow.classList.replace("bx-hide", "bx-show");
-            }
-        }
+        function togglePass(inputId, iconId) {
+            const input = document.getElementById(inputId);
+            const icon = document.getElementById(iconId);
 
-        function showpass2() {
-            const passw = document.getElementById("password2");
-            const iconshow = document.getElementById("showpass2");
-            
-            if (passw.type === "password") {
-                passw.type = "text";
-                iconshow.classList.replace("bx-show", "bx-hide");
+            if (input.type === "password") {
+                input.type = "text";
+                icon.classList.replace("bx-show", "bx-hide");
             } else {
-                passw.type = "password";
-                iconshow.classList.replace("bx-hide", "bx-show");
+                input.type = "password";
+                icon.classList.replace("bx-hide", "bx-show");
             }
         }
 
         // Verificar si las contraseñas coinciden
-        document.getElementById('password2').addEventListener('input', function() {
+        document.getElementById('password2').addEventListener('input', function () {
             const pass1 = document.getElementById('password1').value;
             const pass2 = document.getElementById('password2').value;
             const coincide = document.getElementById('coincide');
-            
-            if (pass1 !== pass2) {
-                coincide.style.display = 'block';
-            } else {
-                coincide.style.display = 'none';
-            }
+
+            coincide.style.display = (pass1 !== pass2) ? 'block' : 'none';
         });
     </script>
 </body>
 </html>
+

@@ -15,7 +15,7 @@ body {
 
 .sidebar {
   position: fixed;
-  top: 138px; 
+  top: 99px; 
   left: 16px;
   width: 250px;
   height: calc(95vh - 120px);
@@ -236,4 +236,38 @@ body {
     bottom: 0;
     margin: 40px 0 30px;
   }
+}
+
+.side {
+  position: relative;
+  left: 0px;
+  color: black;
+  top: 0px;
+}
+
+/* Submenú oculto por defecto */
+.submenu {
+  display: none;
+  flex-direction: column;
+  padding-left: 35px;
+}
+
+/* Mostrar submenu solo si tiene clase 'open' y sidebar no está colapsado */
+.sidebar:not(.collapsed) .has-submenu.open .submenu {
+  display: flex;
+}
+
+/* Flecha animada */
+.submenu-arrow {
+  margin-left: auto;
+  transition: transform 0.3s ease;
+}
+
+/* Flecha hacia arriba cuando el submenú está abierto */
+.has-submenu.open .submenu-arrow {
+  transform: rotate(180deg);
+}
+
+.sidebar.collapsed .submenu-arrow {
+  display: none;
 }
