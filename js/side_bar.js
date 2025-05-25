@@ -28,3 +28,4 @@ sidebarToggler.addEventListener("click", () => {
     document.querySelectorAll(".has-submenu").forEach(item => item.classList.remove("open"));
   }
 });
+
