@@ -611,7 +611,7 @@ try {
                 <!-- Tarjeta para Registro de usuarios -->
                 <div class="card mb-4">
                     <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                        <h4 class="mb-0">Registro de usuarios</h4>
+                        <h4 class="mb-0">Registro De usuarios</h4>
                         <button type="button" class="btn btn-light" data-bs-toggle="modal" data-bs-target="#userModal">
                             <i class="bi bi-person-plus"></i> Nuevo Usuario
                         </button>
