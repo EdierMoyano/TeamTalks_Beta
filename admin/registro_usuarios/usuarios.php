@@ -543,7 +543,7 @@ try {
 }
 
 // Parámetros de paginación
-$usuariosPorPagina = 12;
+$usuariosPorPagina = 5;
 $paginaActual = isset($_GET['pagina']) && is_numeric($_GET['pagina']) ? (int)$_GET['pagina'] : 1;
 if ($paginaActual < 1) $paginaActual = 1;
 
@@ -590,10 +590,6 @@ try {
 
 ?>
 
-
-
-
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -602,14 +598,14 @@ try {
     <title>Gestión de Usuarios</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <!-- Select2 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="../styles/sidebard.css">
     <link rel="stylesheet" href="../styles/main.css">
 </head>
 <body>
-
     <div class="wrapper">
         <?php include '../includes/sidebard.php'; ?>
-        
         <div class="main-content">
             <div class="container mt-4">
                 <!-- Tarjeta para carga masiva -->
@@ -627,7 +623,6 @@ try {
                                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                             </div>
                         <?php endif; ?>
-                        
                         <form action="" method="POST" enctype="multipart/form-data">
                             <input type="hidden" name="action" value="masivo">
                             <div class="row align-items-end">
@@ -653,273 +648,340 @@ try {
                         </form>
                     </div>
                 </div>
-                
                 <!-- Tarjeta para listar usuarios -->
                 <div class="card">
                     <div class="card-header bg-primary text-white">
                         <h4 class="mb-0">Lista de Usuarios</h4>
                     </div>
-                <div class="table-responsive">
-    <div class="mb-3 d-flex justify-content-end">
-    <input 
-        type="text" 
-        id="busquedaUsuario" 
-        class="form-control" 
-        style="max-width: 350px; margin: 10px;" 
-        placeholder="Buscar usuario (nombre, correo...)" 
-        oninput="filtrarUsuario()"
-    >
-</div>
-
-    <table class="table table-hover" id="tablaUsuarios"  >
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Nombre</th>
-                <th>Correo</th>
-                <th>Teléfono</th>
-                <th>Tipo</th>
-                <th>Rol</th>
-                <th>Estado</th>
-                <th>Fichas</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php if (empty($usuarios)): ?>
-                <tr>
-                    <td colspan="9" class="text-center">No hay usuarios registrados</td>
-                </tr>
-            <?php else: ?>
-                <?php foreach ($usuarios as $usuario): ?>
-                    <tr>
-                        <td><?php echo htmlspecialchars($usuario['id']); ?></td>
-                        <td><?php echo htmlspecialchars($usuario['nombres'] . ' ' . $usuario['apellidos']); ?></td>
-                        <td><?php echo htmlspecialchars($usuario['correo']); ?></td>
-                        <td><?php echo htmlspecialchars($usuario['telefono']); ?></td>
-                        <td><?php echo htmlspecialchars($usuario['tipo_doc']); ?></td>
-                        <td><?php echo htmlspecialchars($usuario['rol']); ?></td>
-                        <td>
-                            <span class="badge <?php echo ($usuario['estado'] == 'Activo') ? 'bg-success' : 'bg-danger'; ?>">
-                                <?php echo htmlspecialchars($usuario['estado']); ?>
-                            </span>
-                        </td>
-                        <td>
-                            <?php
-                            if (!empty($usuario['fichas'])) {
-                                $fichasIds = explode(',', $usuario['fichas']);
-                                foreach ($fichasIds as $fichaId) {
-                                    echo '<span class="badge bg-info me-1">' . htmlspecialchars($fichaId) . '</span>';
-                                }
-                            } else {
-                                echo '<span class="badge bg-secondary">Sin ficha</span>';
-                            }
-                            ?>
-                        </td>
-                        
-                    </tr>
-                <?php endforeach; ?>
-            <?php endif; ?>
-        </tbody>
-    </table>
-    <nav>
-        <ul class="pagination justify-content-center" id="paginacionUsuarios"></ul>
-    </nav>
-</div>
-
-<!-- Modal para registro manual -->
-<div class="modal fade" id="userModal" tabindex="-1" aria-labelledby="userModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title" id="userModalLabel">Nuevo Usuario</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <div class="table-responsive">
+                        <div class="d-flex justify-content-end mt-3 mb-4">
+                            <input 
+                                type="text" 
+                                id="busquedaUsuario" 
+                                class="form-control me-3" 
+                                style="max-width: 350px;" 
+                                placeholder="Buscar usuario (nombre, correo...)" 
+                                oninput="filtrarUsuario()"
+                            >
+                        </div>
+                        <table class="table table-hover" id="tablaUsuarios">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Nombre</th>
+                                    <th>Correo</th>
+                                    <th>Teléfono</th>
+                                    <th>Tipo</th>
+                                    <th>Rol</th>
+                                    <th>Estado</th>
+                                    <th>Fichas</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php if (empty($usuarios)): ?>
+                                    <tr>
+                                        <td colspan="9" class="text-center">No hay usuarios registrados</td>
+                                    </tr>
+                                <?php else: ?>
+                                    <?php foreach ($usuarios as $usuario): ?>
+                                        <tr>
+                                            <td><?php echo htmlspecialchars($usuario['id']); ?></td>
+                                            <td><?php echo htmlspecialchars($usuario['nombres'] . ' ' . $usuario['apellidos']); ?></td>
+                                            <td><?php echo htmlspecialchars($usuario['correo']); ?></td>
+                                            <td><?php echo htmlspecialchars($usuario['telefono']); ?></td>
+                                            <td><?php echo htmlspecialchars($usuario['tipo_doc']); ?></td>
+                                            <td><?php echo htmlspecialchars($usuario['rol']); ?></td>
+                                            <td>
+                                                <span class="badge <?php echo ($usuario['estado'] == 'Activo') ? 'bg-success' : 'bg-danger'; ?>">
+                                                    <?php echo htmlspecialchars($usuario['estado']); ?>
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <?php
+                                                if (!empty($usuario['fichas'])) {
+                                                    $fichasIds = explode(',', $usuario['fichas']);
+                                                    foreach ($fichasIds as $fichaId) {
+                                                        echo '<span class="badge bg-info me-1">' . htmlspecialchars($fichaId) . '</span>';
+                                                    }
+                                                } else {
+                                                    echo '<span class="badge bg-secondary">Sin ficha</span>';
+                                                }
+                                                ?>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
+                            </tbody>
+                        </table>
+                        <nav>
+                            <ul class="pagination justify-content-center" id="paginacionUsuarios"></ul>
+                        </nav>
+                    </div>
+                </div>
             </div>
-            <form action="" method="POST" id="userForm">
-                <div class="modal-body">
-                    <!-- ...tu formulario original aquí... -->
+        </div>
+    </div>
+    <!-- Modal para registro manual -->
+    <div class="modal fade" id="userModal" tabindex="-1" aria-labelledby="userModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="userModalLabel">Nuevo Usuario</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form action="" method="POST" id="userForm">
+                    <div class="modal-body">
+                        <input type="hidden" name="action" value="manual">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="id" class="form-label">Número de Identificación *</label>
+                                <input type="text" class="form-control" id="id" name="id" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="id_tipo" class="form-label">Tipo de Documento *</label>
+                                <select class="form-select" id="id_tipo" name="id_tipo" required>
+                                    <option value="">Seleccione un tipo</option>
+                                    <?php foreach ($tiposDocumento as $tipo): ?>
+                                        <option value="<?php echo $tipo['id_tipo']; ?>">
+                                            <?php echo htmlspecialchars($tipo['tipo_doc']); ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="nombres" class="form-label">Nombres *</label>
+                                <input type="text" class="form-control" id="nombres" name="nombres" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="apellidos" class="form-label">Apellidos</label>
+                                <input type="text" class="form-control" id="apellidos" name="apellidos">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="correo" class="form-label">Correo Electrónico *</label>
+                                <input type="email" class="form-control" id="correo" name="correo" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="telefono" class="form-label">Teléfono</label>
+                                <input type="text" class="form-control" id="telefono" name="telefono">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="password" class="form-label">Contraseña *</label>
+                                <input type="password" class="form-control" id="password" name="password" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="id_rol" class="form-label">Rol *</label>
+                                <select class="form-select" id="id_rol" name="id_rol" required>
+                                    <option value="">Seleccione un rol</option>
+                                    <?php foreach ($roles as $rol): ?>
+                                        <option value="<?php echo $rol['id_rol']; ?>">
+                                            <?php echo htmlspecialchars($rol['rol']); ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mb-3 ficha-container">
+                            <label for="id_ficha" class="form-label">Ficha (Solo para Aprendices)</label>
+                            <select class="form-select" id="id_ficha" name="id_ficha" style="width:100%;">
+                                <option value="">Seleccione una ficha</option>
+                                <?php foreach ($fichas as $ficha): ?>
+                                    <option value="<?php echo $ficha['id_ficha']; ?>">
+                                        <?php echo htmlspecialchars($ficha['id_ficha'] . ' - ' . $ficha['formacion_nombre']); ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                            <div class="form-text">La ficha solo es obligatoria para usuarios con rol de Aprendiz</div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Guardar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!-- Modal para mostrar resultados de carga masiva -->
+    <div class="modal fade" id="resultadosModal" tabindex="-1" aria-labelledby="resultadosModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header" id="resultadosModalHeader">
+                    <h5 class="modal-title" id="resultadosModalLabel">Resultados de Carga</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="resultadosModalBody">
+                    <!-- Aquí se insertarán los resultados -->
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">Guardar</button>
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Cerrar</button>
                 </div>
-            </form>
-        </div>
-    </div>
-</div>
-
-<!-- Modal para mostrar resultados de carga masiva -->
-<div class="modal fade" id="resultadosModal" tabindex="-1" aria-labelledby="resultadosModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header" id="resultadosModalHeader">
-                <h5 class="modal-title" id="resultadosModalLabel">Resultados de Carga</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body" id="resultadosModalBody">
-                <!-- Aquí se insertarán los resultados -->
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Cerrar</button>
             </div>
         </div>
     </div>
-</div>
-
-<!-- SCRIPTS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script src="../js/sidebard.js"></script>
-
-<!-- PAGINACIÓN Y FILTRO JS -->
-<script>
-let filasPorPaginaUsuarios = 12;
-let paginaActualUsuarios = 1;
-
-function obtenerFilasUsuariosFiltradas() {
-    let filas = Array.from(document.querySelectorAll("#tablaUsuarios tbody tr"));
-    let filtro = document.getElementById("busquedaUsuario").value.trim().toLowerCase();
-    if (filtro === "") return filas;
-    return filas.filter(fila => {
-        let texto = fila.innerText.toLowerCase();
-        return texto.includes(filtro);
-    });
-}
-
-function mostrarPaginaUsuarios(pagina) {
-    let filas = obtenerFilasUsuariosFiltradas();
-    let totalPaginas = Math.ceil(filas.length / filasPorPaginaUsuarios);
-
-    if (pagina < 1) pagina = 1;
-    if (pagina > totalPaginas) pagina = totalPaginas;
-
-    document.querySelectorAll("#tablaUsuarios tbody tr").forEach(fila => fila.style.display = "none");
-    let inicio = (pagina - 1) * filasPorPaginaUsuarios;
-    let fin = inicio + filasPorPaginaUsuarios;
-    for (let i = inicio; i < fin && i < filas.length; i++) {
-        filas[i].style.display = "";
-    }
-
-    let paginacion = document.getElementById("paginacionUsuarios");
-    paginacion.innerHTML = "";
-    if (totalPaginas <= 1) return;
-
-    paginacion.innerHTML += `<li class="page-item ${pagina === 1 ? 'disabled' : ''}">
-        <button class="page-link" onclick="cambiarPaginaUsuarios(${pagina - 1})">Anterior</button>
-    </li>`;
-
-    for (let i = 1; i <= totalPaginas; i++) {
-        paginacion.innerHTML += `<li class="page-item ${pagina === i ? 'active' : ''}">
-            <button class="page-link" onclick="cambiarPaginaUsuarios(${i})">${i}</button>
-        </li>`;
-    }
-
-    paginacion.innerHTML += `<li class="page-item ${pagina === totalPaginas ? 'disabled' : ''}">
-        <button class="page-link" onclick="cambiarPaginaUsuarios(${pagina + 1})">Siguiente</button>
-    </li>`;
-
-    paginaActualUsuarios = pagina;
-}
-
-function cambiarPaginaUsuarios(nuevaPagina) {
-    mostrarPaginaUsuarios(nuevaPagina);
-}
-
-function filtrarUsuario() {
-    paginaActualUsuarios = 1;
-    mostrarPaginaUsuarios(paginaActualUsuarios);
-}
-
-document.addEventListener("DOMContentLoaded", function() {
-    mostrarPaginaUsuarios(paginaActualUsuarios);
-});
-</script>
-
-<!-- RESTO DE SCRIPTS (modales, tooltips, AJAX para editar, etc.) -->
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Mostrar modal de resultados si hay mensajes
-    <?php if (!empty($modalMessage)): ?>
-        const resultadosModal = new bootstrap.Modal(document.getElementById('resultadosModal'));
-        const resultadosModalHeader = document.getElementById('resultadosModalHeader');
-        const resultadosModalBody = document.getElementById('resultadosModalBody');
-        resultadosModalHeader.className = 'modal-header <?php echo ($modalType == "success") ? "bg-success" : "bg-warning"; ?> text-white';
-        resultadosModalBody.innerHTML = `<?php echo $modalMessage; ?>`;
-        resultadosModal.show();
-    <?php endif; ?>
-
-    // Inicializar tooltips
-    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-    tooltipTriggerList.map(function (tooltipTriggerEl) {
-        return new bootstrap.Tooltip(tooltipTriggerEl);
-    });
-
-    // Mostrar/ocultar campo de ficha según el rol seleccionado
-    document.getElementById('id_rol').addEventListener('change', function() {
-        const fichaContainer = document.querySelector('.ficha-container');
-        const fichaSelect = document.getElementById('id_ficha');
-        if (this.value == '4') { // 4 es el id de Aprendiz
-            fichaContainer.style.display = 'block';
-            fichaSelect.setAttribute('required', 'required');
-        } else {
-            fichaContainer.style.display = 'block';
-            fichaSelect.removeAttribute('required');
-        }
-    });
-
-    // Cargar datos para edición al hacer click en botón editar
-    const editButtons = document.querySelectorAll('.edit-user');
-    editButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const userId = this.getAttribute('data-id');
-            fetch('ajax/get_user.php?id=' + userId)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        const user = data.user;
-                        document.getElementById('id').value = user.id;
-                        document.getElementById('id').readOnly = true;
-                        document.getElementById('nombres').value = user.nombres;
-                        document.getElementById('apellidos').value = user.apellidos;
-                        document.getElementById('correo').value = user.correo;
-                        document.getElementById('telefono').value = user.telefono;
-                        document.getElementById('password').value = '';
-                        document.getElementById('password').placeholder = 'Dejar en blanco para mantener actual';
-                        document.getElementById('password').required = false;
-                        document.getElementById('id_tipo').value = user.id_tipo;
-                        document.getElementById('id_rol').value = user.id_rol;
-                        const fichaContainer = document.querySelector('.ficha-container');
-                        const fichaSelect = document.getElementById('id_ficha');
-                        if (user.id_rol == '4') {
-                            fichaContainer.style.display = 'block';
-                            if (user.id_ficha) {
-                                fichaSelect.value = user.id_ficha;
-                            }
-                        } else {
-                            fichaContainer.style.display = 'block';
-                            fichaSelect.removeAttribute('required');
-                        }
-                        document.getElementById('userModalLabel').textContent = 'Editar Usuario';
-                        const userModal = new bootstrap.Modal(document.getElementById('userModal'));
-                        userModal.show();
-                    } else {
-                        alert('Error al cargar datos del usuario: ' + data.message);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Error al obtener datos del usuario');
-                });
+    <!-- SCRIPTS -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Select2 -->
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../js/sidebard.js"></script>
+    <!-- SELECT2 para campo de ficha -->
+    <script>
+    $(document).ready(function() {
+        $('#id_ficha').select2({
+            dropdownParent: $('#userModal'),
+            dropdownAutoWidth: true,
+            width: '100%',
+            placeholder: "Seleccione una ficha",
+            allowClear: true,
+            dropdownPosition: 'below'
+        });
+        // Resetea el select2 cada vez que abras el modal
+        $('#userModal').on('shown.bs.modal', function () {
+            $('#id_ficha').val('').trigger('change');
         });
     });
-
-    // Resetear formulario cuando se cierra el modal
-    document.getElementById('userModal').addEventListener('hidden.bs.modal', function() {
-        document.getElementById('userForm').reset();
-        document.getElementById('id').readOnly = false;
-        document.getElementById('password').required = true;
-        document.getElementById('password').placeholder = '';
-        document.getElementById('userModalLabel').textContent = 'Nuevo Usuario';
+    </script>
+    <!-- PAGINACIÓN Y FILTRO JS -->
+    <script>
+    let filasPorPaginaUsuarios = 5;
+    let paginaActualUsuarios = 1;
+    function obtenerFilasUsuariosFiltradas() {
+        let filas = Array.from(document.querySelectorAll("#tablaUsuarios tbody tr"));
+        let filtro = document.getElementById("busquedaUsuario").value.trim().toLowerCase();
+        if (filtro === "") return filas;
+        return filas.filter(fila => {
+            let texto = fila.innerText.toLowerCase();
+            return texto.includes(filtro);
+        });
+    }
+    function mostrarPaginaUsuarios(pagina) {
+        let filas = obtenerFilasUsuariosFiltradas();
+        let totalPaginas = Math.ceil(filas.length / filasPorPaginaUsuarios);
+        if (pagina < 1) pagina = 1;
+        if (pagina > totalPaginas) pagina = totalPaginas;
+        document.querySelectorAll("#tablaUsuarios tbody tr").forEach(fila => fila.style.display = "none");
+        let inicio = (pagina - 1) * filasPorPaginaUsuarios;
+        let fin = inicio + filasPorPaginaUsuarios;
+        for (let i = inicio; i < fin && i < filas.length; i++) {
+            filas[i].style.display = "";
+        }
+        let paginacion = document.getElementById("paginacionUsuarios");
+        paginacion.innerHTML = "";
+        if (totalPaginas <= 1) return;
+        paginacion.innerHTML += `<li class="page-item ${pagina === 1 ? 'disabled' : ''}">
+            <button class="page-link" onclick="cambiarPaginaUsuarios(${pagina - 1})">Anterior</button>
+        </li>`;
+        for (let i = 1; i <= totalPaginas; i++) {
+            paginacion.innerHTML += `<li class="page-item ${pagina === i ? 'active' : ''}">
+                <button class="page-link" onclick="cambiarPaginaUsuarios(${i})">${i}</button>
+            </li>`;
+        }
+        paginacion.innerHTML += `<li class="page-item ${pagina === totalPaginas ? 'disabled' : ''}">
+            <button class="page-link" onclick="cambiarPaginaUsuarios(${pagina + 1})">Siguiente</button>
+        </li>`;
+        paginaActualUsuarios = pagina;
+    }
+    function cambiarPaginaUsuarios(nuevaPagina) {
+        mostrarPaginaUsuarios(nuevaPagina);
+    }
+    function filtrarUsuario() {
+        paginaActualUsuarios = 1;
+        mostrarPaginaUsuarios(paginaActualUsuarios);
+    }
+    document.addEventListener("DOMContentLoaded", function() {
+        mostrarPaginaUsuarios(paginaActualUsuarios);
     });
-});
-</script>
+    </script>
+    <!-- RESTO DE SCRIPTS (modales, tooltips, AJAX para editar, etc.) -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        <?php if (!empty($modalMessage)): ?>
+            const resultadosModal = new bootstrap.Modal(document.getElementById('resultadosModal'));
+            const resultadosModalHeader = document.getElementById('resultadosModalHeader');
+            const resultadosModalBody = document.getElementById('resultadosModalBody');
+            resultadosModalHeader.className = 'modal-header <?php echo ($modalType == "success") ? "bg-success" : "bg-warning"; ?> text-white';
+            resultadosModalBody.innerHTML = `<?php echo $modalMessage; ?>`;
+            resultadosModal.show();
+        <?php endif; ?>
+        // Inicializar tooltips
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+        // Mostrar/ocultar campo de ficha según el rol seleccionado
+        document.getElementById('id_rol').addEventListener('change', function() {
+            const fichaContainer = document.querySelector('.ficha-container');
+            const fichaSelect = document.getElementById('id_ficha');
+            if (this.value == '4') {
+                fichaContainer.style.display = 'block';
+                fichaSelect.setAttribute('required', 'required');
+            } else {
+                fichaContainer.style.display = 'block';
+                fichaSelect.removeAttribute('required');
+            }
+        });
+        // Cargar datos para edición al hacer click en botón editar
+        const editButtons = document.querySelectorAll('.edit-user');
+        editButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const userId = this.getAttribute('data-id');
+                fetch('ajax/get_user.php?id=' + userId)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            const user = data.user;
+                            document.getElementById('id').value = user.id;
+                            document.getElementById('id').readOnly = true;
+                            document.getElementById('nombres').value = user.nombres;
+                            document.getElementById('apellidos').value = user.apellidos;
+                            document.getElementById('correo').value = user.correo;
+                            document.getElementById('telefono').value = user.telefono;
+                            document.getElementById('password').value = '';
+                            document.getElementById('password').placeholder = 'Dejar en blanco para mantener actual';
+                            document.getElementById('password').required = false;
+                            document.getElementById('id_tipo').value = user.id_tipo;
+                            document.getElementById('id_rol').value = user.id_rol;
+                            const fichaContainer = document.querySelector('.ficha-container');
+                            const fichaSelect = document.getElementById('id_ficha');
+                            if (user.id_rol == '4') {
+                                fichaContainer.style.display = 'block';
+                                if (user.id_ficha) {
+                                    fichaSelect.value = user.id_ficha;
+                                    $('#id_ficha').trigger('change'); // Actualizar Select2
+                                }
+                            } else {
+                                fichaContainer.style.display = 'block';
+                                fichaSelect.removeAttribute('required');
+                            }
+                            document.getElementById('userModalLabel').textContent = 'Editar Usuario';
+                            const userModal = new bootstrap.Modal(document.getElementById('userModal'));
+                            userModal.show();
+                        } else {
+                            alert('Error al cargar datos del usuario: ' + data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Error al obtener datos del usuario');
+                    });
+            });
+        });
+        // Resetear formulario cuando se cierra el modal
+        document.getElementById('userModal').addEventListener('hidden.bs.modal', function() {
+            document.getElementById('userForm').reset();
+            document.getElementById('id').readOnly = false;
+            document.getElementById('password').required = true;
+            document.getElementById('password').placeholder = '';
+            document.getElementById('userModalLabel').textContent = 'Nuevo Usuario';
+            $('#id_ficha').val('').trigger('change'); // Limpiar select2 también
+        });
+    });
+    </script>
 </body>
 </html>
