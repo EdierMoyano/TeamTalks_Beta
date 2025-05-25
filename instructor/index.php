@@ -58,7 +58,6 @@ $clases = [
 
 <div class="main-content">
         <div class="container">
-            <h2 class="mb-4 text-center">Tus Clases</h2>
             <div class="row justify-content-center">
                 <?php foreach ($clases as $clase): ?>
                     <div class="col-md-4 mb-4 d-flex">

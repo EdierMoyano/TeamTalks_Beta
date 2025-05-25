@@ -48,6 +48,7 @@ $conex = $conexion->connect();
             margin: 0;
         }
     </style>
+    
 </head>
 <body style="background-image: url(../assets/img/background.jpg);">
     <br><br><br><br><br>
