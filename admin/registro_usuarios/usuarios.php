@@ -224,7 +224,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
     }
 }
 
-// Procesar carga masiva de usuarios por Excel
+// Procesar Registro de usuarios de usuarios por Excel
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['action'] == 'masivo') {
     if (isset($_FILES['excel_file']) && $_FILES['excel_file']['error'] == 0) {
         $nombreArchivo = $_FILES['excel_file']['tmp_name'];
@@ -608,7 +608,7 @@ try {
         <?php include '../includes/sidebard.php'; ?>
         <div class="main-content">
             <div class="container mt-4">
-                <!-- Tarjeta para carga masiva -->
+                <!-- Tarjeta para Registro de usuarios -->
                 <div class="card mb-4">
                     <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
                         <h4 class="mb-0">Registro De usuarios</h4>
@@ -807,7 +807,7 @@ try {
             </div>
         </div>
     </div>
-    <!-- Modal para mostrar resultados de carga masiva -->
+    <!-- Modal para mostrar resultados de Registro de usuarios -->
     <div class="modal fade" id="resultadosModal" tabindex="-1" aria-labelledby="resultadosModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
