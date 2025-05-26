@@ -164,4 +164,3 @@ $lastname = $_SESSION['apellidos'] ?? 'Apellidos';
         </div>
     </nav>
 </header>
-
