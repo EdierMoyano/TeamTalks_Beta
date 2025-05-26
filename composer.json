@@ -1,0 +1,18 @@
+{
+    "name": "sofia/team-talks_beta",
+    "description": "TeamTalks_Beta",
+    "autoload": {
+        "psr-4": {
+            "Sofia\\TeamTalksBeta\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "sofiaenciso20",
+            "email": "encisogarciaelisabetsofia@gmail.com"
+        }
+    ],
+    "require": {
+        "picqer/php-barcode-generator": "^3.2"
+    }
+}
