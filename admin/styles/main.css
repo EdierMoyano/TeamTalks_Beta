@@ -1,0 +1,183 @@
+/* Estilos principales para el contenido */
+
+/* Ajustes para el contenido principal */
+.main-content {
+  background-color: #f8f9fa;
+  min-height: 100vh;
+}
+
+/* Ajustes para las tarjetas */
+.card {
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+}
+
+.card-header {
+  border-radius: 10px 10px 0 0 !important;
+  font-weight: 500;
+}
+
+/* Ajustes para los botones */
+.btn-primary {
+  background-color: #0e4a86;
+  border-color: #0e4a86;
+}
+
+.btn-primary:hover {
+  background-color: #1765b4;
+  border-color: #1765b4;
+}
+
+/* Ajustes para formularios */
+.form-control:focus,
+.form-select:focus {
+  border-color: #1765b4;
+  box-shadow: 0 0 0 0.25rem rgba(23, 101, 180, 0.25);
+}
+
+/* Ajustes para tablas */
+.table {
+  vertical-align: middle;
+}
+
+.table th {
+  background-color: #f1f1f1;
+  color: #333;
+  font-weight: 600;
+}
+
+.table-hover tbody tr:hover {
+  background-color: rgba(14, 74, 134, 0.05);
+}
+
+/* Ajustes para paginación */
+.pagination .page-item.active .page-link {
+  background-color: #0e4a86;
+  border-color: #0e4a86;
+}
+
+.pagination .page-link {
+  color: #0e4a86;
+}
+
+/* Ajustes para modales */
+.modal-header {
+  border-radius: 10px 10px 0 0;
+}
+
+.modal-content {
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Iconos y badges */
+.badge {
+  font-weight: 500;
+  padding: 5px 8px;
+}
+
+.badge-success {
+  background-color: #28a745;
+}
+
+.badge-danger {
+  background-color: #dc3545;
+}
+
+/* Utilidades adicionales */
+.text-primary {
+  color: #0e4a86 !important;
+}
+
+.bg-primary {
+  background-color: #0e4a86 !important;
+}
+
+/* Contador de caracteres para textareas */
+.char-counter {
+  font-size: 12px;
+  color: #6c757d;
+  text-align: right;
+  margin-top: 5px;
+}
+
+/* Estilo para campos obligatorios */
+.required::after {
+  content: " *";
+  color: #dc3545;
+}
+
+/* Transiciones */
+.btn,
+.nav-link,
+.form-control,
+.form-select {
+  transition: all 0.3s ease;
+}
+
+/* Ajustes responsivos para pantallas pequeñas */
+@media (max-width: 768px) {
+  .card-header {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .card-header h4 {
+    margin-bottom: 10px;
+  }
+
+  .table {
+    font-size: 14px;
+  }
+
+  .btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+  }
+}
+/* Mejorar bordes redondeados en la paginación */
+.pagination {
+  --bs-pagination-border-radius: 8px;
+}
+
+.pagination .page-item:first-child .page-link {
+  border-top-left-radius: 8px;
+  border-bottom-left-radius: 8px;
+}
+
+.pagination .page-item:last-child .page-link {
+  border-top-right-radius: 8px;
+  border-bottom-right-radius: 8px;
+}
+
+/* Espaciado entre items para que se vea menos cuadrado */
+.pagination .page-link {
+  margin: 0 1px;
+  border-radius: 0; /* Para que solo los extremos sean redondos */
+  color: #0e4a86;
+  border: 1px solid #dee2e6;
+  background-color: #fff;
+}
+
+/* Activo */
+.pagination .page-item.active .page-link {
+  background-color: #0e4a86;
+  border-color: #0e4a86;
+  color: #fff;
+  z-index: 2;
+}
+
+/* Deshabilitados */
+.pagination .page-item.disabled .page-link {
+  color: #6c757d;
+  background-color: #f8f9fa;
+  border-color: #dee2e6;
+  pointer-events: none;
+}
+
+/* Hover */
+.pagination .page-link:hover {
+  background-color: #e9ecef;
+  color: #0e4a86;
+}

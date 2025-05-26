@@ -1,9 +1,8 @@
 <?php
-require_once('../../conexion/conexion.php');
-include '../../includes/session.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/teamtalks/conexion/init.php';
+include 'session.php';
 
-$conexion = new database();
-$conex = $conexion->connect();
+
 
 // Obtener el ID de la ficha desde la URL, asegurándose de que sea un entero
 $id_ficha = isset($_GET['id']) ? (int)$_GET['id'] : 0;
