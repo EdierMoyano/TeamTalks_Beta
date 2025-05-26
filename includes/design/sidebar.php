@@ -1,8 +1,15 @@
+<?php
+require_once $_SERVER['DOCUMENT_ROOT'] . '/teamtalks/conexion/init.php';
+
+
+?>
+
+
 <aside class="sidebar collapsed" style="height: 620px;">
   <!-- Sidebar header -->
   <header class="sidebar-header">
     <a href="#" class="header-logo">
-      <img src="../assets/img/logo.png" alt="CodingNepal">
+      <img src="<?= BASE_URL ?>/assets/img/logo.png" alt="CodingNepal">
     </a>
     <button class="toggler sidebar-toggler">
       <span class="material-symbols-rounded">chevron_left</span>
@@ -26,8 +33,8 @@
             <i class="bi bi-chevron-down submenu-arrow" style="position: relative; top: 0px; left: 0px; color: black;"></i>
           </a>
           <ul class="submenu">
-            <li><a href="index.php" class="nav-link small">Gerente</a></li>
-            <li><a href="transversales.php" class="nav-link small">Transversales</a></li>
+            <li><a href="<?= BASE_URL ?>/instructor/index.php" class="nav-link small">Gerente</a></li>
+            <li><a href="<?= BASE_URL ?>/instructor/transversales.php" class="nav-link small">Transversales</a></li>
           </ul>
         </li>
 
@@ -55,18 +62,13 @@
 
       <!-- Solo para Aprendiz (rol 4) -->
       <?php if ($_SESSION['rol'] == 4): ?>
-        <li class="nav-item has-submenu">
-          <a href="#" class="nav-link submenu-toggle">
-            <i class="side bi bi-people-fill"></i>
-            <span class="nav-label">Clases Inscritas</span>
-            <i class="bi bi-chevron-down submenu-arrow" style="position: relative; top: 0px; left: 0px; color: black;"></i>
+        <li class="nav-item">
+          <a href="#" class="nav-link">
+            <i class="nav-icon material-symbols-rounded">group</i>
+            <span class="nav-label">Team</span>
           </a>
-          <ul class="submenu">
-            <li><a href="index.php" class="nav-link small">Actividades</a></li>
-            <li><a href="transversales.php" class="nav-link small">Calificaciones</a></li>
-          </ul>
+          <span class="nav-tooltip">Team</span>
         </li>
-
       <?php endif; ?>
 
       
@@ -75,5 +77,5 @@
   </nav>
 </aside>
 
-<script src="../js/script.js"></script>
-  <link rel="stylesheet" href="../styles/style_side_cla.css">
+<script src="<?= BASE_URL ?>/js/side_bar.js"></script>
+

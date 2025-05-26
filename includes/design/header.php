@@ -1,8 +1,7 @@
 <?php
 
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
+require_once $_SERVER['DOCUMENT_ROOT'] . '/teamtalks/conexion/init.php';
+
 $usuario_logueado = isset($_SESSION['documento']);
 $username = $_SESSION['nombres'] ?? 'Nombres';
 $lastname = $_SESSION['apellidos'] ?? 'Apellidos';  
@@ -117,7 +116,7 @@ $lastname = $_SESSION['apellidos'] ?? 'Apellidos';
         <div class="container">
             <!-- Logo -->
             <a class="navbar-brand" href="<?php echo $usuario_logueado ? 'index.php' : 'index.php'; ?>">
-                <img src="http://localhost/teamtalks/assets/img/logo.png" alt="Logo de la Empresa" style="height: 100px;">
+                <img src="<?= BASE_URL ?>/assets/img/logo.png" alt="Logo de la Empresa" style="height: 100px;">
             </a>
 
             <!-- Botón responsive -->
@@ -146,15 +145,15 @@ $lastname = $_SESSION['apellidos'] ?? 'Apellidos';
 
                     <li class="nav-item dropdown profile">
                     <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false" style="color: white;">
-                        <img src="http://localhost/teamtalks/assets/img/logo.png" alt="" style="max-width: 70px;">
+                        <img src="<?= BASE_URL ?>/assets/img/logo.png" alt="" style="max-width: 70px;">
                         <p style="position: relative; top: 8px;">
                             <?php echo htmlspecialchars($username);?>
                         </p>
                     </a>
                     <ul class="dropdown-menu options" style="left: 80px;">
-                        <li><a class="dropdown-item select-options" href="/teamtalks/actions/edit.php">Editar perfil</a></li>
-                        <li><a class="dropdown-item select-options" href="/teamtalks/actions/config.php">Configuración</a></li>
-                        <li><a class="dropdown-item select-options" href="/teamtalks/includes/exit.php">Cerrar sesión</a></li>
+                        <li><a class="dropdown-item select-options" href="<?= BASE_URL ?>/actions/edit.php">Editar perfil</a></li>
+                        <li><a class="dropdown-item select-options" href="<?= BASE_URL ?>/actions/config.php">Configuración</a></li>
+                        <li><a class="dropdown-item select-options" href="<?= BASE_URL ?>/includes/exit.php">Cerrar sesión</a></li>
                     </ul>
                 </li>
 
