@@ -3,6 +3,8 @@ session_start();
 require_once('../conexion/conexion.php');
 $conexion = new database();
 $conex = $conexion->connect();
+
+
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -46,6 +48,10 @@ $conex = $conexion->connect();
             margin: 0;
         }
     </style>
+<<<<<<< HEAD
+=======
+    
+>>>>>>> 346b133f6a8dc17d05d4315ef4562bf1dc391b62
 </head>
 <body style="background-image: url(../assets/img/background.jpg);">
     <br><br><br><br><br>
@@ -79,6 +85,7 @@ $conex = $conexion->connect();
                                         while ($fila = $sql->fetch(PDO::FETCH_ASSOC)) {
                                             echo "<option value='" . $fila['id_tipo'] . "'>" . $fila['tipo_doc'] . "</option>";
                                         }
+<<<<<<< HEAD
                                         ?>
                                     </select>
                                 </div>
@@ -110,6 +117,34 @@ $conex = $conexion->connect();
                                 </div>
                             </form>
                         </div>
+=======
+                                    ?>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="documentId" class="form-label">Documento de identidad</label>
+                                <input type="number" id="documentId" name="documento" class="form-control" placeholder="Ingresa tu documento" required>
+                                <p class="docu_error" id="docu_error">¡Documento inválido!</p>
+                            </div>
+
+                            <div class="mb-3 position-relative">
+                                <label for="password" class="form-label">Contraseña</label>
+                                <input type="password" id="password" name="contraseña" class="form-control" placeholder="Ingresa tu contraseña" required>
+                                <i class='bx bx-show' id="showpass" onclick="showpass()"></i>
+                            </div>
+
+                            <div class="mb-3 text-end">
+                                <a href="../Recover_Password/recovery_form.php" class="link-secondary">¿Olvidaste la contraseña?</a>
+                            </div>
+
+                            <div class="d-flex justify-content-between">
+                                <a href="../index.php" class="btn btn-secondary">Regresar</a>
+                                <button type="submit" class="btn btn-primary" name="submit">Iniciar sesión</button>
+                            </div>
+
+                        </form>
+>>>>>>> 346b133f6a8dc17d05d4315ef4562bf1dc391b62
                     </div>
                 </div>
             </div>
@@ -143,6 +178,11 @@ $conex = $conexion->connect();
         });
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<<<<<<< HEAD
     <script src="../scripts/login.js"></script>
 </body>
 </html>
+=======
+</body>
+</html>
+>>>>>>> 346b133f6a8dc17d05d4315ef4562bf1dc391b62

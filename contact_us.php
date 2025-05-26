@@ -15,7 +15,7 @@
 <body>
 
     <?php
-    include 'includes/header.php';
+    include 'includes/design/header.php';
     ?>
 
 
@@ -44,7 +44,11 @@
                         <textarea class="form-control" id="mensaje" rows="5" placeholder="Escribe tu mensaje aquí"></textarea>
                     </div>
 
+<<<<<<< HEAD
                     <button type="submit" class="btn btn-primary w-100">Enviar</button>
+=======
+                    <button type="submit" class="btn btn w-100" style="background-color:#0E4A86; color: white;" >Enviar</button>
+>>>>>>> 346b133f6a8dc17d05d4315ef4562bf1dc391b62
                 </form>
             </div>
 
@@ -60,26 +64,27 @@
             </div>
 
             <div class="row justify-content-center">
-            <div class="col-12 col-md-5 col-lg-5 mb-4">
-                <a href="soporte.php" class="text-decoration-none">
-                <div class="card text-center p-4 shadow-sm h-100">
-                    <img src="assets/img/soporte.webp" class="card-img-top mx-auto" style="max-width: 100px;" alt="Soporte Técnico">
-                    <div class="card-body">
-                    <h3 class="card-title">Soporte Técnico</h3>
-                    </div>
+                <div class="col-12 col-md-6 col-lg-4 mb-4">
+                    <a href="soporte.php" class="text-decoration-none">
+                        <div class="card text-center p-4 shadow-sm h-100">
+                            <img src="assets/img/soporte.webp" class="card-img-top mx-auto" style="max-width: 100px;" alt="Soporte Técnico">
+                            <div class="card-body">
+                                <h3 class="card-title">Soporte Técnico</h3>
+                            </div>
+                        </div>
+                    </a>
                 </div>
-                </a>
-            
-                <a href="reportes.php" class="text-decoration-none">
-                <div class="card text-center p-4 shadow-sm h-100">
-                    <img src="assets/img/seg.webp" class="card-img-top mx-auto" style="max-width: 100px;" alt="Realiza Reportes">
-                    <div class="card-body">
-                    <h3 class="card-title">Realiza Reportes</h3>
-                    </div>
+                <div class="col-12 col-md-6 col-lg-4 mb-4">
+                    <a href="reportes.php" class="text-decoration-none">
+                        <div class="card text-center p-4 shadow-sm h-100">
+                            <img src="assets/img/seg.webp" class="card-img-top mx-auto" style="max-width: 100px;" alt="Realiza Reportes">
+                            <div class="card-body">
+                                <h3 class="card-title">Realiza Reportes</h3>
+                            </div>
+                        </div>
+                    </a>
                 </div>
-                </a>
             </div>
-        </div>
 
         </div>
     </div>
@@ -103,7 +108,11 @@
     </section>
 
     <?php
+<<<<<<< HEAD
     include 'includes/footer.php';
+=======
+    include 'includes/design/footer.php';
+>>>>>>> 346b133f6a8dc17d05d4315ef4562bf1dc391b62
     ?>
 
 

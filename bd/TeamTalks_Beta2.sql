@@ -2,10 +2,10 @@
 -- version 5.2.1
 -- https://www.phpmyadmin.net/
 --
--- Servidor: 127.0.0.1
--- Tiempo de generación: 14-05-2025 a las 16:49:20
--- Versión del servidor: 10.4.32-MariaDB
--- Versión de PHP: 8.2.12
+-- Host: 127.0.0.1
+-- Generation Time: May 08, 2025 at 03:57 AM
+-- Server version: 10.4.32-MariaDB
+-- PHP Version: 8.2.12
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -18,12 +18,12 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Base de datos: `teamtalks`
+-- Database: `teamtalks`
 --
 
 DELIMITER $$
 --
--- Procedimientos
+-- Procedures
 --
 CREATE DEFINER=`root`@`localhost` PROCEDURE `AsignarHorarioClase` (IN `p_id_clase` INT, IN `p_id_dia` INT, IN `p_id_bloque` INT)   BEGIN
     -- Verificar si ya existe un horario para esta clase en este día y bloque
@@ -102,7 +102,7 @@ DELIMITER ;
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `actividades`
+-- Table structure for table `actividades`
 --
 
 CREATE TABLE `actividades` (
@@ -117,7 +117,7 @@ CREATE TABLE `actividades` (
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `actividades_user`
+-- Table structure for table `actividades_user`
 --
 
 CREATE TABLE `actividades_user` (
@@ -134,7 +134,7 @@ CREATE TABLE `actividades_user` (
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `ambientes`
+-- Table structure for table `ambientes`
 --
 
 CREATE TABLE `ambientes` (
@@ -145,7 +145,7 @@ CREATE TABLE `ambientes` (
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `empresa`
+-- Table structure for table `empresa`
 --
 
 CREATE TABLE `empresa` (
@@ -154,18 +154,17 @@ CREATE TABLE `empresa` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Volcado de datos para la tabla `empresa`
+-- Dumping data for table `empresa`
 --
 
 INSERT INTO `empresa` (`nit`, `empresa`) VALUES
-(0, 'Desarrolladores'),
-(248, 'AgroStock'),
-(295, 'SENA');
+(0, 'SENA'),
+(159, 'sena\r\n');
 
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `estado`
+-- Table structure for table `estado`
 --
 
 CREATE TABLE `estado` (
@@ -174,7 +173,7 @@ CREATE TABLE `estado` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Volcado de datos para la tabla `estado`
+-- Dumping data for table `estado`
 --
 
 INSERT INTO `estado` (`id_estado`, `estado`) VALUES
@@ -184,7 +183,7 @@ INSERT INTO `estado` (`id_estado`, `estado`) VALUES
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `fichas`
+-- Table structure for table `fichas`
 --
 
 CREATE TABLE `fichas` (
@@ -201,7 +200,7 @@ CREATE TABLE `fichas` (
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `foros`
+-- Table structure for table `foros`
 --
 
 CREATE TABLE `foros` (
@@ -213,7 +212,7 @@ CREATE TABLE `foros` (
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `historial_contra`
+-- Table structure for table `historial_contra`
 --
 
 CREATE TABLE `historial_contra` (
@@ -225,7 +224,7 @@ CREATE TABLE `historial_contra` (
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `horario`
+-- Table structure for table `horario`
 --
 
 CREATE TABLE `horario` (
@@ -239,7 +238,7 @@ CREATE TABLE `horario` (
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `jornada`
+-- Table structure for table `jornada`
 --
 
 CREATE TABLE `jornada` (
@@ -250,72 +249,22 @@ CREATE TABLE `jornada` (
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `licencias`
+-- Table structure for table `licencias`
 --
 
 CREATE TABLE `licencias` (
   `id_licencia` varchar(10) NOT NULL,
-  `codigo_licencia` varchar(20) DEFAULT NULL,
   `id_tipo_licencia` int(3) NOT NULL,
   `fecha_ini` datetime NOT NULL,
   `fecha_fin` datetime NOT NULL,
-  `nit` int(50) NOT NULL,
-  `estado` enum('Activa','Expirada','Inactiva') DEFAULT 'Activa'
+  `id_estado` int(3) NOT NULL,
+  `nit` int(50) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Volcado de datos para la tabla `licencias`
---
-
-INSERT INTO `licencias` (`id_licencia`, `codigo_licencia`, `id_tipo_licencia`, `fecha_ini`, `fecha_fin`, `nit`, `estado`) VALUES
-('LIC001', NULL, 1, '2025-04-21 00:00:00', '2026-04-23 00:00:00', 248, 'Activa'),
-('LIC002', NULL, 2, '2025-04-25 00:00:00', '2026-04-25 00:00:00', 295, 'Activa');
-
---
--- Disparadores `licencias`
---
-DELIMITER $$
-CREATE TRIGGER `actualizar_estado_licencia` BEFORE UPDATE ON `licencias` FOR EACH ROW BEGIN
-    -- Verificar si la fecha de fin ha cambiado o si es una actualización de estado
-    IF (NEW.fecha_fin <> OLD.fecha_fin OR NEW.estado <> OLD.estado) THEN
-        -- Si la fecha de fin es anterior a la fecha actual y el estado no es 'Inactiva'
-        IF NEW.fecha_fin < CURDATE() AND NEW.estado <> 'Inactiva' THEN
-            SET NEW.estado = 'Expirada';
-        -- Si la fecha de fin es posterior a la fecha actual y el estado era 'Expirada'
-        ELSEIF NEW.fecha_fin >= CURDATE() AND OLD.estado = 'Expirada' THEN
-            SET NEW.estado = 'Activa';
-        END IF;
-    END IF;
-END
-$$
-DELIMITER ;
-DELIMITER $$
-CREATE TRIGGER `calcular_fecha_fin` BEFORE INSERT ON `licencias` FOR EACH ROW BEGIN
-    DECLARE duracion_dias INT;
-    DECLARE codigo_aleatorio VARCHAR(20);
-    
-    -- Generar un código único aleatorio de 20 caracteres
-    SET codigo_aleatorio = CONCAT(
-        SUBSTRING(MD5(RAND()), 1, 10),
-        SUBSTRING(MD5(UNIX_TIMESTAMP()), 1, 10)
-    );
-    
-    -- Asignar el código generado al nuevo registro
-    SET NEW.codigo_licencia = codigo_aleatorio;
-    
-    -- Obtener la duración en días del tipo de licencia
-    SELECT duracion INTO duracion_dias FROM tipo_licencia WHERE id_tipo_licencia = NEW.id_tipo_licencia;
-    
-    -- Calcular la fecha de fin sumando los días de duración a la fecha de inicio
-    SET NEW.fecha_fin = DATE_ADD(NEW.fecha_ini, INTERVAL duracion_dias DAY);
-END
-$$
-DELIMITER ;
 
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `materias`
+-- Table structure for table `materias`
 --
 
 CREATE TABLE `materias` (
@@ -326,7 +275,7 @@ CREATE TABLE `materias` (
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `materia_ficha`
+-- Table structure for table `materia_ficha`
 --
 
 CREATE TABLE `materia_ficha` (
@@ -340,7 +289,7 @@ CREATE TABLE `materia_ficha` (
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `recuperacion`
+-- Table structure for table `recuperacion`
 --
 
 CREATE TABLE `recuperacion` (
@@ -352,7 +301,7 @@ CREATE TABLE `recuperacion` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
--- Volcado de datos para la tabla `recuperacion`
+-- Dumping data for table `recuperacion`
 --
 
 INSERT INTO `recuperacion` (`id_recuperacion`, `id_usuario`, `token`, `fecha_expiracion`, `fecha_creacion`) VALUES
@@ -361,7 +310,7 @@ INSERT INTO `recuperacion` (`id_recuperacion`, `id_usuario`, `token`, `fecha_exp
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `respuesta_foro`
+-- Table structure for table `respuesta_foro`
 --
 
 CREATE TABLE `respuesta_foro` (
@@ -375,7 +324,7 @@ CREATE TABLE `respuesta_foro` (
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `roles`
+-- Table structure for table `roles`
 --
 
 CREATE TABLE `roles` (
@@ -384,7 +333,7 @@ CREATE TABLE `roles` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Volcado de datos para la tabla `roles`
+-- Dumping data for table `roles`
 --
 
 INSERT INTO `roles` (`id_rol`, `rol`) VALUES
@@ -396,7 +345,7 @@ INSERT INTO `roles` (`id_rol`, `rol`) VALUES
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `temas_foro`
+-- Table structure for table `temas_foro`
 --
 
 CREATE TABLE `temas_foro` (
@@ -411,7 +360,7 @@ CREATE TABLE `temas_foro` (
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `tipo_documento`
+-- Table structure for table `tipo_documento`
 --
 
 CREATE TABLE `tipo_documento` (
@@ -420,7 +369,7 @@ CREATE TABLE `tipo_documento` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Volcado de datos para la tabla `tipo_documento`
+-- Dumping data for table `tipo_documento`
 --
 
 INSERT INTO `tipo_documento` (`id_tipo`, `tipo_doc`) VALUES
@@ -430,7 +379,7 @@ INSERT INTO `tipo_documento` (`id_tipo`, `tipo_doc`) VALUES
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `tipo_ficha`
+-- Table structure for table `tipo_ficha`
 --
 
 CREATE TABLE `tipo_ficha` (
@@ -441,7 +390,7 @@ CREATE TABLE `tipo_ficha` (
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `tipo_licencia`
+-- Table structure for table `tipo_licencia`
 --
 
 CREATE TABLE `tipo_licencia` (
@@ -450,21 +399,10 @@ CREATE TABLE `tipo_licencia` (
   `duracion` int(5) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Volcado de datos para la tabla `tipo_licencia`
---
-
-INSERT INTO `tipo_licencia` (`id_tipo_licencia`, `licencia`, `duracion`) VALUES
-(1, 'Demo', 3),
-(2, 'Freeware', 365),
-(3, 'Shareware', 30),
-(4, 'Anual', 365),
-(5, 'Semestral', 182);
-
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `trimestre`
+-- Table structure for table `trimestre`
 --
 
 CREATE TABLE `trimestre` (
@@ -475,7 +413,7 @@ CREATE TABLE `trimestre` (
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `user_ficha`
+-- Table structure for table `user_ficha`
 --
 
 CREATE TABLE `user_ficha` (
@@ -489,7 +427,7 @@ CREATE TABLE `user_ficha` (
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `usuarios`
+-- Table structure for table `usuarios`
 --
 
 CREATE TABLE `usuarios` (
@@ -509,26 +447,25 @@ CREATE TABLE `usuarios` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Volcado de datos para la tabla `usuarios`
+-- Dumping data for table `usuarios`
 --
 
 INSERT INTO `usuarios` (`id`, `id_tipo`, `nombres`, `apellidos`, `correo`, `contraseña`, `avatar`, `telefono`, `id_rol`, `id_estado`, `id_ficha`, `fecha_registro`, `nit`) VALUES
-(1012353162, 1, 'sofia ', 'enciso', 'encisogarciaelisabetsofia@gmail.com', '$2y$10$dh8TziGu.Hr8fhHeoM/k3OmtdfakPh8f6ba9bXXlkGrsWQ3DXFiCO', NULL, '3022927343', 1, 1, NULL, NULL, 0),
-(1104940105, 1, 'Edier\r\n', 'Moyano', 'ediersmb@gmail.com', '$2y$12$Z8XHAwYyhkcYU8LCwUCu3.Ff3LHBigWUDlOjF7wRlyFb6wmQYfply', NULL, '3028623064', 2, 1, NULL, NULL, 295);
+(1104940105, 1, 'Edier\r\n', 'Moyano', 'ediersmb@gmail.com', '$2y$12$Z8XHAwYyhkcYU8LCwUCu3.Ff3LHBigWUDlOjF7wRlyFb6wmQYfply', NULL, '3028623064', 2, 1, NULL, NULL, 0);
 
 --
--- Índices para tablas volcadas
+-- Indexes for dumped tables
 --
 
 --
--- Indices de la tabla `actividades`
+-- Indexes for table `actividades`
 --
 ALTER TABLE `actividades`
   ADD PRIMARY KEY (`id_actividad`),
   ADD KEY `id_materia_ficha` (`id_materia_ficha`);
 
 --
--- Indices de la tabla `actividades_user`
+-- Indexes for table `actividades_user`
 --
 ALTER TABLE `actividades_user`
   ADD PRIMARY KEY (`id_actividad_user`),
@@ -537,25 +474,25 @@ ALTER TABLE `actividades_user`
   ADD KEY `id_user` (`id_user`);
 
 --
--- Indices de la tabla `ambientes`
+-- Indexes for table `ambientes`
 --
 ALTER TABLE `ambientes`
   ADD PRIMARY KEY (`id_ambiente`);
 
 --
--- Indices de la tabla `empresa`
+-- Indexes for table `empresa`
 --
 ALTER TABLE `empresa`
   ADD PRIMARY KEY (`nit`);
 
 --
--- Indices de la tabla `estado`
+-- Indexes for table `estado`
 --
 ALTER TABLE `estado`
   ADD PRIMARY KEY (`id_estado`);
 
 --
--- Indices de la tabla `fichas`
+-- Indexes for table `fichas`
 --
 ALTER TABLE `fichas`
   ADD PRIMARY KEY (`id_ficha`),
@@ -566,48 +503,49 @@ ALTER TABLE `fichas`
   ADD KEY `id_estado` (`id_estado`);
 
 --
--- Indices de la tabla `foros`
+-- Indexes for table `foros`
 --
 ALTER TABLE `foros`
   ADD PRIMARY KEY (`id_foro`),
   ADD KEY `id_materia_ficha` (`id_materia_ficha`);
 
 --
--- Indices de la tabla `historial_contra`
+-- Indexes for table `historial_contra`
 --
 ALTER TABLE `historial_contra`
   ADD PRIMARY KEY (`id`),
   ADD KEY `id_user` (`id_user`);
 
 --
--- Indices de la tabla `horario`
+-- Indexes for table `horario`
 --
 ALTER TABLE `horario`
   ADD PRIMARY KEY (`id_horario`),
   ADD KEY `id_materia_ficha` (`id_materia_ficha`);
 
 --
--- Indices de la tabla `jornada`
+-- Indexes for table `jornada`
 --
 ALTER TABLE `jornada`
   ADD PRIMARY KEY (`id_jornada`);
 
 --
--- Indices de la tabla `licencias`
+-- Indexes for table `licencias`
 --
 ALTER TABLE `licencias`
   ADD PRIMARY KEY (`id_licencia`),
   ADD KEY `nit` (`nit`),
-  ADD KEY `id_tipo_licencia` (`id_tipo_licencia`);
+  ADD KEY `id_tipo_licencia` (`id_tipo_licencia`),
+  ADD KEY `id_estado` (`id_estado`);
 
 --
--- Indices de la tabla `materias`
+-- Indexes for table `materias`
 --
 ALTER TABLE `materias`
   ADD PRIMARY KEY (`id_materia`);
 
 --
--- Indices de la tabla `materia_ficha`
+-- Indexes for table `materia_ficha`
 --
 ALTER TABLE `materia_ficha`
   ADD PRIMARY KEY (`id_materia_ficha`),
@@ -617,7 +555,7 @@ ALTER TABLE `materia_ficha`
   ADD KEY `id_trimestre` (`id_trimestre`);
 
 --
--- Indices de la tabla `recuperacion`
+-- Indexes for table `recuperacion`
 --
 ALTER TABLE `recuperacion`
   ADD PRIMARY KEY (`id_recuperacion`),
@@ -625,7 +563,7 @@ ALTER TABLE `recuperacion`
   ADD KEY `idx_token` (`token`);
 
 --
--- Indices de la tabla `respuesta_foro`
+-- Indexes for table `respuesta_foro`
 --
 ALTER TABLE `respuesta_foro`
   ADD PRIMARY KEY (`id_respuesta_foro`),
@@ -633,13 +571,13 @@ ALTER TABLE `respuesta_foro`
   ADD KEY `id_user` (`id_user`);
 
 --
--- Indices de la tabla `roles`
+-- Indexes for table `roles`
 --
 ALTER TABLE `roles`
   ADD PRIMARY KEY (`id_rol`);
 
 --
--- Indices de la tabla `temas_foro`
+-- Indexes for table `temas_foro`
 --
 ALTER TABLE `temas_foro`
   ADD PRIMARY KEY (`id_tema_foro`),
@@ -647,31 +585,31 @@ ALTER TABLE `temas_foro`
   ADD KEY `id_user` (`id_user`);
 
 --
--- Indices de la tabla `tipo_documento`
+-- Indexes for table `tipo_documento`
 --
 ALTER TABLE `tipo_documento`
   ADD PRIMARY KEY (`id_tipo`);
 
 --
--- Indices de la tabla `tipo_ficha`
+-- Indexes for table `tipo_ficha`
 --
 ALTER TABLE `tipo_ficha`
   ADD PRIMARY KEY (`id_tipo_ficha`);
 
 --
--- Indices de la tabla `tipo_licencia`
+-- Indexes for table `tipo_licencia`
 --
 ALTER TABLE `tipo_licencia`
   ADD PRIMARY KEY (`id_tipo_licencia`);
 
 --
--- Indices de la tabla `trimestre`
+-- Indexes for table `trimestre`
 --
 ALTER TABLE `trimestre`
   ADD PRIMARY KEY (`id_trimestre`);
 
 --
--- Indices de la tabla `user_ficha`
+-- Indexes for table `user_ficha`
 --
 ALTER TABLE `user_ficha`
   ADD PRIMARY KEY (`id_user_ficha`),
@@ -680,7 +618,7 @@ ALTER TABLE `user_ficha`
   ADD KEY `id_estado` (`id_estado`);
 
 --
--- Indices de la tabla `usuarios`
+-- Indexes for table `usuarios`
 --
 ALTER TABLE `usuarios`
   ADD PRIMARY KEY (`id`),
@@ -691,45 +629,45 @@ ALTER TABLE `usuarios`
   ADD KEY `nit` (`nit`);
 
 --
--- AUTO_INCREMENT de las tablas volcadas
+-- AUTO_INCREMENT for dumped tables
 --
 
 --
--- AUTO_INCREMENT de la tabla `estado`
+-- AUTO_INCREMENT for table `estado`
 --
 ALTER TABLE `estado`
   MODIFY `id_estado` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
--- AUTO_INCREMENT de la tabla `recuperacion`
+-- AUTO_INCREMENT for table `recuperacion`
 --
 ALTER TABLE `recuperacion`
   MODIFY `id_recuperacion` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
--- AUTO_INCREMENT de la tabla `roles`
+-- AUTO_INCREMENT for table `roles`
 --
 ALTER TABLE `roles`
   MODIFY `id_rol` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
--- AUTO_INCREMENT de la tabla `tipo_documento`
+-- AUTO_INCREMENT for table `tipo_documento`
 --
 ALTER TABLE `tipo_documento`
   MODIFY `id_tipo` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
--- Restricciones para tablas volcadas
+-- Constraints for dumped tables
 --
 
 --
--- Filtros para la tabla `actividades`
+-- Constraints for table `actividades`
 --
 ALTER TABLE `actividades`
   ADD CONSTRAINT `actividades_ibfk_1` FOREIGN KEY (`id_materia_ficha`) REFERENCES `materia_ficha` (`id_materia_ficha`);
 
 --
--- Filtros para la tabla `actividades_user`
+-- Constraints for table `actividades_user`
 --
 ALTER TABLE `actividades_user`
   ADD CONSTRAINT `actividades_user_ibfk_1` FOREIGN KEY (`id_actividad`) REFERENCES `actividades` (`id_actividad`),
@@ -737,7 +675,7 @@ ALTER TABLE `actividades_user`
   ADD CONSTRAINT `actividades_user_ibfk_3` FOREIGN KEY (`id_user`) REFERENCES `usuarios` (`id`);
 
 --
--- Filtros para la tabla `fichas`
+-- Constraints for table `fichas`
 --
 ALTER TABLE `fichas`
   ADD CONSTRAINT `fichas_ibfk_1` FOREIGN KEY (`id_ambiente`) REFERENCES `ambientes` (`id_ambiente`),
@@ -747,32 +685,33 @@ ALTER TABLE `fichas`
   ADD CONSTRAINT `fichas_ibfk_5` FOREIGN KEY (`id_estado`) REFERENCES `estado` (`id_estado`);
 
 --
--- Filtros para la tabla `foros`
+-- Constraints for table `foros`
 --
 ALTER TABLE `foros`
   ADD CONSTRAINT `foros_ibfk_1` FOREIGN KEY (`id_materia_ficha`) REFERENCES `materia_ficha` (`id_materia_ficha`);
 
 --
--- Filtros para la tabla `historial_contra`
+-- Constraints for table `historial_contra`
 --
 ALTER TABLE `historial_contra`
   ADD CONSTRAINT `historial_contra_ibfk_1` FOREIGN KEY (`id_user`) REFERENCES `usuarios` (`id`);
 
 --
--- Filtros para la tabla `horario`
+-- Constraints for table `horario`
 --
 ALTER TABLE `horario`
   ADD CONSTRAINT `horario_ibfk_1` FOREIGN KEY (`id_materia_ficha`) REFERENCES `materia_ficha` (`id_materia_ficha`);
 
 --
--- Filtros para la tabla `licencias`
+-- Constraints for table `licencias`
 --
 ALTER TABLE `licencias`
   ADD CONSTRAINT `licencias_ibfk_1` FOREIGN KEY (`nit`) REFERENCES `empresa` (`nit`),
-  ADD CONSTRAINT `licencias_ibfk_2` FOREIGN KEY (`id_tipo_licencia`) REFERENCES `tipo_licencia` (`id_tipo_licencia`);
+  ADD CONSTRAINT `licencias_ibfk_2` FOREIGN KEY (`id_tipo_licencia`) REFERENCES `tipo_licencia` (`id_tipo_licencia`),
+  ADD CONSTRAINT `licencias_ibfk_3` FOREIGN KEY (`id_estado`) REFERENCES `estado` (`id_estado`);
 
 --
--- Filtros para la tabla `materia_ficha`
+-- Constraints for table `materia_ficha`
 --
 ALTER TABLE `materia_ficha`
   ADD CONSTRAINT `materia_ficha_ibfk_1` FOREIGN KEY (`id_materia`) REFERENCES `materias` (`id_materia`),
@@ -781,27 +720,27 @@ ALTER TABLE `materia_ficha`
   ADD CONSTRAINT `materia_ficha_ibfk_4` FOREIGN KEY (`id_trimestre`) REFERENCES `trimestre` (`id_trimestre`);
 
 --
--- Filtros para la tabla `recuperacion`
+-- Constraints for table `recuperacion`
 --
 ALTER TABLE `recuperacion`
   ADD CONSTRAINT `recuperacion_ibfk_1` FOREIGN KEY (`id_usuario`) REFERENCES `usuarios` (`id`);
 
 --
--- Filtros para la tabla `respuesta_foro`
+-- Constraints for table `respuesta_foro`
 --
 ALTER TABLE `respuesta_foro`
   ADD CONSTRAINT `respuesta_foro_ibfk_1` FOREIGN KEY (`id_tema_foro`) REFERENCES `temas_foro` (`id_tema_foro`),
   ADD CONSTRAINT `respuesta_foro_ibfk_2` FOREIGN KEY (`id_user`) REFERENCES `usuarios` (`id`);
 
 --
--- Filtros para la tabla `temas_foro`
+-- Constraints for table `temas_foro`
 --
 ALTER TABLE `temas_foro`
   ADD CONSTRAINT `temas_foro_ibfk_1` FOREIGN KEY (`id_foro`) REFERENCES `foros` (`id_foro`),
   ADD CONSTRAINT `temas_foro_ibfk_2` FOREIGN KEY (`id_user`) REFERENCES `usuarios` (`id`);
 
 --
--- Filtros para la tabla `user_ficha`
+-- Constraints for table `user_ficha`
 --
 ALTER TABLE `user_ficha`
   ADD CONSTRAINT `user_ficha_ibfk_1` FOREIGN KEY (`id_user`) REFERENCES `usuarios` (`id`),
@@ -809,12 +748,13 @@ ALTER TABLE `user_ficha`
   ADD CONSTRAINT `user_ficha_ibfk_3` FOREIGN KEY (`id_estado`) REFERENCES `estado` (`id_estado`);
 
 --
--- Filtros para la tabla `usuarios`
+-- Constraints for table `usuarios`
 --
 ALTER TABLE `usuarios`
   ADD CONSTRAINT `usuarios_ibfk_1` FOREIGN KEY (`id_tipo`) REFERENCES `tipo_documento` (`id_tipo`),
   ADD CONSTRAINT `usuarios_ibfk_2` FOREIGN KEY (`id_rol`) REFERENCES `roles` (`id_rol`),
-  ADD CONSTRAINT `usuarios_ibfk_3` FOREIGN KEY (`id_estado`) REFERENCES `estado` (`id_estado`);
+  ADD CONSTRAINT `usuarios_ibfk_3` FOREIGN KEY (`id_estado`) REFERENCES `estado` (`id_estado`),
+  ADD CONSTRAINT `usuarios_ibfk_4` FOREIGN KEY (`nit`) REFERENCES `empresa` (`nit`);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
