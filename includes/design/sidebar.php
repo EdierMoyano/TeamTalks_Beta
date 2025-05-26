@@ -1,9 +1,15 @@
+<?php
+require_once $_SERVER['DOCUMENT_ROOT'] . '/teamtalks/conexion/init.php';
+
+
+?>
+
 
 <aside class="sidebar collapsed" style="height: 620px;">
   <!-- Sidebar header -->
   <header class="sidebar-header">
     <a href="#" class="header-logo">
-      <img src="../assets/img/logo.png" alt="CodingNepal">
+      <img src="<?= BASE_URL ?>/assets/img/logo.png" alt="CodingNepal">
     </a>
     <button class="toggler sidebar-toggler">
       <span class="material-symbols-rounded">chevron_left</span>
@@ -27,8 +33,8 @@
             <i class="bi bi-chevron-down submenu-arrow" style="position: relative; top: 0px; left: 0px; color: black;"></i>
           </a>
           <ul class="submenu">
-            <li><a href="index.php" class="nav-link small">Gerente</a></li>
-            <li><a href="transversales.php" class="nav-link small">Transversales</a></li>
+            <li><a href="<?= BASE_URL ?>/instructor/index.php" class="nav-link small">Gerente</a></li>
+            <li><a href="<?= BASE_URL ?>/instructor/transversales.php" class="nav-link small">Transversales</a></li>
           </ul>
         </li>
 
@@ -71,5 +77,5 @@
   </nav>
 </aside>
 
-<script src="../js/side_bar.js"></script>
+<script src="<?= BASE_URL ?>/js/side_bar.js"></script>
 

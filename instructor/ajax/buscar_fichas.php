@@ -1,9 +1,8 @@
 <?php
-require_once('../../conexion/conexion.php');
-include '../../includes/session.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/teamtalks/conexion/init.php';
+include 'session.php';
 
-$conexion = new database();
-$conex = $conexion->connect();
+
 
 $id_instructor = (int)$_SESSION['documento'];
 $q = isset($_GET['q']) ? trim($_GET['q']) : '';
@@ -65,7 +64,7 @@ if (count($fichas) > 0) {
                 <button class="fichas btn btn-detalles" data-id="' . $ficha['id_ficha'] . '">Detalles</button>
 
 
-                    <button class="fichas btn">Aprendices</button>
+                    <a href="mod/ver_aprendices.php?id_ficha=' . $ficha['id_ficha'] . '"><button class="fichas btn btn-detalles">Aprendices</button></a>
 
 
                 </div>

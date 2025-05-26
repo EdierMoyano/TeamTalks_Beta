@@ -1,9 +1,6 @@
 <?php
-require_once('../conexion/conexion.php');
-include '../includes/session.php';
-
-$conexion = new database();
-$conex = $conexion->connect();
+require_once $_SERVER['DOCUMENT_ROOT'] . '/teamtalks/conexion/init.php';
+include 'session.php';
 
 $id_instructor = $_SESSION['documento'];
 
