@@ -108,11 +108,7 @@
     </section>
 
     <?php
-<<<<<<< HEAD
-    include 'includes/footer.php';
-=======
     include 'includes/design/footer.php';
->>>>>>> 346b133f6a8dc17d05d4315ef4562bf1dc391b62
     ?>
 
 
