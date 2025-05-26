@@ -5,11 +5,7 @@ $conexion = new database();
 $conex = $conexion->connect();
 
 
-<<<<<<< HEAD
-if (isset($_POST['iniciar'])) {
-=======
 if (isset($_POST['submit'])) {
->>>>>>> 346b133f6a8dc17d05d4315ef4562bf1dc391b62
     $documento = $_POST['documento']; 
     $tipo = $_POST['tipo'];
     $contra_desc = $_POST['contraseña']; 
@@ -36,11 +32,8 @@ if (isset($_POST['submit'])) {
             $_SESSION ['estado'] = $fila ['id_estado'];
             $_SESSION ['rol'] = $fila ['id_rol'];
             $_SESSION ['empresa'] = $fila['nit'];
-<<<<<<< HEAD
-=======
             $_SESSION ['nombres'] = $fila['nombres'];
 
->>>>>>> 346b133f6a8dc17d05d4315ef4562bf1dc391b62
 
             if ($_SESSION ['rol'] == 1) {
                 header("Location: ../s_admin/index.php");
@@ -72,9 +65,5 @@ if (isset($_POST['submit'])) {
         else {
             echo '<script>alert ("No se encontró el usuario")</script>';
             echo '<script>window.location = "../login/login.php"</script>';
-<<<<<<< HEAD
-        } 
-=======
         }
->>>>>>> 346b133f6a8dc17d05d4315ef4562bf1dc391b62
 }

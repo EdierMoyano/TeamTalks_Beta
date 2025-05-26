@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: May 08, 2025 at 03:57 AM
+-- Generation Time: May 26, 2025 at 03:01 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -127,7 +127,7 @@ CREATE TABLE `actividades_user` (
   `contenido` text DEFAULT NULL,
   `archivo` varchar(255) DEFAULT NULL,
   `fecha_entrega` date DEFAULT NULL,
-  `id_user` int(11) DEFAULT NULL,
+  `id_user` bigint(20) DEFAULT NULL,
   `nota` decimal(5,2) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -141,6 +141,13 @@ CREATE TABLE `ambientes` (
   `id_ambiente` int(11) NOT NULL,
   `ambiente` varchar(100) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `ambientes`
+--
+
+INSERT INTO `ambientes` (`id_ambiente`, `ambiente`) VALUES
+(1, 'Ambiente Virtual');
 
 -- --------------------------------------------------------
 
@@ -188,14 +195,63 @@ INSERT INTO `estado` (`id_estado`, `estado`) VALUES
 
 CREATE TABLE `fichas` (
   `id_ficha` int(11) NOT NULL,
-  `ficha_nom` varchar(100) DEFAULT NULL,
+  `id_formacion` int(11) DEFAULT NULL,
   `id_ambiente` int(11) DEFAULT NULL,
   `fecha_creac` date DEFAULT NULL,
-  `id_instructor` int(11) DEFAULT NULL,
+  `id_instructor` bigint(20) DEFAULT NULL,
   `id_jornada` int(11) DEFAULT NULL,
   `id_tipo_ficha` int(11) DEFAULT NULL,
-  `id_estado` int(11) DEFAULT NULL
+  `id_estado` int(11) DEFAULT NULL,
+  `id_trimestre` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `fichas`
+--
+
+INSERT INTO `fichas` (`id_ficha`, `id_formacion`, `id_ambiente`, `fecha_creac`, `id_instructor`, `id_jornada`, `id_tipo_ficha`, `id_estado`, `id_trimestre`) VALUES
+(2323, 12345, NULL, '2025-05-16', 3133676, 1, 1, 1, NULL),
+(2900000, 12346, NULL, '2025-05-25', 1598989, 3, 1, 1, NULL),
+(2900001, 12345, NULL, '2025-05-23', 1598989, 3, 2, 1, NULL),
+(2900002, 12345, NULL, '2025-05-23', 1598989, 3, 2, 1, NULL),
+(2900003, 12345, NULL, '2025-05-23', 1598989, 3, 1, 1, NULL),
+(2900004, 12346, NULL, '2025-05-23', 1598989, 3, 2, 1, NULL),
+(2900005, 12346, NULL, '2025-05-23', 1598989, 3, 2, 1, NULL),
+(2900006, 12346, NULL, '2025-05-23', 1598989, 3, 1, 1, NULL),
+(2900007, 12345, NULL, '2025-05-23', 3133676, 1, 1, 1, NULL),
+(2900008, 12345, NULL, '2025-05-23', 3133676, 3, 1, 1, NULL),
+(2900009, 12346, NULL, '2025-05-23', 1598989, 3, 1, 1, NULL),
+(2900010, 12346, NULL, '2025-05-23', 1598989, 3, 1, 1, NULL),
+(2900011, 12345, NULL, '2025-07-22', 3133676, 1, 2, 1, NULL),
+(2900012, 12346, NULL, '2025-05-14', 3133676, 2, 1, 1, NULL),
+(2900013, 12345, NULL, '2025-05-25', 3133676, 1, 1, 1, NULL),
+(2900014, 12345, NULL, '2025-05-11', 3133676, 3, 1, 1, NULL),
+(2900015, 12346, NULL, '2025-05-25', 543232, 2, 1, 1, NULL),
+(2900016, 12345, NULL, '2025-05-30', 3133676, 2, 1, 1, NULL),
+(2900017, 12345, NULL, '2025-05-30', 3133676, 2, 1, 1, NULL);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `formacion`
+--
+
+CREATE TABLE `formacion` (
+  `id_formacion` int(11) NOT NULL,
+  `nombre` varchar(100) NOT NULL,
+  `descripcion` text DEFAULT NULL,
+  `fecha_creacion` date DEFAULT current_timestamp(),
+  `id_estado` int(11) DEFAULT 1,
+  `id_tipo_formacion` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `formacion`
+--
+
+INSERT INTO `formacion` (`id_formacion`, `nombre`, `descripcion`, `fecha_creacion`, `id_estado`, `id_tipo_formacion`) VALUES
+(12345, 'Adsi', 'Adsi', '2025-05-16', 1, 2),
+(12346, 'Desarrollo de videojuegos', 'Desarrollar videojuegos a medida', '2025-05-22', 1, 1);
 
 -- --------------------------------------------------------
 
@@ -217,7 +273,7 @@ CREATE TABLE `foros` (
 
 CREATE TABLE `historial_contra` (
   `id` int(11) NOT NULL,
-  `id_user` int(11) DEFAULT NULL,
+  `id_user` bigint(20) DEFAULT NULL,
   `contraseña_ant` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -246,6 +302,16 @@ CREATE TABLE `jornada` (
   `jornada` varchar(50) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `jornada`
+--
+
+INSERT INTO `jornada` (`id_jornada`, `jornada`) VALUES
+(1, 'Mañana'),
+(2, 'Tarde'),
+(3, 'Noche'),
+(4, 'Mixta');
+
 -- --------------------------------------------------------
 
 --
@@ -257,8 +323,8 @@ CREATE TABLE `licencias` (
   `id_tipo_licencia` int(3) NOT NULL,
   `fecha_ini` datetime NOT NULL,
   `fecha_fin` datetime NOT NULL,
-  `id_estado` int(3) NOT NULL,
-  `nit` int(50) NOT NULL
+  `nit` int(50) NOT NULL,
+  `estado` enum('Activa','Expirada','Inactiva') DEFAULT 'Activa'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -272,6 +338,25 @@ CREATE TABLE `materias` (
   `materia` varchar(100) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `materias`
+--
+
+INSERT INTO `materias` (`id_materia`, `materia`) VALUES
+(1, 'Matemáticas'),
+(2, 'Matemáticas'),
+(3, 'Inglés'),
+(4, 'Educación Física'),
+(5, 'Biología'),
+(6, 'Química'),
+(7, 'Filosofía'),
+(8, 'Ética'),
+(9, 'Emprendimiento'),
+(10, 'Informática'),
+(11, 'Arte'),
+(12, 'Tecnología'),
+(13, 'Lengua Castellana');
+
 -- --------------------------------------------------------
 
 --
@@ -282,7 +367,7 @@ CREATE TABLE `materia_ficha` (
   `id_materia_ficha` int(11) NOT NULL,
   `id_materia` int(11) DEFAULT NULL,
   `id_ficha` int(11) DEFAULT NULL,
-  `id_instructor` int(11) DEFAULT NULL,
+  `id_instructor` bigint(20) DEFAULT NULL,
   `id_trimestre` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -294,7 +379,7 @@ CREATE TABLE `materia_ficha` (
 
 CREATE TABLE `recuperacion` (
   `id_recuperacion` int(11) NOT NULL,
-  `id_usuario` int(11) NOT NULL,
+  `id_usuario` bigint(20) DEFAULT NULL,
   `token` int(11) DEFAULT NULL,
   `fecha_expiracion` datetime NOT NULL,
   `fecha_creacion` datetime DEFAULT current_timestamp()
@@ -318,7 +403,7 @@ CREATE TABLE `respuesta_foro` (
   `id_tema_foro` int(11) DEFAULT NULL,
   `descripcion` text DEFAULT NULL,
   `fecha_respuesta` date DEFAULT NULL,
-  `id_user` int(11) DEFAULT NULL
+  `id_user` bigint(20) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -354,7 +439,7 @@ CREATE TABLE `temas_foro` (
   `titulo` varchar(100) DEFAULT NULL,
   `descripcion` text DEFAULT NULL,
   `fecha_creacion` date DEFAULT NULL,
-  `id_user` int(11) DEFAULT NULL
+  `id_user` bigint(20) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -387,6 +472,37 @@ CREATE TABLE `tipo_ficha` (
   `tipo_ficha` varchar(50) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `tipo_ficha`
+--
+
+INSERT INTO `tipo_ficha` (`id_tipo_ficha`, `tipo_ficha`) VALUES
+(0, 'A distancia'),
+(1, 'Presencial'),
+(2, 'Virtual');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `tipo_formacion`
+--
+
+CREATE TABLE `tipo_formacion` (
+  `id_tipo_formacion` int(11) NOT NULL,
+  `tipo_formacion` varchar(50) NOT NULL,
+  `Duracion` varchar(255) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `tipo_formacion`
+--
+
+INSERT INTO `tipo_formacion` (`id_tipo_formacion`, `tipo_formacion`, `Duracion`) VALUES
+(1, 'Tecnico', '3 Trimestres'),
+(2, 'Tecnologo', '7 Trimestres'),
+(3, 'Ténico', '3 Trimestres'),
+(4, 'Tecnólogo', '7 Trimestres');
+
 -- --------------------------------------------------------
 
 --
@@ -410,6 +526,20 @@ CREATE TABLE `trimestre` (
   `trimestre` varchar(50) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `trimestre`
+--
+
+INSERT INTO `trimestre` (`id_trimestre`, `trimestre`) VALUES
+(1, NULL),
+(2, NULL),
+(3, NULL),
+(4, NULL),
+(5, NULL),
+(6, NULL),
+(7, NULL),
+(8, NULL);
+
 -- --------------------------------------------------------
 
 --
@@ -418,11 +548,26 @@ CREATE TABLE `trimestre` (
 
 CREATE TABLE `user_ficha` (
   `id_user_ficha` int(11) NOT NULL,
-  `id_user` int(11) DEFAULT NULL,
+  `id_user` bigint(20) DEFAULT NULL,
   `id_ficha` int(11) DEFAULT NULL,
   `fecha_asig` date DEFAULT NULL,
   `id_estado` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `user_ficha`
+--
+
+INSERT INTO `user_ficha` (`id_user_ficha`, `id_user`, `id_ficha`, `fecha_asig`, `id_estado`) VALUES
+(1, 123123, 2323, '2025-05-21', 1),
+(2, 76543210, 2323, '2025-05-22', 1),
+(3, 765432210, 2323, '2025-05-22', 1),
+(4, 44322210, 2323, '2025-05-22', 1),
+(5, 443272210, 2323, '2025-05-22', 1),
+(6, 25323123, 2323, '2025-05-22', 1),
+(7, 85858, 2323, '2025-05-22', 1),
+(8, 3157883790, 2323, '2025-05-22', 1),
+(9, 31578583790, 2323, '2025-05-25', 1);
 
 -- --------------------------------------------------------
 
@@ -431,7 +576,7 @@ CREATE TABLE `user_ficha` (
 --
 
 CREATE TABLE `usuarios` (
-  `id` int(11) NOT NULL,
+  `id` bigint(20) NOT NULL,
   `id_tipo` int(11) DEFAULT NULL,
   `nombres` varchar(100) DEFAULT NULL,
   `apellidos` varchar(100) DEFAULT NULL,
@@ -441,7 +586,6 @@ CREATE TABLE `usuarios` (
   `telefono` varchar(20) DEFAULT NULL,
   `id_rol` int(11) DEFAULT NULL,
   `id_estado` int(11) DEFAULT NULL,
-  `id_ficha` int(11) DEFAULT NULL,
   `fecha_registro` date DEFAULT NULL,
   `nit` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -450,8 +594,28 @@ CREATE TABLE `usuarios` (
 -- Dumping data for table `usuarios`
 --
 
-INSERT INTO `usuarios` (`id`, `id_tipo`, `nombres`, `apellidos`, `correo`, `contraseña`, `avatar`, `telefono`, `id_rol`, `id_estado`, `id_ficha`, `fecha_registro`, `nit`) VALUES
-(1104940105, 1, 'Edier\r\n', 'Moyano', 'ediersmb@gmail.com', '$2y$12$Z8XHAwYyhkcYU8LCwUCu3.Ff3LHBigWUDlOjF7wRlyFb6wmQYfply', NULL, '3028623064', 2, 1, NULL, NULL, 0);
+INSERT INTO `usuarios` (`id`, `id_tipo`, `nombres`, `apellidos`, `correo`, `contraseña`, `avatar`, `telefono`, `id_rol`, `id_estado`, `fecha_registro`, `nit`) VALUES
+(12312, 1, 'ssadasdasd', 'asdasd', 'edasda@gmail.com', '$2y$10$d/v28UpCaYFJO7GblUIZxuWiwXOSuRDYztdDu5GR7Kj7AU014wGUS', NULL, '3123123123', 4, 1, '2025-05-21', 159),
+(13123, 1, 'sebas', 'aranda', 'aranda@gmail.com', '$2y$10$9Vaj2kPEU6NSPrD1VQZkAOugCa5KvqoyuE1MXBMJfUPpdBhBNSo9u', NULL, '3028623064', 2, 1, '2025-05-22', 159),
+(85858, 1, 'rere', 're', 'rere@gmail.com', '$2y$10$KYx2cR2aqM2UULZQKrHUKOj7tYRqi/Vk0xDmOCZeq4G/wOIvj5Nri', NULL, '323232323', 4, 1, '2025-05-22', 159),
+(123123, 1, 'asdasd', 'asdasd', 'ediasd@gmail.com', '$2y$10$9hN6EFNRs0gK/shTn6zj8.RuEVoAJgNluu/PXQ7ZFR5YCpPTc4W1W', NULL, '302554554', 4, 1, '2025-05-21', 159),
+(123422, 2, 'asdasd', 'asda', 'adsa@gmailcom', '$2y$10$2IbhSPhYH9Ti48lSUnK0NebsaB3WoBe48NgLkgDUrKN6p39PRn5pG', NULL, '2323213123', 4, 1, '2025-05-21', 159),
+(542323, 1, 'asdasd', 'asdasd', 'edeirs@gmail.com', '$2y$10$1R1H8aGpKkX9qpFVTOh7iuwOU4fF33qP.nP9mUss85ffqjrWKvoHO', NULL, '123123', 4, 1, '2025-05-21', 159),
+(543232, 1, 'rfdd', 'ddd', 'addas@gmail.com', '$2y$10$jNDQk9HfuQnIRgLhWbQD4evzXRgJJu/B.BEqPvqTgZqCq6FLFyh/y', NULL, '543432', 3, 1, '2025-05-25', 159),
+(1598989, 1, 'asdasd', 'asdasd', 'asdasdasd@gmail.com', '$2y$10$W6F5TyILsGEmKEWrX/WWr.Ox0kyWdB/gHol06j.OiVs0zDQ8cEcsa', NULL, '123123', 3, 1, '2025-05-22', 159),
+(3133676, 1, 'Elmer ', 'Moyano', 'ediermb@hotmail.com', 'edier2005', NULL, '3175942017', 3, 1, NULL, 0),
+(5423232, 1, 'dasd', 'asdasd', '2dwadad@gmail.com', '$2y$10$KqNv.hlKYYw/Q/aBp739ZO09zvu1ANYo5V.VyY3T971yhE1yau/Oe', NULL, '123123', 2, 1, '2025-05-21', 159),
+(25323123, 2, 'pepericopepe', 'asdasd', 'wadsfad@gmail.com', '$2y$10$ruH47VSgiwqX4f3j.f53CeNqYy3Mlb1z7eyKxVMoYJIMOum6qBA4.', NULL, '225252', 4, 1, '2025-05-22', 159),
+(44322210, 1, 'Julian Lópaez', NULL, 'Juliana@gmail.com', '$2y$10$fcFZIPf/Tzf9jW1138YVL.IQo80kHKYcxnVGUp7.nRN2jtnPa6b6i', '', '3102345678', 4, 1, '2025-05-22', 159),
+(76543210, 1, 'María López', NULL, 'marialopez@mail.com', '$2y$10$c3wuxXBVCUNBhOzx6d//fOeCT6YD6nt1AQ/DySoz2LBgJ51bpks32', '', '3102345678', 4, 1, '2025-05-22', 159),
+(232121111, 1, 'weadad', 'adad', 'adas@gmail.com', '$2y$10$RHLYh4BJNrM5FI9JnTuE1u5/JSAlGvOhVUQvTDCIojwWbFfUpYWea', NULL, '123123123', 4, 1, '2025-05-21', 159),
+(443272210, 2, 'Juliaan Lópaez', NULL, 'Juliaana@gmail.com', '$2y$10$gwPMsPjjYfvMfkuXWYQ3DekXUImk5FbPjugn/AyI0.mQZNeTXRF0W', '', '31022345678', 4, 1, '2025-05-22', 159),
+(765432210, 1, 'Maríaa López', NULL, 'mariaalopez@mail.com', '$2y$10$bPm7y/Ce0IyQSSB47cfrKeBF4aDsjvORq36YqKj6IQU.cDxYz1Tfm', '', '3102345678', 4, 1, '2025-05-22', 159),
+(1104940105, 1, 'Edier\r\n', 'Moyano', 'ediersmb@gmail.com', '$2y$12$Z8XHAwYyhkcYU8LCwUCu3.Ff3LHBigWUDlOjF7wRlyFb6wmQYfply', NULL, '3028623064', 1, 1, NULL, 159),
+(2147483647, 1, '222sadasda', 'asdas2', 'peee@gmail.com', '$2y$10$9WMyF7K41WS4hYXfb8kUOex8P495mjZuTSDBRONAriOfyw4mEiQk.', NULL, '32323211', 4, 1, '2025-05-21', 159),
+(3157883790, 1, 'marian Lópae5z', NULL, 'piuliaa1na@gmail.com', '$2y$10$PLkz31WOt5euke2lsmp0XuIr/rzdYP2qREneT/l2YickNs5WioMLy', '', '31999345678', 4, 1, '2025-05-23', 159),
+(31578583790, 1, 'mariano Lopae5z', NULL, 'piuliaaa1na@gmail.com', '$2y$10$iHjGsHUS.kP3hLq2c5DPDem0nX.xXzD3MWWYZJhY/5NfWvtEh.jD2', '', '31999345678', 3, 1, '2025-05-25', 159),
+(315783583790, 1, 'yotasz', NULL, 'yotasa@gmail.com', '$2y$10$wj9ki0Cj.MMwFuajVxtDjOyEWkkJqnHYsNcZ3Cpdm0a3fZ0BtluLG', '', '31999345678', 3, 1, '2025-05-25', 159);
 
 --
 -- Indexes for dumped tables
@@ -500,7 +664,16 @@ ALTER TABLE `fichas`
   ADD KEY `id_instructor` (`id_instructor`),
   ADD KEY `id_jornada` (`id_jornada`),
   ADD KEY `id_tipo_ficha` (`id_tipo_ficha`),
-  ADD KEY `id_estado` (`id_estado`);
+  ADD KEY `id_estado` (`id_estado`),
+  ADD KEY `nombre_formacion` (`id_formacion`);
+
+--
+-- Indexes for table `formacion`
+--
+ALTER TABLE `formacion`
+  ADD PRIMARY KEY (`id_formacion`),
+  ADD KEY `id_estado` (`id_estado`),
+  ADD KEY `id_tipo_formacion` (`id_tipo_formacion`);
 
 --
 -- Indexes for table `foros`
@@ -535,8 +708,7 @@ ALTER TABLE `jornada`
 ALTER TABLE `licencias`
   ADD PRIMARY KEY (`id_licencia`),
   ADD KEY `nit` (`nit`),
-  ADD KEY `id_tipo_licencia` (`id_tipo_licencia`),
-  ADD KEY `id_estado` (`id_estado`);
+  ADD KEY `id_tipo_licencia` (`id_tipo_licencia`);
 
 --
 -- Indexes for table `materias`
@@ -559,8 +731,8 @@ ALTER TABLE `materia_ficha`
 --
 ALTER TABLE `recuperacion`
   ADD PRIMARY KEY (`id_recuperacion`),
-  ADD KEY `id_usuario` (`id_usuario`),
-  ADD KEY `idx_token` (`token`);
+  ADD KEY `idx_token` (`token`),
+  ADD KEY `recuperacion_ibfk_1` (`id_usuario`);
 
 --
 -- Indexes for table `respuesta_foro`
@@ -595,6 +767,12 @@ ALTER TABLE `tipo_documento`
 --
 ALTER TABLE `tipo_ficha`
   ADD PRIMARY KEY (`id_tipo_ficha`);
+
+--
+-- Indexes for table `tipo_formacion`
+--
+ALTER TABLE `tipo_formacion`
+  ADD PRIMARY KEY (`id_tipo_formacion`);
 
 --
 -- Indexes for table `tipo_licencia`
@@ -639,6 +817,24 @@ ALTER TABLE `estado`
   MODIFY `id_estado` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
+-- AUTO_INCREMENT for table `fichas`
+--
+ALTER TABLE `fichas`
+  MODIFY `id_ficha` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2900018;
+
+--
+-- AUTO_INCREMENT for table `formacion`
+--
+ALTER TABLE `formacion`
+  MODIFY `id_formacion` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12347;
+
+--
+-- AUTO_INCREMENT for table `materias`
+--
+ALTER TABLE `materias`
+  MODIFY `id_materia` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
+
+--
 -- AUTO_INCREMENT for table `recuperacion`
 --
 ALTER TABLE `recuperacion`
@@ -655,6 +851,18 @@ ALTER TABLE `roles`
 --
 ALTER TABLE `tipo_documento`
   MODIFY `id_tipo` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
+--
+-- AUTO_INCREMENT for table `tipo_formacion`
+--
+ALTER TABLE `tipo_formacion`
+  MODIFY `id_tipo_formacion` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+
+--
+-- AUTO_INCREMENT for table `user_ficha`
+--
+ALTER TABLE `user_ficha`
+  MODIFY `id_user_ficha` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- Constraints for dumped tables
@@ -682,7 +890,15 @@ ALTER TABLE `fichas`
   ADD CONSTRAINT `fichas_ibfk_2` FOREIGN KEY (`id_instructor`) REFERENCES `usuarios` (`id`),
   ADD CONSTRAINT `fichas_ibfk_3` FOREIGN KEY (`id_jornada`) REFERENCES `jornada` (`id_jornada`),
   ADD CONSTRAINT `fichas_ibfk_4` FOREIGN KEY (`id_tipo_ficha`) REFERENCES `tipo_ficha` (`id_tipo_ficha`),
-  ADD CONSTRAINT `fichas_ibfk_5` FOREIGN KEY (`id_estado`) REFERENCES `estado` (`id_estado`);
+  ADD CONSTRAINT `fichas_ibfk_5` FOREIGN KEY (`id_estado`) REFERENCES `estado` (`id_estado`),
+  ADD CONSTRAINT `nombre_formacion` FOREIGN KEY (`id_formacion`) REFERENCES `formacion` (`id_formacion`);
+
+--
+-- Constraints for table `formacion`
+--
+ALTER TABLE `formacion`
+  ADD CONSTRAINT `formacion_ibfk_1` FOREIGN KEY (`id_estado`) REFERENCES `estado` (`id_estado`),
+  ADD CONSTRAINT `formacion_ibfk_2` FOREIGN KEY (`id_tipo_formacion`) REFERENCES `tipo_formacion` (`id_tipo_formacion`);
 
 --
 -- Constraints for table `foros`
@@ -707,8 +923,7 @@ ALTER TABLE `horario`
 --
 ALTER TABLE `licencias`
   ADD CONSTRAINT `licencias_ibfk_1` FOREIGN KEY (`nit`) REFERENCES `empresa` (`nit`),
-  ADD CONSTRAINT `licencias_ibfk_2` FOREIGN KEY (`id_tipo_licencia`) REFERENCES `tipo_licencia` (`id_tipo_licencia`),
-  ADD CONSTRAINT `licencias_ibfk_3` FOREIGN KEY (`id_estado`) REFERENCES `estado` (`id_estado`);
+  ADD CONSTRAINT `licencias_ibfk_2` FOREIGN KEY (`id_tipo_licencia`) REFERENCES `tipo_licencia` (`id_tipo_licencia`);
 
 --
 -- Constraints for table `materia_ficha`
