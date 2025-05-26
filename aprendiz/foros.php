@@ -83,11 +83,11 @@
 
 <main class="main-content">
   <div class="container-fluid">
-    <form class="d-flex mb-4" role="search">
-      <input class="form-control me-2" type="search" placeholder="Buscar" aria-label="Search"/> 
-      <button class="btn btn-blue-dark" type="submit">
+    <form class="d-flex mb-4" role="search" style="max-width: 1000px; margin: 0 auto;">
+      <input class="form-control me-2" type="search" placeholder="Buscar" aria-label="Search" style="font-size: 0.9rem; height: 40px;"/>
+      <button class="btn btn-blue-dark" type="submit" style="height: 40px; padding: 0 12px;">
         <i class="bi bi-search"></i>
-      </button> 
+      </button>
     </form> 
     <br>
 
@@ -98,81 +98,80 @@
 </main>
 
 <script>
-  document.addEventListener("DOMContentLoaded", function () {
-    const ITEMS_POR_PAGINA = 6;
-    let forosTotales = [];
-    let paginaActual = 1;
+document.addEventListener('DOMContentLoaded', () => {
+  const contenedor = document.getElementById('contenedor-foros');
 
-    const contenedor = document.getElementById("contenedor-foros");
-    const paginacion = document.createElement("div");
-    paginacion.className = "d-flex justify-content-center mt-4";
-    contenedor.parentNode.appendChild(paginacion);
+  fetch('get_foros.php')
+    .then(response => response.json())
+    .then(data => {
+      if (data.error) {
+        contenedor.innerHTML = `<p class="text-danger text-center">${data.error}</p>`;
+        return;
+      }
 
-    function renderizarPagina(pagina) {
-      contenedor.innerHTML = "";
+      data.forEach((foro, iF) => {
+        const foroDiv = document.createElement('div');
+        foroDiv.className = 'card card-clase mb-4 shadow';
 
-      const inicio = (pagina - 1) * ITEMS_POR_PAGINA;
-      const fin = inicio + ITEMS_POR_PAGINA;
-      const forosPagina = forosTotales.slice(inicio, fin);
-
-      forosPagina.forEach(foro => {
-        const col = document.createElement("div");
-        col.className = "col-md-4 mb-4";
-
-        const card = document.createElement("div");
-        card.className = "card card-clase h-100";
-
-        card.innerHTML = `
-          <img src="${foro.imagen}" class="card-img-top" alt="Imagen de ${foro.nombre_foro}">
+        foroDiv.innerHTML = `
+          <img src="${foro.imagen}" class="card-img-top" alt="Imagen clase">
           <div class="card-body">
-            <h5 class="card-title">${foro.nombre_foro}</h5>
-            <p class="card-text"><strong>Profesor:</strong> ${foro.profesor}</p>
-            <p class="card-text">${foro.descripcion}</p>
-          </div>
-          <div class="card-footer bg-transparent border-top-0">
-            <a href="ver_foro.php?id=${foro.id_foro}" class="btn btn-blue-dark w-100">Ingresar al Foro</a>
-          </div>
+            <h5 class="card-title">Clase: ${foro.nombre_clase}</h5>
+            <p><strong>Profesor:</strong> ${foro.nombre_profesor}</p>
+            <p><strong>Ficha:</strong> ${foro.numero_fichas}</p>
+            <p><strong>Fecha del foro:</strong> ${foro.fecha_foro}</p>
+            <hr>
         `;
 
-        col.appendChild(card);
-        contenedor.appendChild(col);
-      });
+        foro.temas.forEach((tema, iT) => {
+          const collapseId = `respuestas_${iF}_${iT}`;
+          let temaHTML = `
+            <div class="bg-light p-3 rounded mb-3">
+              <h6 class="text-primary mb-1"><i class="bi bi-chat-left-text"></i> ${tema.titulo}</h6>
+              <p>${tema.descripcion}</p>
+              <p class="text-muted"><small>Creado por <strong>${tema.creador}</strong> el ${tema.fecha_creacion}</small></p>
+          `;
 
-      renderizarControles(forosTotales.length);
-    }
+          if (tema.respuestas.length > 0) {
+            temaHTML += `
+              <button class="btn btn-sm btn-outline-primary mb-2" type="button" data-bs-toggle="collapse" data-bs-target="#${collapseId}">
+                Ver respuestas (${tema.respuestas.length})
+              </button>
+              <div class="collapse" id="${collapseId}">
+                <div class="ps-3 border-start border-2 border-primary mt-2">
+            `;
 
-    function renderizarControles(totalItems) {
-      const totalPaginas = Math.ceil(totalItems / ITEMS_POR_PAGINA);
-      paginacion.innerHTML = "";
+            tema.respuestas.forEach(resp => {
+              temaHTML += `
+                <div class="mb-2">
+                  <p class="mb-0">${resp.descripcion}</p>
+                  <p class="text-muted mb-0"><small>Respondido por <strong>${resp.respondido_por}</strong> el ${resp.fecha_respuesta}</small></p>
+                </div>
+              `;
+            });
 
-      for (let i = 1; i <= totalPaginas; i++) {
-        const btn = document.createElement("button");
-        btn.textContent = i;
-        btn.className = `btn mx-1 ${i === paginaActual ? 'btn-blue-dark' : 'btn-outline-secondary'}`;
-        btn.addEventListener("click", () => {
-          paginaActual = i;
-          renderizarPagina(paginaActual);
+            temaHTML += `
+                </div>
+              </div>
+            `;
+          } else {
+            temaHTML += `<p class="text-secondary"><em>No hay respuestas aún.</em></p>`;
+          }
+
+          temaHTML += `</div>`; // Cierre del tema
+          foroDiv.innerHTML += temaHTML;
         });
-        paginacion.appendChild(btn);
-      }
-    }
 
-    fetch("api/foros_cla.php")
-      .then(res => res.json())
-      .then(foros => {
-        forosTotales = foros;
-        if (forosTotales.length === 0) {
-          contenedor.innerHTML = "<p>No hay foros disponibles.</p>";
-          return;
-        }
-        renderizarPagina(paginaActual);
-      })
-      .catch(err => {
-        console.error("Error al cargar foros:", err);
-        contenedor.innerHTML = "<p>Error al cargar los foros.</p>";
+        foroDiv.innerHTML += `</div>`; // Cierre del card-body
+        contenedor.appendChild(foroDiv);
       });
-  });
+    })
+    .catch(error => {
+      console.error('Error al obtener los foros:', error);
+      contenedor.innerHTML = `<p class="text-danger text-center">Ocurrió un error al cargar los foros.</p>`;
+    });
+});
 </script>
 
 </body>
-</html>
+</html> 

@@ -57,13 +57,13 @@
       <?php if ($_SESSION['rol'] == 4): ?>
         <li class="nav-item has-submenu">
           <a href="#" class="nav-link submenu-toggle">
-            <i class="side bi bi-people-fill"></i>
+            <i class="bi bi-mortarboard" style="position: relative; top: 0px; left: 0px; color: black;"></i>
             <span class="nav-label">Clases Inscritas</span>
             <i class="bi bi-chevron-down submenu-arrow" style="position: relative; top: 0px; left: 0px; color: black;"></i>
           </a>
           <ul class="submenu">
-            <li><a href="index.php" class="nav-link small">Actividades</a></li>
-            <li><a href="transversales.php" class="nav-link small">Calificaciones</a></li>
+            <li><a href="index.php" class="nav-link small"><i class="bi bi-journal-bookmark-fill" style="position: relative; top: 0px; left: 0px; color: black;"></i>Actividades</a></li>
+            <li><a href="transversales.php" class="nav-link small"><i class="bi bi-card-checklist" style="position: relative; top: 0px; left: 0px; color: black;"></i>Calificaciones</a></li>
           </ul>
         </li>
 
@@ -76,4 +76,4 @@
 </aside>
 
 <script src="../js/script.js"></script>
-  <link rel="stylesheet" href="../styles/style_side_cla.css">
+  <link rel="stylesheet" href="../styles/style_side.css">
