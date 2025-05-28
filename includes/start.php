@@ -6,9 +6,9 @@ if (isset($_POST['submit'])) {
     $tipo = $_POST['tipo'];
     $contra_desc = $_POST['contraseña']; 
 
-    if ($tipo == '' || $documento == '' || $contra_desc == '') {
+    if (empty($documento) || empty($tipo) || empty($contra_desc)) {
         echo '<script>alert("Ningún dato puede estar vacío")</script>';
-        echo '<script>window.location = "../login.php"</script>';
+        echo '<script>window.location = "' . BASE_URL . '/login/login.php"</script>';
         exit();
     }
 
@@ -23,18 +23,29 @@ if (isset($_POST['submit'])) {
         $_SESSION['empresa'] = $fila['nit'];
         $_SESSION['nombres'] = $fila['nombres'];
 
+        // Redirige según el rol
         switch ($_SESSION['rol']) {
-            case 1: header("Location: ../s_admin/index.php"); break;
-            case 2: header("Location: ../admin/index.php"); break;
-            case 3: header("Location: ../instructor/index.php"); break;
-            case 4: header("Location: ../aprendiz/mis_clases.php"); break;
-            default: echo '<script>alert("Rol no reconocido")</script>';
+            case 1:
+                header("Location: " . BASE_URL . "/s_admin/index.php");
+                break;
+            case 2:
+                header("Location: " . BASE_URL . "/admin/index.php");
+                break;
+            case 3:
+                header("Location: " . BASE_URL . "/instructor/index.php");
+                break;
+            case 4:
+                header("Location: " . BASE_URL . "/aprendiz/index.php");
+                break;
+            default:
+                echo '<script>alert("Rol no reconocido")</script>';
+                echo '<script>window.location = "' . BASE_URL . '/login/login.php"</script>';
         }
 
         exit();
     } else {
         echo '<script>alert("Credenciales inválidas o usuario inactivo")</script>';
-        echo '<script>window.location = "../login/login.php"</script>';
+        echo '<script>window.location = "' . BASE_URL . '/login/login.php"</script>';
         exit();
     }
 }

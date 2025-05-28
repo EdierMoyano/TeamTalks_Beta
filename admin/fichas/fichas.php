@@ -1,7 +1,7 @@
 <?php
-session_start();
-require_once '../../conexion/conexion.php';
-require_once '../../includes/functions.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/teamtalks/conexion/init.php';
+
+include 'functions.php';
 
 // Mostrar mensaje después de redireccionar tras editar
 if (isset($_SESSION['alertMessage'])) {
