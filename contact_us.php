@@ -104,7 +104,7 @@
     </section>
 
     <?php
-    include 'includes/footer.php';
+    include 'includes/design/footer.php';
     ?>
 
 

@@ -81,5 +81,5 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/teamtalks/conexion/init.php';
   </nav>
 </aside>
 
-<script src="../js/script.js"></script>
-  <link rel="stylesheet" href="../styles/style_side.css">
+<script src="<?= BASE_URL ?>/js/side_bar.js"></script>
+
