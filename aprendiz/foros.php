@@ -7,9 +7,7 @@
 
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-    integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw=="
-    crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
@@ -18,29 +16,29 @@
       background-color: #f4f4f9;
       font-family: Arial, sans-serif;
     }
-    
+
     .main-content {
       margin-left: 5px;
       transition: margin-left 0.4s ease;
     }
 
     .card-clase {
-      width: 90%; /* Reduce el ancho de las tarjetas */
-      margin: 0 auto; /* Centra las tarjetas */
+      width: 90%;
+      margin: 0 auto;
       transition: transform 0.2s, box-shadow 0.2s;
     }
 
     .card-clase img {
-      height: 150px; /* Ajusta la altura de las imágenes */
-      object-fit: cover; /* Asegura que las imágenes se ajusten al espacio */
+      height: 150px;
+      object-fit: cover;
     }
 
     .card-clase .card-body {
-      font-size: 0.9rem; /* Reduce el tamaño del texto */
+      font-size: 0.9rem;
     }
 
     .card-clase .card-title {
-      font-size: 1rem; /* Reduce el tamaño del título */
+      font-size: 1rem;
     }
 
     .card-clase:hover {
@@ -53,16 +51,16 @@
     }
 
     .btn-blue-dark {
-  background-color:rgb(14, 74, 134); /* Azul oscuro */
-  border-color:rgb(14, 74, 134);
-  color: white;
-}
+      background-color: rgb(14, 74, 134);
+      border-color: rgb(14, 74, 134);
+      color: white;
+    }
 
-.btn-blue-dark:hover {
-  background-color:rgb(23, 101, 180); /* Azul aún más oscuro al pasar el mouse */
-  border-color:rgb(23, 101, 180);
-  color: white;
-}
+    .btn-blue-dark:hover {
+      background-color: rgb(23, 101, 180);
+      border-color: rgb(23, 101, 180);
+      color: white;
+    }
 
     @media (max-width: 768px) {
       .sidebar {
@@ -88,20 +86,21 @@
       <button class="btn btn-blue-dark" type="submit" style="height: 40px; padding: 0 12px;">
         <i class="bi bi-search"></i>
       </button>
-    </form> 
+    </form>
     <br>
 
     <div class="row" id="contenedor-foros">
-      <!-- Tarjetas de foros se insertarán aquí -->
+      <!-- Aquí se insertan los foros dinámicamente -->
     </div>
   </div>
 </main>
+
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
   const contenedor = document.getElementById('contenedor-foros');
 
-  fetch('get_foros.php')
+  fetch('api/foros_cla.php')
     .then(response => response.json())
     .then(data => {
       if (data.error) {
@@ -150,19 +149,25 @@ document.addEventListener('DOMContentLoaded', () => {
               `;
             });
 
-            temaHTML += `
-                </div>
-              </div>
-            `;
+            temaHTML += `</div></div>`;
           } else {
             temaHTML += `<p class="text-secondary"><em>No hay respuestas aún.</em></p>`;
           }
 
-          temaHTML += `</div>`; // Cierre del tema
+          // Formulario para responder
+          temaHTML += `
+            <form onsubmit="enviarRespuesta(event, ${tema.id_tema_foro})" class="mt-2">
+              <div class="mb-2">
+                <textarea required name="respuesta" class="form-control" placeholder="Escribe tu respuesta..."></textarea>
+              </div>
+              <button type="submit" class="btn btn-sm btn-success">Responder</button>
+            </form>
+          </div>`;
+
           foroDiv.innerHTML += temaHTML;
         });
 
-        foroDiv.innerHTML += `</div>`; // Cierre del card-body
+        foroDiv.innerHTML += `</div>`;
         contenedor.appendChild(foroDiv);
       });
     })
@@ -171,7 +176,35 @@ document.addEventListener('DOMContentLoaded', () => {
       contenedor.innerHTML = `<p class="text-danger text-center">Ocurrió un error al cargar los foros.</p>`;
     });
 });
+
+// Función para enviar la respuesta
+function enviarRespuesta(e, idTema) {
+  e.preventDefault();
+  const form = e.target;
+  const respuesta = form.respuesta.value;
+
+  fetch('api/guardar_respuesta.php', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      id_tema_foro: idTema,
+      descripcion: respuesta,
+      id_user: 1107977746 // Reemplazar con el ID real del usuario autenticado
+    })
+  })
+    .then(res => res.json())
+    .then(result => {
+      if (result.success) {
+        alert('Respuesta guardada correctamente');
+        location.reload();
+      } else {
+        alert('Error: ' + result.error);
+      }
+    });
+}
 </script>
 
 </body>
-</html> 
+</html>

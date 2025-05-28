@@ -47,8 +47,7 @@ try {
             LEFT JOIN respuesta_foro rf ON rf.id_tema_foro = tf.id_tema_foro
             LEFT JOIN usuarios ur ON rf.id_user = ur.id
 
-            ORDER BY f.id_foro, tf.id_tema_foro, rf.id_respuesta_foro
-    ";
+            ORDER BY f.id_foro, tf.id_tema_foro, rf.id_respuesta_foro";
 
     $stmt = $pdo->query($sql);
     $rows = $stmt->fetchAll();
@@ -67,7 +66,7 @@ try {
                 'nombre_clase' => $row['nombre_clase'],
                 'nombre_profesor' => $row['nombre_profesor'],
                 'numero_fichas' => $row['numero_fichas'],
-                'imagen' => "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSLlPxXwu6GBz2YNT0kRZhPElAeyZArGF2evQ&s" . urlencode($row['nombre_clase']),
+                'imagen' => "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSLlPxXwu6GBz2YNT0kRZhPElAeyZArGF2evQ&s",
                 'temas' => []
             ];
         }
@@ -83,24 +82,22 @@ try {
             ];
         }
 
-        if (!empty($row['id_respuesta_foro'])) {
+        if (!empty($row['id_respuesta_foro']) && $tema_id) {
             $foros[$foro_id]['temas'][$tema_id]['respuestas'][] = [
                 'id_respuesta_foro' => $row['id_respuesta_foro'],
                 'descripcion' => $row['respuesta'],
                 'fecha_respuesta' => $row['fecha_respuesta'],
-                'respondido_por' => $row['aprendiz_respondido']
+                'respondido_por' => $row['aprendiz_respondio'] ?? 'Anónimo'
             ];
         }
     }
 
-    // Reindexar arrays para convertir los objetos en arreglos válidos JSON
     $foros = array_values(array_map(function ($foro) {
         $foro['temas'] = array_values($foro['temas']);
         return $foro;
     }, $foros));
 
     echo json_encode($foros, JSON_UNESCAPED_UNICODE);
-
 } catch (PDOException $e) {
     echo json_encode(['error' => 'Error de conexión o consulta: ' . $e->getMessage()]);
 }
