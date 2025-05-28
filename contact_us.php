@@ -44,11 +44,7 @@
                         <textarea class="form-control" id="mensaje" rows="5" placeholder="Escribe tu mensaje aquí"></textarea>
                     </div>
 
-<<<<<<< HEAD
-                    <button type="submit" class="btn btn-primary w-100">Enviar</button>
-=======
                     <button type="submit" class="btn btn w-100" style="background-color:#0E4A86; color: white;" >Enviar</button>
->>>>>>> 346b133f6a8dc17d05d4315ef4562bf1dc391b62
                 </form>
             </div>
 
@@ -108,11 +104,7 @@
     </section>
 
     <?php
-<<<<<<< HEAD
-    include 'includes/footer.php';
-=======
     include 'includes/design/footer.php';
->>>>>>> 346b133f6a8dc17d05d4315ef4562bf1dc391b62
     ?>
 
 

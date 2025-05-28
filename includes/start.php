@@ -1,5 +1,5 @@
 <?php
-require_once $_SERVER['DOCUMENT_ROOT'] . '/teamtalks/init.php'; // Carga todo: rutas, conexión, sesión
+require_once $_SERVER['DOCUMENT_ROOT'] . '/teamtalks/conexion/init.php'; // Carga todo: rutas, conexión, sesión
 
 if (isset($_POST['submit'])) {
     $documento = $_POST['documento']; 
@@ -27,7 +27,7 @@ if (isset($_POST['submit'])) {
             case 1: header("Location: ../s_admin/index.php"); break;
             case 2: header("Location: ../admin/index.php"); break;
             case 3: header("Location: ../instructor/index.php"); break;
-            case 4: header("Location: ../aprendiz/index.php"); break;
+            case 4: header("Location: ../aprendiz/mis_clases.php"); break;
             default: echo '<script>alert("Rol no reconocido")</script>';
         }
 
