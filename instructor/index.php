@@ -88,7 +88,6 @@ $id_instructor = $_SESSION['documento'];
   <?php include '../includes/design/sidebar.php'; ?>
 
 
-
   <div class="main-content container">
     <nav class="d-flex justify-content-center navbar" style="position: relative; right: 50px;">
       <div class="">
@@ -126,9 +125,6 @@ $id_instructor = $_SESSION['documento'];
 </div>
 
 
-
-
-    
 
 <!-- Script para buscar fichas dinámicamente -->
 <script>
