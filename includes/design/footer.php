@@ -12,14 +12,14 @@
                 <h5 class="mb-4 font-weight-bold text-primary text-white">Soporte</h5>
                 <hr class="text-white mb-4">
                 <p>
-                    <a href="soporte.php" class="l text-white">Contacta Soporte Tecnico</a>
+                    <a href="soporte.php" class=" text-white">Contacta Soporte Tecnico</a>
                 </p>
             </div>
             <div class="col-md-2 col-lg-2 col-xl-2 mx-auto mt-3">
                 <h5 class="mb-4 font-weight-bold text-primary text-white">Reportes</h5>
                 <hr class="text-white mb-4">
                 <p>
-                    <a href="reportes.php" class="l text-white">Contacta Realizar Reportes</a>
+                    <a href="reportes.php" class=" text-white">Contacta Realizar Reportes</a>
                 </p>
                 
             </div>
