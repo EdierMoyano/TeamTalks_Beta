@@ -13,8 +13,8 @@ $id_instructor = $_SESSION['documento'];
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Teamtalks</title>
-    <link rel="stylesheet" href="../styles/style_side.css">
-    <link rel="icon" href="../assets/img/icon2.png">
+    <link rel="stylesheet" href="<?= BASE_URL ?>/styles/style_side.css">
+    <link rel="icon" href="<?= BASE_URL ?>/assets/img/icon2.png">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0">
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -67,8 +67,8 @@ $id_instructor = $_SESSION['documento'];
     </style>
 </head>
 <body style="padding-top:180px;" class="sidebar-collapsed">
-  <?php include '../includes/design/header.php'; ?>
-  <?php include '../includes/design/sidebar.php'; ?>
+  <?php include 'design/header.php'; ?>
+  <?php include 'design/sidebar.php'; ?>
 
   <div class="main-content container">
     <nav class="d-flex justify-content-center navbar" style="position: relative; right: 50px;">

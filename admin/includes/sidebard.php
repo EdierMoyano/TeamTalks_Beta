@@ -100,15 +100,15 @@ $baseUrl = "/teamtalks/admin/"; // Asegúrate de que esta ruta sea correcta
                 </a>
                 <span class="nav-tooltip">Formaciones</span>
             </li>
-            <li class="nav-item <?php echo ($currentPage == 'clases.php') ? 'active' : ''; ?>">
-                <a href="<?php echo $baseUrl; ?>clases.php" class="nav-link">
+            <li class="nav-item <?php echo ($currentPage == 'materias.php') ? 'active' : ''; ?>">
+                <a href="<?php echo $baseUrl; ?>materias/materias.php" class="nav-link">
                     <span class="nav-icon"><i class="bi bi-book"></i></span>
-                    <span class="nav-label">Clases</span>
+                    <span class="nav-label">Materias</span>
                 </a>
-                <span class="nav-tooltip">Clases</span>
+                <span class="nav-tooltip">Materias</span>
             </li>
             <li class="nav-item <?php echo ($currentPage == 'horarios.php') ? 'active' : ''; ?>">
-                <a href="<?php echo $baseUrl; ?>horarios.php" class="nav-link">
+                <a href="<?php echo $baseUrl; ?>horarios/horarios.php" class="nav-link">
                     <span class="nav-icon"><i class="bi bi-calendar3"></i></span>
                     <span class="nav-label">Horarios</span>
                 </a>

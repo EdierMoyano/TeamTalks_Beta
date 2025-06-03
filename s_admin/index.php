@@ -26,9 +26,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             
             // Consulta CORREGIDA - Usando parámetro nombrado correctamente
             $query = "SELECT u.id, u.nombres, u.apellidos, u.correo, u.contraseña, r.id_rol, r.rol
-                      FROM usuarios u
-                      JOIN roles r ON u.id_rol = r.id_rol
-                      WHERE u.correo = :correo AND r.id_rol = 1";
+                    FROM usuarios u
+                    JOIN roles r ON u.id_rol = r.id_rol
+                    WHERE u.correo = :correo AND r.id_rol = 1";
 
             
             $stmt = $conn->prepare($query);
