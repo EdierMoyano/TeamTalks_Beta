@@ -7,11 +7,11 @@
 
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-    integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw=="
-    crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0">
+
 
   <style>
     body {
@@ -20,27 +20,33 @@
     }
     
     .main-content {
-      margin-left: 5px;
+      margin-left: 250px;
       transition: margin-left 0.4s ease;
     }
 
+    
+    body.sidebar-collapsed .main-content {
+    margin-left: 100px; /* ajusta según el ancho del sidebar colapsado */
+}
+
+
     .card-clase {
-      width: 90%; /* Reduce el ancho de las tarjetas */
-      margin: 0 auto; /* Centra las tarjetas */
+      width: 90%;
+      margin: 0 auto;
       transition: transform 0.2s, box-shadow 0.2s;
     }
 
     .card-clase img {
-      height: 150px; /* Ajusta la altura de las imágenes */
-      object-fit: cover; /* Asegura que las imágenes se ajusten al espacio */
+      height: 150px;
+      object-fit: cover;
     }
 
     .card-clase .card-body {
-      font-size: 0.9rem; /* Reduce el tamaño del texto */
+      font-size: 0.9rem;
     }
 
     .card-clase .card-title {
-      font-size: 1rem; /* Reduce el tamaño del título */
+      font-size: 1rem;
     }
 
     .card-clase:hover {
@@ -53,16 +59,16 @@
     }
 
     .btn-blue-dark {
-  background-color:rgb(14, 74, 134); /* Azul oscuro */
-  border-color:rgb(14, 74, 134);
-  color: white;
-}
+      background-color: rgb(14, 74, 134);
+      border-color: rgb(14, 74, 134);
+      color: white;
+    }
 
-.btn-blue-dark:hover {
-  background-color:rgb(23, 101, 180); /* Azul aún más oscuro al pasar el mouse */
-  border-color:rgb(23, 101, 180);
-  color: white;
-}
+    .btn-blue-dark:hover {
+      background-color: rgb(23, 101, 180);
+      border-color: rgb(23, 101, 180);
+      color: white;
+    }
 
     @media (max-width: 768px) {
       .sidebar {
@@ -77,102 +83,33 @@
     }
   </style>
 </head>
-<body>
+<body class="sidebar-collapsed">
 
 <?php include '../includes/design/header.php'; ?><br><br>
 
+<?php include '../includes/design/sidebar.php'; ?>
+
+
 <main class="main-content">
   <div class="container-fluid">
-    <form class="d-flex mb-4" role="search">
-      <input class="form-control me-2" type="search" placeholder="Buscar" aria-label="Search"/> 
-      <button class="btn btn-blue-dark" type="submit">
+    <form class="d-flex mb-4" role="search" style="max-width: 1000px; margin: 0 auto;">
+      <input class="form-control me-2" type="search" placeholder="Buscar" aria-label="Search" style="font-size: 0.9rem; height: 40px;"/>
+      <button class="btn btn-blue-dark" type="submit" style="height: 40px; padding: 0 12px;">
         <i class="bi bi-search"></i>
-      </button> 
-    </form> 
+      </button>
+    </form>
     <br>
 
     <div class="row" id="contenedor-foros">
-      <!-- Tarjetas de foros se insertarán aquí -->
+      <!-- Aquí se insertan los foros dinámicamente -->
     </div>
   </div>
 </main>
 
 <script>
-  document.addEventListener("DOMContentLoaded", function () {
-    const ITEMS_POR_PAGINA = 6;
-    let forosTotales = [];
-    let paginaActual = 1;
-
-    const contenedor = document.getElementById("contenedor-foros");
-    const paginacion = document.createElement("div");
-    paginacion.className = "d-flex justify-content-center mt-4";
-    contenedor.parentNode.appendChild(paginacion);
-
-    function renderizarPagina(pagina) {
-      contenedor.innerHTML = "";
-
-      const inicio = (pagina - 1) * ITEMS_POR_PAGINA;
-      const fin = inicio + ITEMS_POR_PAGINA;
-      const forosPagina = forosTotales.slice(inicio, fin);
-
-      forosPagina.forEach(foro => {
-        const col = document.createElement("div");
-        col.className = "col-md-4 mb-4";
-
-        const card = document.createElement("div");
-        card.className = "card card-clase h-100";
-
-        card.innerHTML = `
-          <img src="${foro.imagen}" class="card-img-top" alt="Imagen de ${foro.nombre_foro}">
-          <div class="card-body">
-            <h5 class="card-title">${foro.nombre_foro}</h5>
-            <p class="card-text"><strong>Profesor:</strong> ${foro.profesor}</p>
-            <p class="card-text">${foro.descripcion}</p>
-          </div>
-          <div class="card-footer bg-transparent border-top-0">
-            <a href="ver_foro.php?id=${foro.id_foro}" class="btn btn-blue-dark w-100">Ingresar al Foro</a>
-          </div>
-        `;
-
-        col.appendChild(card);
-        contenedor.appendChild(col);
-      });
-
-      renderizarControles(forosTotales.length);
-    }
-
-    function renderizarControles(totalItems) {
-      const totalPaginas = Math.ceil(totalItems / ITEMS_POR_PAGINA);
-      paginacion.innerHTML = "";
-
-      for (let i = 1; i <= totalPaginas; i++) {
-        const btn = document.createElement("button");
-        btn.textContent = i;
-        btn.className = `btn mx-1 ${i === paginaActual ? 'btn-blue-dark' : 'btn-outline-secondary'}`;
-        btn.addEventListener("click", () => {
-          paginaActual = i;
-          renderizarPagina(paginaActual);
-        });
-        paginacion.appendChild(btn);
-      }
-    }
-
-    fetch("api/foros_cla.php")
-      .then(res => res.json())
-      .then(foros => {
-        forosTotales = foros;
-        if (forosTotales.length === 0) {
-          contenedor.innerHTML = "<p>No hay foros disponibles.</p>";
-          return;
-        }
-        renderizarPagina(paginaActual);
-      })
-      .catch(err => {
-        console.error("Error al cargar foros:", err);
-        contenedor.innerHTML = "<p>Error al cargar los foros.</p>";
-      });
-  });
+  window.ID_USER = <?php echo json_encode($_SESSION['documento']); ?>;
 </script>
+<script src="../js/foros.js"></script>
 
 </body>
 </html>

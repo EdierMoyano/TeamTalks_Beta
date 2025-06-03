@@ -140,7 +140,8 @@ $lastname = $_SESSION['apellidos'] ?? 'Apellidos';
 
                     </li>
                     <!-- Menú para usuarios autenticados -->
-                    <li class="nav-item"><a class="l nav-link text-white" href="index.php" style="position:relative; right: 15px; top:25px">Inicio</a></li>
+                    <li class="nav-item"><a class="l nav-link text-white" href="../aprendiz/index.php" style="position:relative; right: 15px; top:25px">Mis Clases</a></li>
+                    <li class="nav-item"><a class="l nav-link text-white" href="../aprendiz/foros.php" style="position:relative; right: 15px; top:25px">Foros</a></li>
 
 
                     <li class="nav-item dropdown profile">
