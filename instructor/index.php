@@ -12,8 +12,8 @@ $id_instructor = $_SESSION['documento'];
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Teamtalks</title>
-    <link rel="stylesheet" href="../styles/style_side.css" />
-    <link rel="icon" href="../assets/img/icon2.png" />
+    <link rel="stylesheet" href="<?= BASE_URL ?>/styles/style_side.css" />
+    <link rel="icon" href="<?= BASE_URL ?>/assets/img/icon2.png" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0"/>
     <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"
@@ -96,7 +96,7 @@ $id_instructor = $_SESSION['documento'];
             <i class="bi bi-search"></i>
           </button>
 
-          <input id="buscarficha" class="form-control me-2" type="search" placeholder="Buscar ficha" aria-label="Search" style="width: 800px;"/>
+          <input id="buscarficha" class="form-control me-2" type="search" placeholder="Buscar por ficha o nombre de formación" aria-label="Search" style="width: 800px;"/>
         </form>
       </div>
     </nav><br>
@@ -114,7 +114,6 @@ $id_instructor = $_SESSION['documento'];
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
       <div class="modal-header text-white" style="background-color: #0E4A86;">
-        <h5 class="modal-title" id="modalDetallesFichaLabel">Detalles de la Ficha</h5>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
       </div>
       <div class="modal-body" id="contenido-modal-detalles">
@@ -132,6 +131,9 @@ $id_instructor = $_SESSION['documento'];
     const query = document.getElementById('buscarficha').value.trim();
     const xhr = new XMLHttpRequest();
     xhr.open('GET', 'ajax/buscar_fichas.php?q=' + encodeURIComponent(query) + '&page=' + page, true);
+    xhr.onloadstart = function () {
+    document.getElementById('resultadoFichas').innerHTML = '<div class="text-center"><span class="spinner-border"></span> Cargando...</div>';
+  };
     xhr.onload = function () {
       if (xhr.status === 200) {
         document.getElementById('resultadoFichas').innerHTML = xhr.responseText;

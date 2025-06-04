@@ -39,14 +39,38 @@ $conex = $conexion->connect();
             height: 45px;
         }
 
-        input[type="text"][inputmode="numeric"] {
-            -moz-appearance: textfield;
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
         }
-        input[type="text"][inputmode="numeric"]::-webkit-inner-spin-button,
-        input[type="text"][inputmode="numeric"]::-webkit-outer-spin-button {
-            -webkit-appearance: none;
-            margin: 0;
+
+        input[type=number] {
+        -moz-appearance: textfield;
         }
+
+
+        .login {
+            color: white;
+            background-color: #0E4A86;
+        }
+        .login:hover {
+            color: white;
+            background-color:rgb(8, 45, 82);
+        }
+
+        .back {
+            color: #0E4A86;
+            background-color: white;
+            border-color: #0E4A86;
+        }
+
+        .back:hover {
+            color: white;
+            background-color:rgb(8, 45, 82);
+
+        }
+
     </style>
     
 </head>
@@ -103,8 +127,8 @@ $conex = $conexion->connect();
                             </div>
 
                             <div class="d-flex justify-content-between">
-                                <a href="../index.php" class="btn btn-secondary">Regresar</a>
-                                <button type="submit" class="btn btn-primary" name="submit">Iniciar sesión</button>
+                                <a href="../index.php" class="back btn">Regresar</a>
+                                <button type="submit" class="login btn" name="submit">Iniciar sesión</button>
                             </div>
 
                         </form>
