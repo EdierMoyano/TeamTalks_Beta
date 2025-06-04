@@ -34,8 +34,8 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/teamtalks/conexion/init.php';
             <i class="bi bi-chevron-down submenu-arrow" style="position: relative; top: 0px; left: 0px; color: black;"></i>
           </a>
           <ul class="submenu">
-            <li><a href="<?= BASE_URL ?>/instructor/index.php" class="nav-link small">Gerente</a></li>
-            <li><a href="<?= BASE_URL ?>/instructor/transversales.php" class="nav-link small">Transversales</a></li>
+            <li><a href="<?= BASE_URL ?>/instructor/index.php" class="nav-link small"><i class="side bi bi-briefcase-fill"></i>Gerente</a></li>
+            <li><a href="<?= BASE_URL ?>/instructor/transversales.php" class="nav-link small"><i class="side bi bi-arrow-left-right"></i>Transversales</a></li>
           </ul>
         </li>
 
@@ -52,7 +52,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/teamtalks/conexion/init.php';
             <span class="nav-label">Foros</span>
           </a>
         </li>
-        
+
       <?php endif; ?>
 
       <!-- Solo para Aprendiz (rol 4) -->
@@ -70,12 +70,10 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/teamtalks/conexion/init.php';
         </li>
       <?php endif; ?>
 
-      
+
 
     </ul>
   </nav>
 </aside>
 
 <script src="<?= BASE_URL ?>/js/side_bar.js"></script>
-
-

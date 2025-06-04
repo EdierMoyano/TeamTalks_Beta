@@ -139,31 +139,8 @@ $conex = $conexion->connect();
     </div>
 
     <!-- Scripts -->
-    <script>
-        function showpass() {
-            const passw = document.getElementById("password");
-            const iconshow = document.getElementById("showpass");
-            if (passw.type === "password") {
-                passw.type = "text";
-                iconshow.classList.replace("bx-show", "bx-hide");
-            } else {
-                passw.type = "password";
-                iconshow.classList.replace("bx-hide", "bx-show");
-            }
-        }
+    <script src="jslogin.js"></script>
 
-        // Validación para el campo numérico
-        document.addEventListener('DOMContentLoaded', function() {
-            const documentoInput = document.getElementById('documentId');
-            
-            documentoInput.addEventListener('keypress', function(e) {
-                // Permitir solo números
-                if (!/\d/.test(String.fromCharCode(e.keyCode))) {
-                    e.preventDefault();
-                }
-            });
-        });
-    </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

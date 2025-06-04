@@ -27,14 +27,13 @@ if ($q === '') {
         ";
     $stmt = $conex->prepare($sql);
     $stmt->execute(['id' => $id_instructor]);
-    
+
     $fichas = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     // Contar total para paginación
     $total = $conex->prepare("SELECT COUNT(*) FROM materia_ficha WHERE id_instructor = :id");
     $total->execute(['id' => $id_instructor]);
     $total_pages = ceil($total->fetchColumn() / $limit);
-
 } else {
     // Búsqueda sin paginación
     $sql = "
@@ -54,39 +53,50 @@ if ($q === '') {
         'id' => $id_instructor,
         'q' => "%$q%"
     ]);
-    
+
     $fichas = $stmt->fetchAll(PDO::FETCH_ASSOC);
     $total_pages = 0; // No hay paginación en búsqueda
 }
 
-// Generar HTML
-if (count($fichas) > 0) {
-    foreach ($fichas as $ficha) {
-        echo '
-        <div class="col-md-4">
-          <div class="card shadow bg-light h-100" style="width: 320px;">
-            <div class="card-body">
-              <h5 class="card-title"> ' . htmlspecialchars($ficha['nombre_materia']) . '</h5>
-              <p class="card-text">
-                <strong>Ficha:</strong> ' . htmlspecialchars($ficha['ficha_materia']) . '<br />
-                <strong>Formación:</strong> '. htmlspecialchars($ficha['nombre_formacion']) . '
-              </p>
-            </div>
-          </div>
-        </div>';
-    }
-
-    // Solo mostrar paginación si no estás buscando
-    if ($q === '' && $total_pages > 1) {
-        echo '<div class="d-flex justify-content-center mt-4"><nav><ul class="pagination">';
-        for ($i = 1; $i <= $total_pages; $i++) {
-            echo '<li class="page-item ' . ($i == $page ? 'active' : '') . '">
-                    <a class="page-link" href="#" onclick="buscarFicha(' . $i . ')">' . $i . '</a>
-                  </li>';
-        }
-        echo '</ul></nav></div>';
-    }
-} else {
-    echo '<div class="col-12 text-center"><p>No se encontraron coincidencias.</p></div>';
-}
 ?>
+
+<?php if (count($fichas) > 0): ?>
+    <?php foreach ($fichas as $ficha): ?>
+        <div class="col-md-4">
+            <div class="card shadow bg-light" style="width: 320px; height: 200px">
+                <div class="card-body">
+                    <h5 class="card-title"><?= htmlspecialchars($ficha['nombre_materia']) ?></h5>
+                    <p class="card-text">
+                        <strong>Ficha:</strong> <?= htmlspecialchars($ficha['ficha_materia']) ?><br />
+                        <strong>Formación:</strong> <?= htmlspecialchars($ficha['nombre_formacion']) ?><br />
+                    <div class="d-flex justify-content-around mt-2">
+                        <button class="fichas btn btn-detalles" data-id="<?= $ficha['ficha_materia'] ?>">Detalles</button>
+                        <a href="mod/ver_aprendices.php?id_ficha=<?= $ficha['ficha_materia'] ?>">
+                            <button class="fichas btn btn-detalles">Aprendices</button>
+                        </a>
+                    </div>
+                    </p>
+                </div>
+            </div>
+        </div>
+    <?php endforeach; ?>
+
+    <?php if ($q === '' && $total_pages > 1): ?>
+        <div class="d-flex justify-content-center mt-4">
+            <nav>
+                <ul class="pagination">
+                    <?php for ($i = 1; $i <= $total_pages; $i++): ?>
+                        <li class="page-item <?= ($i == $page ? 'active' : '') ?>">
+                            <a class="page-link" href="#" onclick="buscarFicha(<?= $i ?>)"><?= $i ?></a>
+                        </li>
+                    <?php endfor; ?>
+                </ul>
+            </nav>
+        </div>
+    <?php endif; ?>
+
+<?php else: ?>
+    <div class="col-12 text-center">
+        <p>No se encontraron coincidencias.</p>
+    </div>
+<?php endif; ?>
