@@ -111,7 +111,7 @@
   </div>
 </main>
 
-<script src="../js/buscador.js"></script>
+<script src="../js/clases.js"></script>
 
 </body>
 </html>

@@ -4,6 +4,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/teamtalks/conexion/init.php';
 
 ?>
 
+<link rel="stylesheet" href="<?= BASE_URL ?>/styles/style_side.css">
 
 <aside class="sidebar collapsed" style="height: 620px;">
   <!-- Sidebar header -->
@@ -72,6 +73,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/teamtalks/conexion/init.php';
             <li><a href="index.php" class="nav-link small"><i class="bi bi-journal-bookmark-fill" style="position: relative; top: 0px; left: 0px; color: black;"></i>Actividades</a></li>
             <li><a href="transversales.php" class="nav-link small"><i class="bi bi-card-checklist" style="position: relative; top: 0px; left: 0px; color: black;"></i>Calificaciones</a></li>
           </ul>
+          
         </li>
       <?php endif; ?>
 
@@ -82,4 +84,5 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/teamtalks/conexion/init.php';
 </aside>
 
 <script src="<?= BASE_URL ?>/js/side_bar.js"></script>
+
 

@@ -1,6 +1,20 @@
 <?php
 header('Content-Type: application/json');
 
+/*
+ * API: guardar_respuesta.php
+ * Descripción:
+ * Recibe una petición POST en formato JSON para guardar una respuesta en un foro.
+ * Inserta la respuesta en la tabla 'respuesta_foro' con el id del tema, la descripción,
+ * la fecha y el usuario que responde.
+ * 
+ * Campos requeridos en el JSON de entrada:
+ * - id_tema_foro: ID del tema del foro al que se responde.
+ * - descripcion: Texto de la respuesta.
+ * - id_user: ID del usuario que responde.
+ */
+
+// Configuración de la base de datos
 $host = 'localhost';
 $db = 'teamtalks';
 $user = 'root';
@@ -34,6 +48,7 @@ try {
     $id_user = $input['id_user'];
     $fecha = date('Y-m-d H:i:s');
 
+    // Insertar la respuesta en la base de datos
     $sql = "INSERT INTO respuesta_foro (id_tema_foro, descripcion, fecha_respuesta, id_user)
             VALUES (:id_tema_foro, :descripcion, :fecha_respuesta, :id_user)";
 
@@ -45,7 +60,9 @@ try {
         ':id_user' => $id_user
     ]);
 
+    // Respuesta exitosa
     echo json_encode(['success' => true]);
 } catch (PDOException $e) {
+    // Manejo de errores de conexión o consulta
     echo json_encode(['error' => 'Error al guardar la respuesta: ' . $e->getMessage()]);
 }

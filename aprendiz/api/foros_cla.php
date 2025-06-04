@@ -1,6 +1,22 @@
 <?php
 header('Content-Type: application/json');
 
+/*
+ * API: foros_cla.php
+ * Descripción:
+ * Obtiene la información de los foros de clase, incluyendo los temas y respuestas asociadas.
+ * Devuelve una estructura jerárquica: Foro → Temas → Respuestas.
+ * 
+ * Tablas involucradas:
+ * - foros: Información general del foro.
+ * - materia_ficha: Relaciona materias, instructores y fichas.
+ * - materias: Nombres de las materias.
+ * - usuarios: Datos de instructores, creadores de temas y aprendices que responden.
+ * - fichas: Números de ficha.
+ * - temas_foro: Temas creados dentro de un foro.
+ * - respuesta_foro: Respuestas a los temas del foro.
+ */
+
 $host = 'localhost';
 $db = 'teamtalks';
 $user = 'root';
@@ -14,8 +30,10 @@ $options = [
 ];
 
 try {
+    // Conexión a la base de datos
     $pdo = new PDO($dsn, $user, $pass, $options);
 
+    // Consulta SQL para obtener foros, temas y respuestas relacionados a clases
     $sql = "SELECT 
                 f.id_foro,
                 f.fecha_foro,
@@ -54,10 +72,12 @@ try {
 
     $foros = [];
 
+    // Procesamiento de los resultados para estructurarlos jerárquicamente
     foreach ($rows as $row) {
         $foro_id = $row['id_foro'];
         $tema_id = $row['id_tema_foro'];
 
+        // Si el foro aún no está en el array, se agrega
         if (!isset($foros[$foro_id])) {
             $foros[$foro_id] = [
                 'id_foro' => $foro_id,
@@ -66,11 +86,13 @@ try {
                 'nombre_clase' => $row['nombre_clase'],
                 'nombre_profesor' => $row['nombre_profesor'],
                 'numero_fichas' => $row['numero_fichas'],
+                // Imagen simulada para la clase
                 'imagen' => "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSLlPxXwu6GBz2YNT0kRZhPElAeyZArGF2evQ&s",
                 'temas' => []
             ];
         }
 
+        // Si el tema aún no está en el foro, se agrega
         if ($tema_id && !isset($foros[$foro_id]['temas'][$tema_id])) {
             $foros[$foro_id]['temas'][$tema_id] = [
                 'id_tema_foro' => $tema_id,
@@ -82,6 +104,7 @@ try {
             ];
         }
 
+        // Si hay respuesta, se agrega al tema correspondiente
         if (!empty($row['id_respuesta_foro']) && $tema_id) {
             $foros[$foro_id]['temas'][$tema_id]['respuestas'][] = [
                 'id_respuesta_foro' => $row['id_respuesta_foro'],
@@ -92,12 +115,16 @@ try {
         }
     }
 
+    // Reindexar los arrays para que sean numéricos y más fáciles de manejar en el frontend
     $foros = array_values(array_map(function ($foro) {
         $foro['temas'] = array_values($foro['temas']);
         return $foro;
     }, $foros));
 
+    // Devolver la respuesta en formato JSON
     echo json_encode($foros, JSON_UNESCAPED_UNICODE);
+
 } catch (PDOException $e) {
+    // Manejo de errores de conexión o consulta
     echo json_encode(['error' => 'Error de conexión o consulta: ' . $e->getMessage()]);
 }
