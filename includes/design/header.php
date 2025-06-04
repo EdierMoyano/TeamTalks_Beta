@@ -18,6 +18,8 @@ $lastname = $_SESSION['apellidos'] ?? 'Apellidos';
     }
 
     .boton {
+        position: relative;
+        left: 20px;
         color: #0E4A86;
         background-color: white;
         border: none;
@@ -115,7 +117,7 @@ $lastname = $_SESSION['apellidos'] ?? 'Apellidos';
     <nav class="navbar navbar-expand-lg" style="background-color: #0E4A86;">
         <div class="container">
             <!-- Logo -->
-            <a class="navbar-brand" href="<?php echo $usuario_logueado ? 'index.php' : 'index.php'; ?>">
+            <a class="navbar-brand" href="<?= BASE_URL ?> <?php echo $usuario_logueado ? '/instructor/index.php' : '/instructor/index.php'; ?>">
                 <img src="<?= BASE_URL ?>/assets/img/logo.png" alt="Logo de la Empresa" style="height: 100px;">
             </a>
 
@@ -140,8 +142,7 @@ $lastname = $_SESSION['apellidos'] ?? 'Apellidos';
 
                     </li>
                     <!-- Menú para usuarios autenticados -->
-                    <li class="nav-item"><a class="l nav-link text-white" href="../aprendiz/index.php" style="position:relative; right: 15px; top:25px">Mis Clases</a></li>
-                    <li class="nav-item"><a class="l nav-link text-white" href="../aprendiz/foros.php" style="position:relative; right: 15px; top:25px">Foros</a></li>
+                    <li class="nav-item"><a class="l nav-link text-white" href="<?= BASE_URL ?> /instructor/index.php" style="position:relative; right: 15px; top:25px">Inicio</a></li>
 
 
                     <li class="nav-item dropdown profile">
@@ -165,3 +166,39 @@ $lastname = $_SESSION['apellidos'] ?? 'Apellidos';
         </div>
     </nav>
 </header>
+<?php if ($usuario_logueado): ?>
+<script>
+  (function(){
+    const timeoutInSeconds = <?= $timeout ?? 480 ?>; // Tiempo de inactividad en segundos
+    const timeoutMillis = timeoutInSeconds * 1000; // Tiempo en milisegundos
+    let timeoutId;
+
+    function cerrarSesion() {
+      fetch('<?= BASE_URL ?>/includes/exit.php')
+        .then(() => {
+          alert('Tu sesión ha expirado por inactividad.');
+          window.location.href = '<?= BASE_URL ?>/login/login.php';
+        })
+        .catch(() => {
+          // Si no logra salir, al menos redirige
+          window.location.href = '<?= BASE_URL ?>/login/login.php';
+        });
+    }
+
+    function resetTimer() {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(cerrarSesion, timeoutMillis);
+    }
+
+    // Escuchar cualquier actividad del usuario
+    ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'].forEach(evt => {
+      window.addEventListener(evt, resetTimer, true);
+    });
+
+    // Iniciar el temporizador
+    resetTimer();
+  })();
+</script>
+<?php endif; ?>
+
+

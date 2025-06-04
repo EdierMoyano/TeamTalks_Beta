@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Contactanos</title>
-    <link rel="icon" href="../styles/icon2.png">
+    <link rel="icon" href="assets/img/icon2.png">
     <!-- CSS de Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
@@ -44,7 +44,7 @@
                         <textarea class="form-control" id="mensaje" rows="5" placeholder="Escribe tu mensaje aquí"></textarea>
                     </div>
 
-                    <button type="submit" class="btn btn-primary w-100">Enviar</button>
+                    <button type="submit" class="btn btn w-100" style="background-color:#0E4A86; color: white;" >Enviar</button>
                 </form>
             </div>
 

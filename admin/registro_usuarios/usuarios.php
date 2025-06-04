@@ -982,6 +982,7 @@ try {
             $('#id_ficha').val('').trigger('change'); // Limpiar select2 también
         });
     });
+    
     </script>
 </body>
 </html>

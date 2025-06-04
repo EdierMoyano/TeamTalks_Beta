@@ -1,5 +1,5 @@
 <?php
-require_once $_SERVER['DOCUMENT_ROOT'] . '/teamtalks/conexion/init.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/teamtalks/conexion/init.php'; // Carga todo: rutas, conexión, sesión
 
 if (isset($_POST['submit'])) {
     $documento = $_POST['documento']; 

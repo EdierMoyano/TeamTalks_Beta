@@ -2,8 +2,6 @@
 require_once $_SERVER['DOCUMENT_ROOT'] . '/teamtalks/conexion/init.php';
 include 'session.php';
 
-
-
 // Obtener el ID de la ficha desde la URL, asegurándose de que sea un entero
 $id_ficha = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 
@@ -34,49 +32,54 @@ $ficha = $stmt->fetch(PDO::FETCH_ASSOC);
 
 
 // Si se encuentra la ficha, mostrar los datos en una tabla para el modal
-if ($ficha) {
-    echo "
-    <div class='container-fluid'>
-        <table class='table table-bordered table-hover'>
-            <tbody>
-                <tr>
-                    <th scope='row'>Número de ficha</th>
-                    <td>{$ficha['id_ficha']}</td>
-                </tr>
-                <tr>
-                    <th scope='row'>Nombre de la formación</th>
-                    <td>{$ficha['nombre_formacion']}</td>
-                </tr>
-                <tr>
-                    <th scope='row'>Ambiente</th>
-                    <td>{$ficha['id_ambiente']}</td>
-                </tr>
-                <tr>
-                    <th scope='row'>Instructor gerente</th>
-                    <td>{$ficha['nom_instru']} {$ficha['ape_instru']}</td>
-                </tr>
-                <tr>
-                    <th scope='row'>Jornada</th>
-                    <td>{$ficha['jornada']}</td>
-                </tr>
-                <tr>
-                    <th scope='row'>Tipo de ficha</th>
-                    <td>{$ficha['tipo_ficha']}</td>
-                </tr>
-                <tr>
-                    <th scope='row'>Tipo de formación</th>
-                    <td>{$ficha['tipo_formacion']}</td>
-                </tr>
-                <tr>
-                    <th scope='row'>Trimestre</th>
-                    <td>{$ficha['id_trimestre']}</td>
-                </tr>
-            </tbody>
-        </table>
+if ($ficha): ?>
+    <div class="card shadow-sm border-0">
+        <div class="card-header text-white d-flex justify-content-between align-items-center" style="background-color: #0E4A86;">
+            <h5 class="mb-0">📘 Detalles de la Ficha</h5>
+            <span class="badge bg-light" style="color: #0E4A86">Ficha #<?= htmlspecialchars($ficha['id_ficha']) ?></span>
+        </div>
+        <div class="card-body">
+            <div class="mb-3">
+                <h6 class="text-muted">Nombre del Programa</h6>
+                <p class="fs-5 fw-semibold"><?= htmlspecialchars($ficha['nombre_formacion']) ?></p>
+            </div>
+
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <h6 class="text-muted mb-1">Ambiente</h6>
+                    <span class="badge bg-primary"><?= htmlspecialchars($ficha['id_ambiente']) ?></span>
+                </div>
+                <div class="col-md-6">
+                    <h6 class="text-muted mb-1">Trimestre</h6>
+                    <span class="badge bg-secondary"><?= htmlspecialchars($ficha['id_trimestre']) ?></span>
+                </div>
+            </div>
+
+            <hr>
+
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <h6 class="text-muted mb-1">Instructor Gerente</h6>
+                    <p class="mb-0"><?= htmlspecialchars($ficha['nom_instru'] . ' ' . $ficha['ape_instru']) ?></p>
+                </div>
+                <div class="col-md-6">
+                    <h6 class="text-muted mb-1">Jornada</h6>
+                    <span class="badge bg-primary"><?= htmlspecialchars($ficha['jornada']) ?></span>
+                </div>
+            </div>
+
+            <div class="row g-3 mt-3">
+                <div class="col-md-6">
+                    <h6 class="text-muted mb-1">Tipo de Ficha</h6>
+                    <span class="badge bg-secondary"><?= htmlspecialchars($ficha['tipo_ficha']) ?></span>
+                </div>
+                <div class="col-md-6">
+                    <h6 class="text-muted mb-1">Tipo de Formación</h6>
+                    <span class="badge" style="background-color: #0E4A86;"><?= htmlspecialchars($ficha['tipo_formacion']) ?></span>
+                </div>
+            </div>
+        </div>
     </div>
-    ";
-} else {
-     // Si no se encuentra la ficha, mostrar un mensaje de advertencia
-    echo "<div class='alert alert-warning'>No se encontraron detalles.</div>";
-}
-?>
+<?php else: ?>
+    <div class="alert alert-warning">No se encontraron detalles de la ficha.</div>
+<?php endif; ?>

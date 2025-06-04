@@ -113,7 +113,7 @@ try {
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end">
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="../logout.php">Cerrar Sesión</a></li>
+                            <li><a class="dropdown-item" href="../includes/exit.php">Cerrar Sesión</a></li>
                         </ul>
                     </li>
                 </ul>

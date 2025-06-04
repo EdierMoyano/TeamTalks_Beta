@@ -12,14 +12,14 @@
                 <h5 class="mb-4 font-weight-bold text-primary text-white">Soporte</h5>
                 <hr class="text-white mb-4">
                 <p>
-                    <a href="soporte.php" class="l text-white">Contacta Soporte Tecnico</a>
+                    <a href="soporte.php" class=" text-white"><strong>Contacta Soporte Tecnico</strong></a>
                 </p>
             </div>
-            <div class="col-md-2 col-lg-2 col-xl-2 mx-auto mt-3">
+            <div class="col-md-2 col-lg-2 col-xl-3 mx-auto mt-3">
                 <h5 class="mb-4 font-weight-bold text-primary text-white">Reportes</h5>
                 <hr class="text-white mb-4">
                 <p>
-                    <a href="reportes.php" class="l text-white">Contacta Realizar Reportes</a>
+                    <a href="reportes.php" class=" text-white"><strong>Contacta Realizar Reportes</strong></a>
                 </p>
                 
             </div>
@@ -32,7 +32,9 @@
                 </p>
                 <p>
                     <li class="fas fa-envelope me-3 text-white"></li>
-                    <span style="color: white !important;">teamtalks39@gmail.com</span>
+                    <a href="mailto:teamtalks39@gmail.com">
+                        <span style="color: white !important;"><strong>teamtalks39@gmail.com</strong></span>
+                    </a>
                 </p>
                 <p>
                     <li class="fas fa-phone me-3 text-white"></li>
@@ -43,9 +45,8 @@
             <hr class="text-white mb-4">
             <div class="text-center mb-2">
                 <p>
-                    <span style="color: white !important;">Copyright, Todos los derechos reservados</span>
-                    <a href="#"><strong class="text-primary">Test</strong>
-                    </a>
+                    <span style="color: white !important;">&copy; 2025 <strong>TeamTalks</strong>. Todos los drechos reservados</span>
+                    
                 </p>
             </div>
             <div class="text-center">
