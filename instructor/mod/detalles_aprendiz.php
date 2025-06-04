@@ -26,7 +26,7 @@ if ($data): ?>
     <div class="card shadow-sm border-0">
         <div class="card-header text-white d-flex justify-content-between align-items-center" style="background-color: #0E4A86">
             <h5 class="mb-0">📋 Detalles del Aprendiz</h5>
-            <span class="badge bg-light text-primary">ID: <?= htmlspecialchars($data['id']) ?></span>
+            <span class="badge bg-light" style="color: #0E4A86;">ID: <?= htmlspecialchars($data['id']) ?></span>
         </div>
         <div class="card-body">
             <div class="mb-3">
@@ -50,22 +50,30 @@ if ($data): ?>
             <div class="row">
                 <div class="col-md-6 mb-3">
                     <h6 class="text-muted mb-1">Ficha</h6>
-                    <span class="badge bg-success fs-6"><?= htmlspecialchars($data['ficha']) ?></span>
+                    <span class="badge bg-primary fs-6"><?= htmlspecialchars($data['ficha']) ?></span>
                 </div>
                 <div class="col-md-6 mb-3">
                     <h6 class="text-muted mb-1">Tipo de Ficha</h6>
-                    <span class="badge bg-info text-dark fs-6"><?= htmlspecialchars($data['tipo_ficha']) ?></span>
+                    <span class="badge bg-secondary fs-6"><?= htmlspecialchars($data['tipo_ficha']) ?></span>
                 </div>
             </div>
 
-            <div class="mb-3">
-                <h6 class="text-muted mb-1">Formación</h6>
-                <p class="mb-0 fw-medium"><?= htmlspecialchars($data['formacion']) ?></p>
-            </div>
+            <div class="row">
+                <div class="container">
+                    <div class="mb-3">
+                        <h6 class="text-muted mb-1">Formación</h6>
+                        <p class="mb-0 fw-medium"><?= htmlspecialchars($data['formacion']) ?></p>
+                    </div>
 
-            <div class="mb-3">
-                <h6 class="text-muted mb-1">Tipo de Formación</h6>
-                <span class="badge bg-secondary"><?= htmlspecialchars($data['tipo_formacion']) ?></span>
+                    <div class="mb-3">
+                        <h6 class="text-muted mb-1">Tipo de Formación</h6>
+                        <span class="badge fs-6" style="background-color: #0E4A86;"><?= htmlspecialchars($data['tipo_formacion']) ?></span>
+                    </div>
+                </div>
+                
+                <div class="container">
+                    
+                </div>
             </div>
         </div>
     </div>

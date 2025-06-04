@@ -42,10 +42,34 @@ $conex = $conexion->connect();
         input::-webkit-outer-spin-button,
         input::-webkit-inner-spin-button {
         -webkit-appearance: none;
-        margin: 0;
+        margin: 0;
         }
-    input[type=number] {
-    -moz-appearance: textfield;}
+
+        input[type=number] {
+        -moz-appearance: textfield;
+        }
+
+
+        .login {
+            color: white;
+            background-color: #0E4A86;
+        }
+        .login:hover {
+            color: white;
+            background-color:rgb(8, 45, 82);
+        }
+
+        .back {
+            color: #0E4A86;
+            background-color: white;
+            border-color: #0E4A86;
+        }
+
+        .back:hover {
+            color: white;
+            background-color:rgb(8, 45, 82);
+
+        }
 
     </style>
     
@@ -103,8 +127,8 @@ $conex = $conexion->connect();
                             </div>
 
                             <div class="d-flex justify-content-between">
-                                <a href="../index.php" class="btn btn-secondary">Regresar</a>
-                                <button type="submit" class="btn btn-primary" name="submit">Iniciar sesión</button>
+                                <a href="../index.php" class="back btn">Regresar</a>
+                                <button type="submit" class="login btn" name="submit">Iniciar sesión</button>
                             </div>
 
                         </form>
@@ -114,10 +138,32 @@ $conex = $conexion->connect();
         </div>
     </div>
 
+    <!-- Scripts -->
+    <script>
+        function showpass() {
+            const passw = document.getElementById("password");
+            const iconshow = document.getElementById("showpass");
+            if (passw.type === "password") {
+                passw.type = "text";
+                iconshow.classList.replace("bx-show", "bx-hide");
+            } else {
+                passw.type = "password";
+                iconshow.classList.replace("bx-hide", "bx-show");
+            }
+        }
 
+        // Validación para el campo numérico
+        document.addEventListener('DOMContentLoaded', function() {
+            const documentoInput = document.getElementById('documentId');
+            
+            documentoInput.addEventListener('keypress', function(e) {
+                // Permitir solo números
+                if (!/\d/.test(String.fromCharCode(e.keyCode))) {
+                    e.preventDefault();
+                }
+            });
+        });
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="./jslogin.js"></script>
-
-
 </body>
 </html>

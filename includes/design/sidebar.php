@@ -41,15 +41,9 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/teamtalks/conexion/init.php';
 
 
         <li class="nav-item">
-          <a href="#" class="nav-link">
+          <a href="<?= BASE_URL ?>/instructor/actividades.php" class="nav-link">
             <i class="side bi bi-backpack-fill"></i>
             <span class="nav-label">Actividades</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a href="#" class="nav-link">
-            <i class="side bi bi-mortarboard-fill"></i>
-            <span class="nav-label">Aprendices</span>
           </a>
         </li>
         <li class="nav-item">
