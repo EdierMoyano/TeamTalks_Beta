@@ -26,7 +26,6 @@ if ($q === '') {
     $total = $conex->prepare("SELECT COUNT(*) FROM fichas WHERE id_instructor = :id");
     $total->execute(['id' => $id_instructor]);
     $total_pages = ceil($total->fetchColumn() / $limit);
-
 } else {
     // Búsqueda por número de ficha o nombre de formación (sin paginación)
     $sql = "
@@ -56,12 +55,12 @@ if ($q === '') {
                     <h5 class="card-title">Ficha: <?= htmlspecialchars($ficha['id_ficha']) ?></h5>
                     <p class="card-text">
                         <strong>Formación:</strong> <?= htmlspecialchars($ficha['nombre_formacion']) ?><br />
-                        <div class="d-flex justify-content-around mt-2">
-                            <button class="fichas btn btn-detalles" data-id="<?= $ficha['id_ficha'] ?>">Detalles</button>
-                            <a href="mod/ver_aprendices.php?id_ficha=<?= $ficha['id_ficha'] ?>">
-                                <button class="fichas btn btn-detalles">Aprendices</button>
-                            </a>
-                        </div>
+                    <div class="d-flex justify-content-around mt-2">
+                        <button class="fichas btn btn-detalles" data-id="<?= $ficha['id_ficha'] ?>">Detalles</button>
+                        <a href="mod/ver_aprendices.php?id_ficha=<?= $ficha['id_ficha'] ?>">
+                            <button class="fichas btn btn-detalles">Aprendices</button>
+                        </a>
+                    </div>
                     </p>
                 </div>
             </div>

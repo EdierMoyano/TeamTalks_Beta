@@ -29,12 +29,12 @@ $id_instructor = $_SESSION['documento'];
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css"/>
     <style>
       .main-content {
-        margin-left: 260px;
+        margin-left: 280px;
         transition: margin-left 0.4s ease;
       }
 
       body.sidebar-collapsed .main-content {
-        margin-left: 160px;
+        margin-left: 200px;
       }
 
     .but {
@@ -88,7 +88,7 @@ $id_instructor = $_SESSION['documento'];
   <?php include '../includes/design/sidebar.php'; ?>
 
 
-  <div class="main-content container">
+  <div class="main-content">
     <nav class="d-flex justify-content-center navbar" style="position: relative; right: 50px;">
       <div class="">
         <form class="d-flex" role="search">
@@ -101,10 +101,10 @@ $id_instructor = $_SESSION['documento'];
       </div>
     </nav><br>
     
-    <h2 class="text-center mb-4">Ficha(s) que Gestionas</h2>
+    <h2 class="text-center mb-4" style="position:relative; right: 45px;">Ficha(s) que Gestionas</h2>
 
     <!-- Contenedor de resultados -->
-    <div id="resultadoFichas" class="row g-3">
+    <div id="resultadoFichas" class="row g-3" style="margin-right: 0px">
       
     </div><br>
 
