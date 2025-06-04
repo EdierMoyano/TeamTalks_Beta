@@ -4,6 +4,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/teamtalks/conexion/init.php';
 
 ?>
 
+<link rel="stylesheet" href="<?= BASE_URL ?>/styles/style_side.css">
 
 <aside class="sidebar collapsed" style="height: 620px;">
   <!-- Sidebar header -->
@@ -56,12 +57,16 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/teamtalks/conexion/init.php';
 
       <!-- Solo para Aprendiz (rol 4) -->
       <?php if ($_SESSION['rol'] == 4): ?>
-        <li class="nav-item">
-          <a href="#" class="nav-link">
-            <i class="nav-icon material-symbols-rounded">group</i>
-            <span class="nav-label">Team</span>
+        <li class="nav-item has-submenu">
+          <a href="#" class="nav-link submenu-toggle">
+            <i class="bi bi-mortarboard" style="position: relative; top: 0px; left: 0px; color: black;"></i>
+            <span class="nav-label">Clases Inscritas</span>
+            <i class="bi bi-chevron-down submenu-arrow" style="position: relative; top: 0px; left: 0px; color: black;"></i>
           </a>
-          <span class="nav-tooltip">Team</span>
+          <ul class="submenu">
+            <li><a href="index.php" class="nav-link small"><i class="bi bi-journal-bookmark-fill" style="position: relative; top: 0px; left: 0px; color: black;"></i>Actividades</a></li>
+            <li><a href="transversales.php" class="nav-link small"><i class="bi bi-card-checklist" style="position: relative; top: 0px; left: 0px; color: black;"></i>Calificaciones</a></li>
+          </ul>
         </li>
       <?php endif; ?>
 
@@ -72,4 +77,5 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/teamtalks/conexion/init.php';
 </aside>
 
 <script src="<?= BASE_URL ?>/js/side_bar.js"></script>
+
 
