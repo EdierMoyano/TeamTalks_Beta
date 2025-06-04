@@ -19,17 +19,22 @@ $modalType = '';
 $db = new Database();
 $conexion = $db->connect();
 
+// Verificar que la conexión sea válida
+if (!$conexion || !($conexion instanceof PDO)) {
+    die("Error: No se pudo establecer la conexión a la base de datos");
+}
+
 // Procesar creación de horario
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['action'] == 'crear_horario') {
     $nombre_horario = trim($_POST['nombre_horario']);
     $descripcion = trim($_POST['descripcion']);
     $id_jornada = $_POST['id_jornada'] ?? null;
-    $id_ficha = $_POST['id_ficha'] ?? null;
-    $id_trimestre = $_POST['id_trimestre'] ?? null;
+    $id_ficha = !empty($_POST['id_ficha']) ? $_POST['id_ficha'] : null;
+    $id_trimestre = !empty($_POST['id_trimestre']) ? $_POST['id_trimestre'] : null;
     $dias_configuracion = $_POST['dias_config'] ?? [];
 
-    if (empty($nombre_horario) || empty($id_jornada) || empty($id_ficha) || empty($id_trimestre)) {
-        $alertMessage = "El nombre del horario, jornada, ficha y trimestre son obligatorios";
+    if (empty($nombre_horario) || empty($id_jornada)) {
+        $alertMessage = "El nombre del horario y la jornada son obligatorios";
         $alertType = "danger";
     } elseif (empty($dias_configuracion)) {
         $alertMessage = "Debe configurar al menos un día de la semana";
@@ -38,72 +43,91 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
         try {
             $conexion->beginTransaction();
 
-            // Crear el horario principal
-            $stmt = $conexion->prepare("
-                INSERT INTO horario (nombre_horario, descripcion, id_jornada, id_ficha, id_trimestre, id_estado, fecha_creacion) 
-                VALUES (:nombre_horario, :descripcion, :id_jornada, :id_ficha, :id_trimestre, 1, CURRENT_DATE)
-            ");
-            $stmt->bindParam(':nombre_horario', $nombre_horario, PDO::PARAM_STR);
-            $stmt->bindParam(':descripcion', $descripcion, PDO::PARAM_STR);
-            $stmt->bindParam(':id_jornada', $id_jornada, PDO::PARAM_INT);
-            $stmt->bindParam(':id_ficha', $id_ficha, PDO::PARAM_INT);
-            $stmt->bindParam(':id_trimestre', $id_trimestre, PDO::PARAM_INT);
-            $stmt->execute();
-            
-            $id_horario = $conexion->lastInsertId();
-
-            // Procesar configuración de cada día
+            // Procesar configuración de cada día usando la estructura real de la tabla horario
             foreach ($dias_configuracion as $dia => $config) {
                 if (!isset($config['activo']) || $config['activo'] != '1') continue;
                 
                 $tipo_dia = $config['tipo']; // 'un_bloque' o 'dos_bloques'
                 
                 if ($tipo_dia == 'un_bloque') {
-                    // Un solo bloque
+                    // Un solo bloque - crear un registro en horario
                     if (!empty($config['materia_bloque1'])) {
                         $stmt = $conexion->prepare("
-                            INSERT INTO horario_materia_dia (id_horario, dia_semana, id_materia_ficha, bloque_numero, hora_inicio, hora_fin) 
-                            VALUES (:id_horario, :dia_semana, :id_materia_ficha, 1, :hora_inicio, :hora_fin)
+                            INSERT INTO horario (
+                                id_materia_ficha, dia_semana, hora_inicio, hora_fin, 
+                                id_jornada, nombre_horario, descripcion, id_estado, 
+                                fecha_creacion, id_ficha, id_trimestre
+                            ) VALUES (
+                                :id_materia_ficha, :dia_semana, :hora_inicio, :hora_fin,
+                                :id_jornada, :nombre_horario, :descripcion, 1,
+                                CURDATE(), :id_ficha, :id_trimestre
+                            )
                         ");
-                        $stmt->bindParam(':id_horario', $id_horario, PDO::PARAM_INT);
-                        $stmt->bindParam(':dia_semana', $dia, PDO::PARAM_STR);
-                        $stmt->bindParam(':id_materia_ficha', $config['materia_bloque1'], PDO::PARAM_INT);
-                        $stmt->bindParam(':hora_inicio', $config['hora_inicio_bloque1'], PDO::PARAM_STR);
-                        $stmt->bindParam(':hora_fin', $config['hora_fin_bloque1'], PDO::PARAM_STR);
+                        $stmt->bindValue(':id_materia_ficha', $config['materia_bloque1'], PDO::PARAM_INT);
+                        $stmt->bindValue(':dia_semana', $dia, PDO::PARAM_STR);
+                        $stmt->bindValue(':hora_inicio', $config['hora_inicio_bloque1'], PDO::PARAM_STR);
+                        $stmt->bindValue(':hora_fin', $config['hora_fin_bloque1'], PDO::PARAM_STR);
+                        $stmt->bindValue(':id_jornada', $id_jornada, PDO::PARAM_INT);
+                        $stmt->bindValue(':nombre_horario', $nombre_horario, PDO::PARAM_STR);
+                        $stmt->bindValue(':descripcion', $descripcion, PDO::PARAM_STR);
+                        $stmt->bindValue(':id_ficha', $id_ficha, $id_ficha ? PDO::PARAM_INT : PDO::PARAM_NULL);
+                        $stmt->bindValue(':id_trimestre', $id_trimestre, $id_trimestre ? PDO::PARAM_INT : PDO::PARAM_NULL);
                         $stmt->execute();
                     }
                 } else {
-                    // Dos bloques
+                    // Dos bloques - crear dos registros en horario
                     if (!empty($config['materia_bloque1'])) {
                         $stmt = $conexion->prepare("
-                            INSERT INTO horario_materia_dia (id_horario, dia_semana, id_materia_ficha, bloque_numero, hora_inicio, hora_fin) 
-                            VALUES (:id_horario, :dia_semana, :id_materia_ficha, 1, :hora_inicio, :hora_fin)
+                            INSERT INTO horario (
+                                id_materia_ficha, dia_semana, hora_inicio, hora_fin, 
+                                id_jornada, nombre_horario, descripcion, id_estado, 
+                                fecha_creacion, id_ficha, id_trimestre
+                            ) VALUES (
+                                :id_materia_ficha, :dia_semana, :hora_inicio, :hora_fin,
+                                :id_jornada, :nombre_horario, :descripcion, 1,
+                                CURDATE(), :id_ficha, :id_trimestre
+                            )
                         ");
-                        $stmt->bindParam(':id_horario', $id_horario, PDO::PARAM_INT);
-                        $stmt->bindParam(':dia_semana', $dia, PDO::PARAM_STR);
-                        $stmt->bindParam(':id_materia_ficha', $config['materia_bloque1'], PDO::PARAM_INT);
-                        $stmt->bindParam(':hora_inicio', $config['hora_inicio_bloque1'], PDO::PARAM_STR);
-                        $stmt->bindParam(':hora_fin', $config['hora_fin_bloque1'], PDO::PARAM_STR);
+                        $stmt->bindValue(':id_materia_ficha', $config['materia_bloque1'], PDO::PARAM_INT);
+                        $stmt->bindValue(':dia_semana', $dia, PDO::PARAM_STR);
+                        $stmt->bindValue(':hora_inicio', $config['hora_inicio_bloque1'], PDO::PARAM_STR);
+                        $stmt->bindValue(':hora_fin', $config['hora_fin_bloque1'], PDO::PARAM_STR);
+                        $stmt->bindValue(':id_jornada', $id_jornada, PDO::PARAM_INT);
+                        $stmt->bindValue(':nombre_horario', $nombre_horario, PDO::PARAM_STR);
+                        $stmt->bindValue(':descripcion', $descripcion, PDO::PARAM_STR);
+                        $stmt->bindValue(':id_ficha', $id_ficha, $id_ficha ? PDO::PARAM_INT : PDO::PARAM_NULL);
+                        $stmt->bindValue(':id_trimestre', $id_trimestre, $id_trimestre ? PDO::PARAM_INT : PDO::PARAM_NULL);
                         $stmt->execute();
                     }
                     
                     if (!empty($config['materia_bloque2'])) {
                         $stmt = $conexion->prepare("
-                            INSERT INTO horario_materia_dia (id_horario, dia_semana, id_materia_ficha, bloque_numero, hora_inicio, hora_fin) 
-                            VALUES (:id_horario, :dia_semana, :id_materia_ficha, 2, :hora_inicio, :hora_fin)
+                            INSERT INTO horario (
+                                id_materia_ficha, dia_semana, hora_inicio, hora_fin, 
+                                id_jornada, nombre_horario, descripcion, id_estado, 
+                                fecha_creacion, id_ficha, id_trimestre
+                            ) VALUES (
+                                :id_materia_ficha, :dia_semana, :hora_inicio, :hora_fin,
+                                :id_jornada, :nombre_horario, :descripcion, 1,
+                                CURDATE(), :id_ficha, :id_trimestre
+                            )
                         ");
-                        $stmt->bindParam(':id_horario', $id_horario, PDO::PARAM_INT);
-                        $stmt->bindParam(':dia_semana', $dia, PDO::PARAM_STR);
-                        $stmt->bindParam(':id_materia_ficha', $config['materia_bloque2'], PDO::PARAM_INT);
-                        $stmt->bindParam(':hora_inicio', $config['hora_inicio_bloque2'], PDO::PARAM_STR);
-                        $stmt->bindParam(':hora_fin', $config['hora_fin_bloque2'], PDO::PARAM_STR);
+                        $stmt->bindValue(':id_materia_ficha', $config['materia_bloque2'], PDO::PARAM_INT);
+                        $stmt->bindValue(':dia_semana', $dia, PDO::PARAM_STR);
+                        $stmt->bindValue(':hora_inicio', $config['hora_inicio_bloque2'], PDO::PARAM_STR);
+                        $stmt->bindValue(':hora_fin', $config['hora_fin_bloque2'], PDO::PARAM_STR);
+                        $stmt->bindValue(':id_jornada', $id_jornada, PDO::PARAM_INT);
+                        $stmt->bindValue(':nombre_horario', $nombre_horario, PDO::PARAM_STR);
+                        $stmt->bindValue(':descripcion', $descripcion, PDO::PARAM_STR);
+                        $stmt->bindValue(':id_ficha', $id_ficha, $id_ficha ? PDO::PARAM_INT : PDO::PARAM_NULL);
+                        $stmt->bindValue(':id_trimestre', $id_trimestre, $id_trimestre ? PDO::PARAM_INT : PDO::PARAM_NULL);
                         $stmt->execute();
                     }
                 }
             }
 
             $conexion->commit();
-            $alertMessage = "Horario creado y asignado correctamente";
+            $alertMessage = "Horario creado correctamente";
             $alertType = "success";
 
         } catch (PDOException $e) {
@@ -116,27 +140,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
 
 // Procesar eliminación de horario
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['action'] == 'eliminar') {
-    $id_horario = $_POST['id_horario'];
+    $nombre_horario = $_POST['nombre_horario'];
     
     try {
-        $conexion->beginTransaction();
+        $stmt = $conexion->prepare("DELETE FROM horario WHERE nombre_horario = ?");
+        $stmt->execute([$nombre_horario]);
         
-        // Eliminar detalles del horario
-        $stmt = $conexion->prepare("DELETE FROM horario_materia_dia WHERE id_horario = :id_horario");
-        $stmt->bindParam(':id_horario', $id_horario, PDO::PARAM_INT);
-        $stmt->execute();
-        
-        // Eliminar horario principal
-        $stmt = $conexion->prepare("DELETE FROM horario WHERE id_horario = :id_horario");
-        $stmt->bindParam(':id_horario', $id_horario, PDO::PARAM_INT);
-        $stmt->execute();
-        
-        $conexion->commit();
         $alertMessage = "Horario eliminado correctamente";
         $alertType = "success";
         
     } catch (PDOException $e) {
-        $conexion->rollBack();
         $alertMessage = "Error: " . $e->getMessage();
         $alertType = "danger";
     }
@@ -146,13 +159,34 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
 $jornadas = [];
 try {
     $stmt = $conexion->query("SELECT * FROM jornada ORDER BY id_jornada");
-    $jornadas = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    if ($stmt) {
+        $jornadas = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 } catch (PDOException $e) {
     $alertMessage = "Error al cargar jornadas: " . $e->getMessage();
     $alertType = "danger";
 }
 
-// Obtener bloques de horario por jornada (sin descansos)
+// Obtener trimestres
+$trimestres = [];
+try {
+    $stmt = $conexion->query("SELECT * FROM trimestre ORDER BY id_trimestre");
+    if ($stmt) {
+        $trimestres = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+} catch (PDOException $e) {
+    // Si hay error, crear trimestres por defecto
+    $trimestres = [
+        ['id_trimestre' => 1, 'trimestre' => 'Primer Trimestre'],
+        ['id_trimestre' => 2, 'trimestre' => 'Segundo Trimestre'],
+        ['id_trimestre' => 3, 'trimestre' => 'Tercer Trimestre'],
+        ['id_trimestre' => 4, 'trimestre' => 'Cuarto Trimestre'],
+        ['id_trimestre' => 5, 'trimestre' => 'Quinto Trimestre'],
+        ['id_trimestre' => 6, 'trimestre' => 'Sexto Trimestre']
+    ];
+}
+
+// Obtener bloques de horario por jornada (si existen)
 $bloques_por_jornada = [];
 try {
     $stmt = $conexion->query("
@@ -161,33 +195,63 @@ try {
         JOIN jornada j ON bh.id_jornada = j.id_jornada 
         ORDER BY bh.id_jornada, bh.orden_bloque
     ");
-    $bloques = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    
-    foreach ($bloques as $bloque) {
-        $bloques_por_jornada[$bloque['id_jornada']][] = $bloque;
+    if ($stmt) {
+        $bloques = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        foreach ($bloques as $bloque) {
+            $bloques_por_jornada[$bloque['id_jornada']][] = $bloque;
+        }
     }
 } catch (PDOException $e) {
-    $alertMessage = "Error al cargar bloques: " . $e->getMessage();
-    $alertType = "danger";
+    // Si no existe la tabla bloques_horario, crear bloques por defecto
+    $bloques_por_jornada = [
+        1 => [
+            ['nombre_bloque' => '1er Bloque', 'hora_inicio' => '06:00:00', 'hora_fin' => '09:00:00'],
+            ['nombre_bloque' => '2do Bloque', 'hora_inicio' => '09:30:00', 'hora_fin' => '12:30:00']
+        ],
+        2 => [
+            ['nombre_bloque' => '1er Bloque', 'hora_inicio' => '12:30:00', 'hora_fin' => '15:30:00'],
+            ['nombre_bloque' => '2do Bloque', 'hora_inicio' => '16:00:00', 'hora_fin' => '19:00:00']
+        ],
+        3 => [
+            ['nombre_bloque' => '1er Bloque', 'hora_inicio' => '18:00:00', 'hora_fin' => '21:00:00'],
+            ['nombre_bloque' => '2do Bloque', 'hora_inicio' => '21:30:00', 'hora_fin' => '22:30:00']
+        ]
+    ];
 }
 
-// Obtener días de la semana
-$dias_semana = [];
-try {
-    $stmt = $conexion->query("SELECT * FROM dias_semana WHERE orden_dia <= 6 ORDER BY orden_dia");
-    $dias_semana = $stmt->fetchAll(PDO::FETCH_ASSOC);
-} catch (PDOException $e) {
-    $alertMessage = "Error al cargar días: " . $e->getMessage();
-    $alertType = "danger";
-}
+// Obtener días de la semana (crear array por defecto)
+$dias_semana = [
+    ['id_dia' => 1, 'nombre_dia' => 'Lunes', 'orden_dia' => 1],
+    ['id_dia' => 2, 'nombre_dia' => 'Martes', 'orden_dia' => 2],
+    ['id_dia' => 3, 'nombre_dia' => 'Miércoles', 'orden_dia' => 3],
+    ['id_dia' => 4, 'nombre_dia' => 'Jueves', 'orden_dia' => 4],
+    ['id_dia' => 5, 'nombre_dia' => 'Viernes', 'orden_dia' => 5],
+    ['id_dia' => 6, 'nombre_dia' => 'Sábado', 'orden_dia' => 6]
+];
 
-// Obtener horarios existentes - CONSULTA SIMPLIFICADA
+// Obtener horarios existentes - CONSULTA CORREGIDA para la estructura real
 $horarios = [];
 try {
-    // Primero obtener horarios que tienen nombre_horario (los nuevos)
     $stmt = $conexion->query("
-        SELECT h.id_horario, h.nombre_horario, h.descripcion, h.fecha_creacion,
-               j.jornada, e.estado, h.id_ficha, fo.nombre as nombre_programa, t.trimestre
+        SELECT 
+            h.nombre_horario,
+            h.descripcion,
+            h.fecha_creacion,
+            j.jornada,
+            e.estado,
+            h.id_ficha,
+            fo.nombre as nombre_programa,
+            t.trimestre,
+            COUNT(DISTINCT h.dia_semana) as dias_configurados,
+            GROUP_CONCAT(DISTINCT h.dia_semana ORDER BY 
+                CASE h.dia_semana 
+                    WHEN 'Lunes' THEN 1 
+                    WHEN 'Martes' THEN 2 
+                    WHEN 'Miércoles' THEN 3 
+                    WHEN 'Jueves' THEN 4 
+                    WHEN 'Viernes' THEN 5 
+                    WHEN 'Sábado' THEN 6 
+                END SEPARATOR ', ') as dias_semana
         FROM horario h
         LEFT JOIN jornada j ON h.id_jornada = j.id_jornada
         LEFT JOIN estado e ON h.id_estado = e.id_estado
@@ -195,30 +259,12 @@ try {
         LEFT JOIN formacion fo ON f.id_formacion = fo.id_formacion
         LEFT JOIN trimestre t ON h.id_trimestre = t.id_trimestre
         WHERE h.nombre_horario IS NOT NULL AND h.nombre_horario != ''
-        ORDER BY h.id_horario DESC
+        GROUP BY h.nombre_horario, h.descripcion, h.fecha_creacion, j.jornada, e.estado, h.id_ficha, fo.nombre, t.trimestre
+        ORDER BY h.fecha_creacion DESC
     ");
-    $horarios_nuevos = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    
-    // Luego obtener horarios antiguos (sin nombre_horario)
-    $stmt = $conexion->query("
-        SELECT h.id_horario, 
-               CONCAT('Horario #', h.id_horario) as nombre_horario,
-               'Horario creado anteriormente' as descripcion,
-               NULL as fecha_creacion,
-               'No definida' as jornada,
-               'Activo' as estado,
-               h.id_materia_ficha,
-               'Ver detalles' as nombre_programa,
-               'No definido' as trimestre
-        FROM horario h
-        WHERE (h.nombre_horario IS NULL OR h.nombre_horario = '')
-        ORDER BY h.id_horario DESC
-    ");
-    $horarios_antiguos = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    
-    // Combinar ambos arrays
-    $horarios = array_merge($horarios_nuevos, $horarios_antiguos);
-    
+    if ($stmt) {
+        $horarios = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 } catch (PDOException $e) {
     $alertMessage = "Error al cargar horarios: " . $e->getMessage();
     $alertType = "danger";
@@ -248,9 +294,6 @@ try {
             margin: 2px 0;
             font-size: 0.9em;
         }
-        .tipo-badge {
-            font-size: 0.8em;
-        }
         .info-sistema {
             background: #e7f3ff;
             border: 1px solid #b3d9ff;
@@ -268,6 +311,47 @@ try {
             .horarios-grid {
                 grid-template-columns: 1fr;
             }
+        }
+        
+        .ficha-dropdown {
+            position: relative;
+        }
+        
+        .lista-fichas {
+            position: absolute;
+            top: auto;
+            bottom: 100%;
+            left: 0;
+            right: 0;
+            z-index: 1050;
+            background: white;
+            border: 1px solid #ced4da;
+            border-radius: 0.375rem;
+            max-height: 200px;
+            overflow-y: auto;
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+            transform: translateY(-5px);
+        }
+        
+        .ficha-item {
+            padding: 8px 12px;
+            cursor: pointer;
+            border-bottom: 1px solid #eee;
+            font-size: 0.9em;
+        }
+        
+        .ficha-item:hover {
+            background-color: #e9ecef;
+        }
+        
+        .ficha-numero {
+            font-weight: bold;
+            color: #0d6efd;
+        }
+        
+        .ficha-programa {
+            color: #6c757d;
+            font-size: 0.85em;
         }
     </style>
 </head>
@@ -305,7 +389,6 @@ try {
                                     <ul class="mb-0">
                                         <li><strong>Un Bloque:</strong> Una materia por día (3 horas continuas)</li>
                                         <li><strong>Dos Bloques:</strong> Dos materias por día (descanso automático de 30 min)</li>
-                                        <li><strong>Jornada Completa:</strong> Una materia durante toda la jornada (6.5 horas aprox)</li>
                                     </ul>
                                 </div>
                                 <div class="col-md-6">
@@ -364,12 +447,12 @@ try {
                         <table class="table table-hover" id="tablaHorarios">
                             <thead>
                                 <tr>
-                                    <th>ID</th>
                                     <th>Nombre</th>
                                     <th>Ficha</th>
                                     <th>Programa</th>
                                     <th>Trimestre</th>
                                     <th>Jornada</th>
+                                    <th>Días</th>
                                     <th>Estado</th>
                                     <th>Acciones</th>
                                 </tr>
@@ -382,7 +465,6 @@ try {
                                 <?php else: ?>
                                     <?php foreach ($horarios as $horario): ?>
                                         <tr>
-                                            <td><?php echo htmlspecialchars($horario['id_horario']); ?></td>
                                             <td><strong><?php echo htmlspecialchars($horario['nombre_horario']); ?></strong></td>
                                             <td>
                                                 <?php if ($horario['id_ficha']): ?>
@@ -407,6 +489,9 @@ try {
                                                 </span>
                                             </td>
                                             <td>
+                                                <small><?php echo htmlspecialchars($horario['dias_semana'] ?? 'No definidos'); ?></small>
+                                            </td>
+                                            <td>
                                                 <span class="badge <?php echo ($horario['estado'] == 'Activo') ? 'bg-success' : 'bg-danger'; ?>">
                                                     <?php echo htmlspecialchars($horario['estado'] ?? 'Activo'); ?>
                                                 </span>
@@ -414,13 +499,12 @@ try {
                                             <td>
                                                 <div class="btn-group" role="group">
                                                     <button class="btn btn-sm btn-outline-info view-horario" 
-                                                            data-id="<?php echo $horario['id_horario']; ?>"
+                                                            data-nombre="<?php echo htmlspecialchars($horario['nombre_horario']); ?>"
                                                             data-bs-toggle="tooltip" 
                                                             title="Ver detalle del horario">
                                                         <i class="bi bi-eye"></i>
                                                     </button>
                                                     <button class="btn btn-sm btn-outline-danger delete-horario" 
-                                                            data-id="<?php echo $horario['id_horario']; ?>"
                                                             data-nombre="<?php echo htmlspecialchars($horario['nombre_horario']); ?>"
                                                             data-bs-toggle="tooltip" 
                                                             title="Eliminar horario">
@@ -443,179 +527,181 @@ try {
     </div>
 
     <!-- Modal para crear horario -->
-<div class="modal fade" id="horarioModal" tabindex="-1" aria-labelledby="horarioModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-xl">
-        <div class="modal-content">
-            <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title" id="horarioModalLabel">Crear Nuevo Horario SENA</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <form action="" method="POST" id="horarioForm">
-                <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
-                    <input type="hidden" name="action" value="crear_horario">
-                    
-                    <!-- Información básica -->
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label for="nombre_horario" class="form-label">Nombre del Horario *</label>
-                            <input type="text" class="form-control" id="nombre_horario" name="nombre_horario" required 
-                                   placeholder="Ej: Horario Mañana ADSI">
+    <div class="modal fade" id="horarioModal" tabindex="-1" aria-labelledby="horarioModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="horarioModalLabel">Crear Nuevo Horario SENA</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form action="" method="POST" id="horarioForm">
+                    <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
+                        <input type="hidden" name="action" value="crear_horario">
+                        
+                        <!-- Información básica -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="nombre_horario" class="form-label">Nombre del Horario *</label>
+                                <input type="text" class="form-control" id="nombre_horario" name="nombre_horario" required 
+                                       placeholder="Ej: Horario Mañana ADSI">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="id_jornada" class="form-label">Jornada *</label>
+                                <select class="form-select" id="id_jornada" name="id_jornada" required>
+                                    <option value="">Seleccione una jornada</option>
+                                    <?php foreach ($jornadas as $jornada): ?>
+                                        <option value="<?php echo $jornada['id_jornada']; ?>">
+                                            <?php echo htmlspecialchars($jornada['jornada']); ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
                         </div>
-                        <div class="col-md-6">
-                            <label for="id_jornada" class="form-label">Jornada *</label>
-                            <select class="form-select" id="id_jornada" name="id_jornada" required>
-                                <option value="">Seleccione una jornada</option>
-                                <?php foreach ($jornadas as $jornada): ?>
-                                    <option value="<?php echo $jornada['id_jornada']; ?>">
-                                        <?php echo htmlspecialchars($jornada['jornada']); ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
-                    </div>
 
-                    <!-- Asignación de ficha y trimestre -->
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label for="id_ficha" class="form-label">Ficha *</label>
-                            <select class="form-select" id="id_ficha" name="id_ficha" required>
-                                <option value="">Seleccione una ficha</option>
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label for="id_trimestre" class="form-label">Trimestre *</label>
-                            <select class="form-select" id="id_trimestre" name="id_trimestre" required disabled>
-                                <option value="">Primero seleccione una ficha</option>
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="descripcion" class="form-label">Descripción</label>
-                        <textarea class="form-control" id="descripcion" name="descripcion" rows="2" 
-                                  placeholder="Descripción opcional del horario"></textarea>
-                    </div>
-
-                    <hr>
-                    
-                    <!-- Configuración por días -->
-                    <h6>Configuración por Días</h6>
-                    <div id="dias-configuracion">
-                        <?php foreach ($dias_semana as $dia): ?>
-                            <div class="card mb-3 dia-card" data-dia="<?php echo $dia['nombre_dia']; ?>">
-                                <div class="card-header">
-                                    <div class="form-check">
-                                        <input class="form-check-input dia-checkbox" type="checkbox" 
-                                               name="dias_config[<?php echo $dia['nombre_dia']; ?>][activo]" 
-                                               value="1"
-                                               id="dia_activo_<?php echo $dia['id_dia']; ?>">
-                                        <label class="form-check-label fw-bold" for="dia_activo_<?php echo $dia['id_dia']; ?>">
-                                            <?php echo htmlspecialchars($dia['nombre_dia']); ?>
-                                        </label>
-                                    </div>
-                                </div>
-                                <div class="card-body dia-config" style="display: none;">
-                                    <div class="row mb-3">
-                                        <div class="col-md-6">
-                                            <label class="form-label">Tipo de día</label>
-                                            <div>
-                                                <div class="form-check form-check-inline">
-                                                    <input class="form-check-input tipo-dia" type="radio" 
-                                                           name="dias_config[<?php echo $dia['nombre_dia']; ?>][tipo]" 
-                                                           value="un_bloque" 
-                                                           id="<?php echo $dia['nombre_dia']; ?>_un_bloque">
-                                                    <label class="form-check-label" for="<?php echo $dia['nombre_dia']; ?>_un_bloque">
-                                                        Un Bloque
-                                                    </label>
-                                                </div>
-                                                <div class="form-check form-check-inline">
-                                                    <input class="form-check-input tipo-dia" type="radio" 
-                                                           name="dias_config[<?php echo $dia['nombre_dia']; ?>][tipo]" 
-                                                           value="dos_bloques" 
-                                                           id="<?php echo $dia['nombre_dia']; ?>_dos_bloques">
-                                                    <label class="form-check-label" for="<?php echo $dia['nombre_dia']; ?>_dos_bloques">
-                                                        Dos Bloques
-                                                    </label>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    
-                                    <!-- Configuración de bloques -->
-                                    <div class="bloques-config">
-                                        <!-- Bloque 1 -->
-                                        <div class="row mb-3 bloque-1">
-                                            <div class="col-md-4">
-                                                <label class="form-label">Materia Bloque 1</label>
-                                                <select class="form-select materia-select" 
-                                                        name="dias_config[<?php echo $dia['nombre_dia']; ?>][materia_bloque1]">
-                                                    <option value="">Seleccione materia</option>
-                                                </select>
-                                            </div>
-                                            <div class="col-md-4">
-                                                <label class="form-label">Hora Inicio</label>
-                                                <select class="form-select hora-inicio-1" 
-                                                        name="dias_config[<?php echo $dia['nombre_dia']; ?>][hora_inicio_bloque1]">
-                                                    <option value="">Seleccione hora</option>
-                                                </select>
-                                            </div>
-                                            <div class="col-md-4">
-                                                <label class="form-label">Hora Fin</label>
-                                                <select class="form-select hora-fin-1" 
-                                                        name="dias_config[<?php echo $dia['nombre_dia']; ?>][hora_fin_bloque1]">
-                                                    <option value="">Seleccione hora</option>
-                                                </select>
-                                            </div>
-                                        </div>
-                                        
-                                        <!-- Bloque 2 (solo visible si se selecciona dos bloques) -->
-                                        <div class="row mb-3 bloque-2" style="display: none;">
-                                            <div class="col-md-4">
-                                                <label class="form-label">Materia Bloque 2</label>
-                                                <select class="form-select materia-select" 
-                                                        name="dias_config[<?php echo $dia['nombre_dia']; ?>][materia_bloque2]">
-                                                    <option value="">Seleccione materia</option>
-                                                </select>
-                                            </div>
-                                            <div class="col-md-4">
-                                                <label class="form-label">Hora Inicio</label>
-                                                <select class="form-select hora-inicio-2" 
-                                                        name="dias_config[<?php echo $dia['nombre_dia']; ?>][hora_inicio_bloque2]">
-                                                    <option value="">Seleccione hora</option>
-                                                </select>
-                                            </div>
-                                            <div class="col-md-4">
-                                                <label class="form-label">Hora Fin</label>
-                                                <select class="form-select hora-fin-2" 
-                                                        name="dias_config[<?php echo $dia['nombre_dia']; ?>][hora_fin_bloque2]">
-                                                    <option value="">Seleccione hora</option>
-                                                </select>
-                                            </div>
-                                        </div>
+                        <!-- Asignación de ficha y trimestre -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="id_ficha" class="form-label">Ficha (Opcional)</label>
+                                <div class="ficha-dropdown">
+                                    <input type="text" class="form-control" id="buscar_ficha" placeholder="Buscar ficha por número o programa..." autocomplete="off">
+                                    <input type="hidden" id="id_ficha" name="id_ficha">
+                                    <div id="lista_fichas" class="lista-fichas" style="display: none;">
+                                        <!-- Las fichas se cargarán aquí -->
                                     </div>
                                 </div>
                             </div>
-                        <?php endforeach; ?>
-                    </div>
+                            <div class="col-md-6">
+                                <label for="id_trimestre" class="form-label">Trimestre (Opcional)</label>
+                                <select class="form-select" id="id_trimestre" name="id_trimestre">
+                                    <option value="">Seleccione un trimestre</option>
+                                    <?php foreach ($trimestres as $trimestre): ?>
+                                        <option value="<?php echo $trimestre['id_trimestre']; ?>">
+                                            <?php echo htmlspecialchars($trimestre['trimestre']); ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="descripcion" class="form-label">Descripción</label>
+                            <textarea class="form-control" id="descripcion" name="descripcion" rows="2" 
+                                      placeholder="Descripción opcional del horario"></textarea>
+                        </div>
 
-                    <div class="alert alert-info">
-                        <i class="bi bi-info-circle"></i> 
-                        <strong>Instrucciones:</strong>
-                        <ul class="mb-0 mt-2">
-                            <li>Seleccione primero la ficha para cargar sus materias asignadas</li>
-                            <li>Configure cada día individualmente según sus necesidades</li>
-                            <li>El descanso de 30 minutos se aplica automáticamente entre bloques</li>
-                        </ul>
+                        <hr>
+                        
+                        <!-- Configuración por días -->
+                        <h6>Configuración por Días</h6>
+                        <div id="dias-configuracion">
+                            <?php foreach ($dias_semana as $dia): ?>
+                                <div class="card mb-3 dia-card" data-dia="<?php echo $dia['nombre_dia']; ?>">
+                                    <div class="card-header">
+                                        <div class="form-check">
+                                            <input class="form-check-input dia-checkbox" type="checkbox" 
+                                                   name="dias_config[<?php echo $dia['nombre_dia']; ?>][activo]" 
+                                                   value="1"
+                                                   id="dia_activo_<?php echo $dia['id_dia']; ?>">
+                                            <label class="form-check-label fw-bold" for="dia_activo_<?php echo $dia['id_dia']; ?>">
+                                                <?php echo htmlspecialchars($dia['nombre_dia']); ?>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="card-body dia-config" style="display: none;">
+                                        <div class="row mb-3">
+                                            <div class="col-md-6">
+                                                <label class="form-label">Tipo de día</label>
+                                                <div>
+                                                    <div class="form-check form-check-inline">
+                                                        <input class="form-check-input tipo-dia" type="radio" 
+                                                               name="dias_config[<?php echo $dia['nombre_dia']; ?>][tipo]" 
+                                                               value="un_bloque" 
+                                                               id="<?php echo $dia['nombre_dia']; ?>_un_bloque">
+                                                        <label class="form-check-label" for="<?php echo $dia['nombre_dia']; ?>_un_bloque">
+                                                            Un Bloque
+                                                        </label>
+                                                    </div>
+                                                    <div class="form-check form-check-inline">
+                                                        <input class="form-check-input tipo-dia" type="radio" 
+                                                               name="dias_config[<?php echo $dia['nombre_dia']; ?>][tipo]" 
+                                                               value="dos_bloques" 
+                                                               id="<?php echo $dia['nombre_dia']; ?>_dos_bloques">
+                                                        <label class="form-check-label" for="<?php echo $dia['nombre_dia']; ?>_dos_bloques">
+                                                            Dos Bloques
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Configuración de bloques -->
+                                        <div class="bloques-config">
+                                            <!-- Bloque 1 -->
+                                            <div class="row mb-3 bloque-1">
+                                                <div class="col-md-4">
+                                                    <label class="form-label">Materia Bloque 1</label>
+                                                    <select class="form-select materia-select" 
+                                                            name="dias_config[<?php echo $dia['nombre_dia']; ?>][materia_bloque1]">
+                                                        <option value="">Seleccione materia</option>
+                                                    </select>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <label class="form-label">Hora Inicio</label>
+                                                    <input type="time" class="form-control" 
+                                                           name="dias_config[<?php echo $dia['nombre_dia']; ?>][hora_inicio_bloque1]">
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <label class="form-label">Hora Fin</label>
+                                                    <input type="time" class="form-control" 
+                                                           name="dias_config[<?php echo $dia['nombre_dia']; ?>][hora_fin_bloque1]">
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Bloque 2 (solo visible si se selecciona dos bloques) -->
+                                            <div class="row mb-3 bloque-2" style="display: none;">
+                                                <div class="col-md-4">
+                                                    <label class="form-label">Materia Bloque 2</label>
+                                                    <select class="form-select materia-select" 
+                                                            name="dias_config[<?php echo $dia['nombre_dia']; ?>][materia_bloque2]">
+                                                        <option value="">Seleccione materia</option>
+                                                    </select>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <label class="form-label">Hora Inicio</label>
+                                                    <input type="time" class="form-control" 
+                                                           name="dias_config[<?php echo $dia['nombre_dia']; ?>][hora_inicio_bloque2]">
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <label class="form-label">Hora Fin</label>
+                                                    <input type="time" class="form-control" 
+                                                           name="dias_config[<?php echo $dia['nombre_dia']; ?>][hora_fin_bloque2]">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle"></i> 
+                            <strong>Instrucciones:</strong>
+                            <ul class="mb-0 mt-2">
+                                <li>La ficha y trimestre son opcionales</li>
+                                <li>Configure cada día individualmente según sus necesidades</li>
+                                <li>Puede asignar materias específicas si selecciona una ficha</li>
+                                <li>El descanso de 30 minutos se aplica automáticamente entre bloques</li>
+                            </ul>
+                        </div>
                     </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">Crear Horario</button>
-                </div>
-            </form>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Crear Horario</button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
-</div>
 
     <!-- Modal de confirmación para eliminar -->
     <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
@@ -627,12 +713,12 @@ try {
                 </div>
                 <div class="modal-body">
                     <p>¿Está seguro que desea eliminar el horario <strong id="deleteHorarioNombre"></strong>?</p>
-                    <p class="text-muted">Esta acción no se puede deshacer.</p>
+                    <p class="text-muted">Esta acción eliminará todos los registros asociados a este horario.</p>
                 </div>
                 <div class="modal-footer">
                     <form action="" method="POST" id="deleteForm">
                         <input type="hidden" name="action" value="eliminar">
-                        <input type="hidden" name="id_horario" id="deleteIdHorario">
+                        <input type="hidden" name="nombre_horario" id="deleteNombreHorario">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                         <button type="submit" class="btn btn-danger">Eliminar</button>
                     </form>
@@ -647,6 +733,11 @@ try {
     <script src="../js/sidebard.js"></script>
 
     <script>
+    // Variables globales
+    let fichasData = [];
+    let materiasData = [];
+
+    // Paginación
     let filasPorPaginaHorarios = 6;
     let paginaActualHorarios = 1;
 
@@ -703,6 +794,103 @@ try {
         mostrarPaginaHorarios(paginaActualHorarios);
     }
 
+    // Cargar fichas al abrir el modal
+    document.getElementById('horarioModal').addEventListener('shown.bs.modal', function() {
+        cargarFichas();
+    });
+
+    // Función para cargar fichas
+    async function cargarFichas() {
+        try {
+            const response = await fetch('get_data.php?action=get_fichas');
+            if (response.ok) {
+                const data = await response.json();
+                fichasData = data;
+                mostrarTodasLasFichas();
+            }
+        } catch (error) {
+            console.error('Error cargando fichas:', error);
+        }
+    }
+
+    // Función para mostrar todas las fichas en el dropdown
+    function mostrarTodasLasFichas() {
+        const listaFichas = document.getElementById('lista_fichas');
+        listaFichas.innerHTML = '';
+        
+        fichasData.forEach(ficha => {
+            const fichaItem = document.createElement('div');
+            fichaItem.className = 'ficha-item';
+            fichaItem.innerHTML = `
+                <div class="ficha-numero">Ficha ${ficha.id_ficha}</div>
+                <div class="ficha-programa">${ficha.nombre_programa} (${ficha.tipo_formacion})</div>
+            `;
+            fichaItem.addEventListener('click', function() {
+                seleccionarFicha(ficha);
+            });
+            listaFichas.appendChild(fichaItem);
+        });
+    }
+
+    // Función para filtrar fichas
+    function filtrarFichas(termino) {
+        const listaFichas = document.getElementById('lista_fichas');
+        listaFichas.innerHTML = '';
+        
+        const fichasFiltradas = fichasData.filter(ficha => {
+            const textoFicha = `${ficha.id_ficha} ${ficha.nombre_programa} ${ficha.tipo_formacion}`.toLowerCase();
+            return textoFicha.includes(termino.toLowerCase());
+        });
+        
+        fichasFiltradas.forEach(ficha => {
+            const fichaItem = document.createElement('div');
+            fichaItem.className = 'ficha-item';
+            fichaItem.innerHTML = `
+                <div class="ficha-numero">Ficha ${ficha.id_ficha}</div>
+                <div class="ficha-programa">${ficha.nombre_programa} (${ficha.tipo_formacion})</div>
+            `;
+            fichaItem.addEventListener('click', function() {
+                seleccionarFicha(ficha);
+            });
+            listaFichas.appendChild(fichaItem);
+        });
+        
+        if (fichasFiltradas.length === 0) {
+            listaFichas.innerHTML = '<div class="ficha-item">No se encontraron fichas</div>';
+        }
+    }
+
+    // Función para seleccionar una ficha
+    function seleccionarFicha(ficha) {
+        document.getElementById('buscar_ficha').value = `Ficha ${ficha.id_ficha} - ${ficha.nombre_programa}`;
+        document.getElementById('id_ficha').value = ficha.id_ficha;
+        document.getElementById('lista_fichas').style.display = 'none';
+        cargarMaterias(ficha.id_ficha);
+    }
+
+    // Función para cargar materias de la ficha
+    async function cargarMaterias(idFicha) {
+        try {
+            const response = await fetch(`get_data.php?action=get_materias_ficha&id_ficha=${idFicha}`);
+            if (response.ok) {
+                materiasData = await response.json();
+                
+                // Actualizar todos los selects de materias
+                document.querySelectorAll('.materia-select').forEach(select => {
+                    select.innerHTML = '<option value="">Seleccione materia</option>';
+                    materiasData.forEach(materia => {
+                        select.innerHTML += `<option value="${materia.id_materia_ficha}">
+                            ${materia.materia}
+                        </option>`;
+                    });
+                });
+            }
+        } catch (error) {
+            console.error('Error cargando materias:', error);
+        }
+    }
+
+    // Event listeners
     document.addEventListener("DOMContentLoaded", function() {
         mostrarPaginaHorarios(paginaActualHorarios);
 
@@ -712,199 +900,100 @@ try {
             return new bootstrap.Tooltip(tooltipTriggerEl);
         });
 
-        // Manejar eliminación de horarios
-        const deleteButtons = document.querySelectorAll('.delete-horario');
-        deleteButtons.forEach(button => {
-            button.addEventListener('click', function() {
-                const horarioId = this.getAttribute('data-id');
-                const horarioNombre = this.getAttribute('data-nombre');
+        // Manejar el input de búsqueda de fichas
+        const buscarFicha = document.getElementById('buscar_ficha');
+        if (buscarFicha) {
+            buscarFicha.addEventListener('input', function() {
+                const termino = this.value.trim();
+                const listaFichas = document.getElementById('lista_fichas');
                 
-                document.getElementById('deleteIdHorario').value = horarioId;
+                if (termino.length > 0) {
+                    filtrarFichas(termino);
+                    listaFichas.style.display = 'block';
+                } else {
+                    mostrarTodasLasFichas();
+                    listaFichas.style.display = 'block';
+                }
+            });
+
+            // Mostrar lista al hacer focus
+            buscarFicha.addEventListener('focus', function() {
+                if (fichasData.length > 0) {
+                    document.getElementById('lista_fichas').style.display = 'block';
+                }
+            });
+        }
+
+        // Ocultar lista al hacer click fuera
+        document.addEventListener('click', function(event) {
+            const fichaDropdown = document.querySelector('.ficha-dropdown');
+            if (fichaDropdown && !fichaDropdown.contains(event.target)) {
+                document.getElementById('lista_fichas').style.display = 'none';
+            }
+        });
+
+        // Manejar activación/desactivación de días
+        document.querySelectorAll('.dia-checkbox').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const diaCard = this.closest('.dia-card');
+                const diaConfig = diaCard.querySelector('.dia-config');
+                
+                if (this.checked) {
+                    diaConfig.style.display = 'block';
+                } else {
+                    diaConfig.style.display = 'none';
+                }
+            });
+        });
+
+        // Manejar cambio de tipo de día
+        document.querySelectorAll('.tipo-dia').forEach(radio => {
+            radio.addEventListener('change', function() {
+                const diaCard = this.closest('.dia-card');
+                const bloque2 = diaCard.querySelector('.bloque-2');
+                
+                if (this.value === 'dos_bloques') {
+                    bloque2.style.display = 'block';
+                } else {
+                    bloque2.style.display = 'none';
+                }
+            });
+        });
+
+        // Manejar eliminación de horarios
+        document.addEventListener('click', function(event) {
+            if (event.target.closest('.delete-horario')) {
+                const button = event.target.closest('.delete-horario');
+                const horarioNombre = button.getAttribute('data-nombre');
+                
+                document.getElementById('deleteNombreHorario').value = horarioNombre;
                 document.getElementById('deleteHorarioNombre').textContent = horarioNombre;
                 
                 const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
                 deleteModal.show();
-            });
+            }
         });
 
         // Resetear formulario cuando se cierra el modal
         document.getElementById('horarioModal').addEventListener('hidden.bs.modal', function() {
             document.getElementById('horarioForm').reset();
-        });
-    });
-    </script>
-<script>
-// Variables globales
-let fichasData = [];
-let materiasData = [];
-let bloquesData = [];
-
-// Cargar fichas al abrir el modal
-document.getElementById('horarioModal').addEventListener('shown.bs.modal', function() {
-    cargarFichas();
-});
-
-// Función para cargar fichas
-async function cargarFichas() {
-    try {
-        const response = await fetch('get_data.php?action=get_fichas');
-        const data = await response.json();
-        
-        console.log('Fichas cargadas:', data); // Para debug
-        
-        fichasData = data;
-        
-        const selectFicha = document.getElementById('id_ficha');
-        selectFicha.innerHTML = '<option value="">Seleccione una ficha</option>';
-        
-        fichasData.forEach(ficha => {
-            selectFicha.innerHTML += `<option value="${ficha.id_ficha}">
-                ${ficha.id_ficha} - ${ficha.nombre_programa} (${ficha.tipo_formacion})
-            </option>`;
-        });
-    } catch (error) {
-        console.error('Error cargando fichas:', error);
-    }
-}
-
-// Manejar cambio de ficha
-document.getElementById('id_ficha').addEventListener('change', function() {
-    const idFicha = this.value;
-    if (idFicha) {
-        cargarTrimestres(idFicha);
-        cargarMaterias(idFicha);
-    } else {
-        document.getElementById('id_trimestre').innerHTML = '<option value="">Primero seleccione una ficha</option>';
-        document.getElementById('id_trimestre').disabled = true;
-        limpiarMaterias();
-    }
-});
-
-// Función para cargar trimestres
-async function cargarTrimestres(idFicha) {
-    try {
-        const response = await fetch(`get_data.php?action=get_trimestres&id_ficha=${idFicha}`);
-        const trimestres = await response.json();
-        
-        console.log('Trimestres cargados:', trimestres); // Para debug
-        
-        const selectTrimestre = document.getElementById('id_trimestre');
-        selectTrimestre.innerHTML = '<option value="">Seleccione un trimestre</option>';
-        selectTrimestre.disabled = false;
-        
-        trimestres.forEach(trimestre => {
-            selectTrimestre.innerHTML += `<option value="${trimestre.id_trimestre}">
-                ${trimestre.trimestre}
-            </option>`;
-        });
-    } catch (error) {
-        console.error('Error cargando trimestres:', error);
-    }
-}
-
-// Función para cargar materias de la ficha
-async function cargarMaterias(idFicha) {
-    try {
-        const response = await fetch(`get_data.php?action=get_materias_ficha&id_ficha=${idFicha}`);
-        materiasData = await response.json();
-        
-        console.log('Materias cargadas:', materiasData); // Para debug
-        
-        // Actualizar todos los selects de materias
-        document.querySelectorAll('.materia-select').forEach(select => {
-            select.innerHTML = '<option value="">Seleccione materia</option>';
-            materiasData.forEach(materia => {
-                select.innerHTML += `<option value="${materia.id_materia_ficha}">
-                    ${materia.materia}
-                </option>`;
+            document.querySelectorAll('.dia-config').forEach(config => {
+                config.style.display = 'none';
             });
-        });
-    } catch (error) {
-        console.error('Error cargando materias:', error);
-    }
-}
-
-// Manejar cambio de jornada
-document.getElementById('id_jornada').addEventListener('change', function() {
-    const idJornada = this.value;
-    if (idJornada) {
-        cargarBloques(idJornada);
-    }
-});
-
-// Función para cargar bloques de horario
-async function cargarBloques(idJornada) {
-    try {
-        const response = await fetch(`get_data.php?action=get_bloques_jornada&id_jornada=${idJornada}`);
-        bloquesData = await response.json();
-        
-        console.log('Bloques cargados:', bloquesData); // Para debug
-        
-        // Actualizar selects de horas
-        actualizarSelectsHoras();
-    } catch (error) {
-        console.error('Error cargando bloques:', error);
-    }
-}
-
-// Función para actualizar selects de horas
-function actualizarSelectsHoras() {
-    document.querySelectorAll('.hora-inicio-1, .hora-fin-1, .hora-inicio-2, .hora-fin-2').forEach(select => {
-        select.innerHTML = '<option value="">Seleccione hora</option>';
-        bloquesData.forEach(bloque => {
-            select.innerHTML += `<option value="${bloque.hora_inicio}">${bloque.hora_inicio}</option>`;
-            select.innerHTML += `<option value="${bloque.hora_fin}">${bloque.hora_fin}</option>`;
+            document.querySelectorAll('.bloque-2').forEach(bloque => {
+                bloque.style.display = 'none';
+            });
+            document.getElementById('lista_fichas').style.display = 'none';
+            limpiarMaterias();
         });
     });
-}
 
-// Manejar activación/desactivación de días
-document.querySelectorAll('.dia-checkbox').forEach(checkbox => {
-    checkbox.addEventListener('change', function() {
-        const diaCard = this.closest('.dia-card');
-        const diaConfig = diaCard.querySelector('.dia-config');
-        
-        if (this.checked) {
-            diaConfig.style.display = 'block';
-        } else {
-            diaConfig.style.display = 'none';
-        }
-    });
-});
-
-// Manejar cambio de tipo de día
-document.querySelectorAll('.tipo-dia').forEach(radio => {
-    radio.addEventListener('change', function() {
-        const diaCard = this.closest('.dia-card');
-        const bloque2 = diaCard.querySelector('.bloque-2');
-        
-        if (this.value === 'dos_bloques') {
-            bloque2.style.display = 'block';
-        } else {
-            bloque2.style.display = 'none';
-        }
-    });
-});
-
-// Función para limpiar materias
-function limpiarMaterias() {
-    document.querySelectorAll('.materia-select').forEach(select => {
-        select.innerHTML = '<option value="">Primero seleccione una ficha</option>';
-    });
-}
-
-// Resetear formulario cuando se cierra el modal
-document.getElementById('horarioModal').addEventListener('hidden.bs.modal', function() {
-    document.getElementById('horarioForm').reset();
-    document.querySelectorAll('.dia-config').forEach(config => {
-        config.style.display = 'none';
-    });
-    document.querySelectorAll('.bloque-2').forEach(bloque => {
-        bloque.style.display = 'none';
-    });
-    document.getElementById('id_trimestre').disabled = true;
-    limpiarMaterias();
-});
-</script>
+    // Función para limpiar materias
+    function limpiarMaterias() {
+        document.querySelectorAll('.materia-select').forEach(select => {
+            select.innerHTML = '<option value="">Primero seleccione una ficha</option>';
+        });
+    }
+    </script>
 </body>
 </html>
