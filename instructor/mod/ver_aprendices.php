@@ -125,7 +125,7 @@ $aprendices = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <i class="bi bi-search"></i>
           </button>
 
-          <input id="buscarficha" class="form-control me-2" type="search" placeholder="Buscar ficha" aria-label="Search" style="width: 800px;" />
+          <input id="buscarficha" class="form-control me-2" type="search" placeholder="Buscar numero de documento" aria-label="Search" style="width: 800px;" />
         </form>
       </div>
     </nav><br>

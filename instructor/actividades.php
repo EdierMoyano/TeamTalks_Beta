@@ -36,6 +36,34 @@ $id_instructor = $_SESSION['documento'];
     body.sidebar-collapsed .main-content {
       margin-left: 160px;
     }
+
+    /* Scroll estilizado solo para la columna de fichas */
+    .fichas-scroll {
+      max-height: calc(100vh - 200px);
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: #888 transparent;
+    }
+
+    /* Estilo para navegadores WebKit (Chrome, Edge, Safari) */
+    .fichas-scroll::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .fichas-scroll::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .fichas-scroll::-webkit-scrollbar-thumb {
+      background-color: #888;
+      border-radius: 10px;
+      border: 2px solid transparent;
+      background-clip: content-box;
+    }
+
+    .fichas-scroll::-webkit-scrollbar-thumb:hover {
+      background-color: #555;
+    }
   </style>
 </head>
 
@@ -44,58 +72,42 @@ $id_instructor = $_SESSION['documento'];
   <?php include 'design/sidebar.php'; ?>
 
   <div class="main-content">
-    <div class="row" style="height: 85vh;">
-      <!-- Columna izquierda: Fichas -->
-      <div class="col-md-4 scroll-area divider">
-        <h5 class="mt-3">Mis Fichas</h5>
-        <ul class="list-group" id="lista-fichas">
-          <li class="list-group-item list-group-item-action">2593846 - Transversal</li>
-          <li class="list-group-item list-group-item-action">1382937 - Gerente</li>
-          <li class="list-group-item list-group-item-action">7639382 - Transversal</li>
-          <li class="list-group-item list-group-item-action">1882721 - Gerente</li>
-          <!-- Más fichas simuladas -->
-        </ul>
-      </div>
+    <div class="row" style="margin-right: 0px">
 
-      <!-- Columna derecha: Actividades -->
-      <div class="col-md-8 position-relative scroll-area">
-        <div class="p-3" id="contenido-actividades">
-          <p class="text-muted">Aquí se encontrarán las actividades de las fichas.</p>
+      <div class="col-md-6 border-end p-3 fichas-scroll" style="max-height: 500px; overflow-y: auto;">
+        <h5 class="mb-3">Mis Fichas</h5>
+        <div id="contenedor-fichas">
+          <!-- Aquí se cargan las fichas vía AJAX -->
+          <div class="text-center text-muted">Cargando fichas...</div>
         </div>
-        <button id="crearActividadBtn" class="btn btn-primary position-absolute bottom-0 end-0 m-3" data-bs-toggle="modal" data-bs-target="#modalActividad">
-          Crear Actividad
-        </button>
       </div>
+
+      <!-- Columna derecha: Texto centrado -->
+      <div class="col-md-6 d-flex align-items-center justify-content-center text-muted">
+        <p class="text-center fs-5">Aquí se mostrarán las actividades de la ficha.</p>
+      </div>
+
     </div>
   </div>
 
-  <!-- Modal para crear actividad -->
-  <div class="modal fade" id="modalActividad" tabindex="-1" aria-labelledby="modalActividadLabel" aria-hidden="true">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <form id="formActividad">
-          <div class="modal-header">
-            <h5 class="modal-title" id="modalActividadLabel">Crear Actividad</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-          </div>
-          <div class="modal-body">
-            <div class="mb-3">
-              <label for="titulo" class="form-label">Título</label>
-              <input type="text" class="form-control" id="titulo" required />
-            </div>
-            <div class="mb-3">
-              <label for="descripcion" class="form-label">Descripción</label>
-              <textarea class="form-control" id="descripcion" rows="3" required></textarea>
-            </div>
-          </div>
-          <div class="modal-footer">
-            <button type="submit" class="btn btn-primary">Guardar</button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
 
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      fetchFichas();
+    });
+
+    function fetchFichas() {
+      fetch("ajax/fichas_actividad.php")
+        .then(response => response.text())
+        .then(html => {
+          document.getElementById("contenedor-fichas").innerHTML = html;
+        })
+        .catch(error => {
+          console.error("Error al cargar fichas:", error);
+          document.getElementById("contenedor-fichas").innerHTML = '<div class="text-danger">Error al cargar las fichas.</div>';
+        });
+    }
+  </script>
 
 </body>
 
