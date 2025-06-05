@@ -26,7 +26,7 @@
 
     
     body.sidebar-collapsed .main-content {
-    margin-left: 100px; /* ajusta según el ancho del sidebar colapsado */
+    margin-left: 100px; /* ajusta segúun el ancho del sidebar colapsado */
 }
 
 
