@@ -57,6 +57,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/teamtalks/conexion/init.php';
 
       <!-- Solo para Aprendiz (rol 4) -->
       <?php if ($_SESSION['rol'] == 4): ?>
+        <li class="nav-item"><a href="<?= BASE_URL ?>/aprendiz/index.php" class="nav-link"><i class="bi bi-book" style="position: relative; top: 0px; left: 0px; color: black;"></i><span class="nav-label">Formaciones</span></a></li>
         <li class="nav-item has-submenu">
           <a href="#" class="nav-link submenu-toggle">
             <i class="bi bi-mortarboard" style="position: relative; top: 0px; left: 0px; color: black;"></i>
@@ -64,10 +65,12 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/teamtalks/conexion/init.php';
             <i class="bi bi-chevron-down submenu-arrow" style="position: relative; top: 0px; left: 0px; color: black;"></i>
           </a>
           <ul class="submenu">
-            <li><a href="index.php" class="nav-link small"><i class="bi bi-journal-bookmark-fill" style="position: relative; top: 0px; left: 0px; color: black;"></i>Actividades</a></li>
-            <li><a href="transversales.php" class="nav-link small"><i class="bi bi-card-checklist" style="position: relative; top: 0px; left: 0px; color: black;"></i>Calificaciones</a></li>
+            <li><a href="#" class="nav-link small"><i class="bi bi-journal-bookmark-fill" style="position: relative; top: 0px; left: 0px; color: black;"></i>Actividades</a></li>
+            <li><a href="#" class="nav-link small"><i class="bi bi-card-checklist" style="position: relative; top: 0px; left: 0px; color: black;"></i>Calificaciones</a></li>
           </ul>
         </li>
+
+        <li class="nav-item"><a href="<?= BASE_URL ?>/aprendiz/foros.php" class="nav-link"><i class="side bi bi-pencil-square"></i><span class="nav-label">Foros</span></a></li>
       <?php endif; ?>
 
 
