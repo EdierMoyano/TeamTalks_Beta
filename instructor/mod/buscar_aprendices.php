@@ -48,20 +48,25 @@ if (count($aprendices) === 0) {
 } else {
   foreach ($aprendices as $aprendiz) {
     $tarjetasHTML .= '
-        <div class="col-md-5">
-          <div class="card shadow bg-light" style="background-color: white; width: 480px">
-            <div class="card-body">
-              <h5 class="card-title">' . htmlspecialchars($aprendiz['nombres']) . ' ' . htmlspecialchars($aprendiz['apellidos']) . '</h5>
-              <p class="card-text">
-                <strong>ID:</strong> ' . htmlspecialchars($aprendiz['id']) . '<br>
-                <strong>Correo:</strong> ' . htmlspecialchars($aprendiz['correo']) . '<br>
-                <strong>Teléfono:</strong> ' . htmlspecialchars($aprendiz['telefono']) . '
-                <button class="fichas btn btn-detalles" style="position: absolute; left: 320px; bottom: 35px; width: 130px " data-id="' . $aprendiz['id'] . '">Detalles Aprendiz</button>
-
-              </p>
-            </div>
+    <div class="col-md-6 col-lg-4 d-flex">
+      <div class="card shadow-sm border-0 ficha-aprendiz-card w-100">
+        <div class="card-body d-flex flex-column justify-content-between">
+          <div>
+            <h5 class="card-title mb-2" style="color: #0E4A86;">
+              <i class="bi bi-person-circle me-2"></i>' . htmlspecialchars($aprendiz['nombres']) . ' ' . htmlspecialchars($aprendiz['apellidos']) . '
+            </h5>
+            <p class="card-text text-muted small">
+              <i class="bi bi-person-badge-fill me-1"></i><strong>ID:</strong> ' . htmlspecialchars($aprendiz['id']) . '<br>
+              <i class="bi bi-envelope-fill me-1"></i><strong>Correo:</strong> ' . htmlspecialchars($aprendiz['correo']) . '<br>
+              <i class="bi bi-telephone-fill me-1"></i><strong>Teléfono:</strong> ' . htmlspecialchars($aprendiz['telefono']) . '
+            </p>
           </div>
-        </div>';
+          <button class="btn btn-detalles  mt-3 " data-id="' . $aprendiz['id'] . '">
+            <i class="bi bi-eye-fill me-1"></i> Ver detalles
+          </button>
+        </div>
+      </div>
+    </div>';
   }
 }
 

@@ -1,0 +1,58 @@
+body, html {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: hidden;
+  font-family: 'Arvo', serif;
+}
+
+.page_404 {
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  text-align: center;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.four_zero_four_bg {
+  background-image: url("error-404 team.gif");
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  width: 100%;
+  height: 420px;
+  margin: 0 auto;
+}
+
+.content_box_404 {
+  margin-top: 20px;
+}
+
+.content_box_404 h3 {
+  font-size: 28px;
+  margin-bottom: 10px;
+}
+
+.content_box_404 p {
+  font-size: 18px;
+  color: #555;
+}
+
+.link_404 {
+  display: inline-block;
+  margin-top: 15px;
+  padding: 10px 25px;
+  background-color: #207dff;
+  color: #fff !important;
+  text-decoration: none;
+  border-radius: 5px;
+  transition: background 0.3s ease;
+  border: none;
+}
+
+.link_404:hover {
+  background: #0E4A86;
+}

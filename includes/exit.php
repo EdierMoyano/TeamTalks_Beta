@@ -8,6 +8,14 @@ unset($_SESSION['nombre']);
 session_destroy();
 session_write_close();
 
-echo '<script>window.location = "../index.php"</script>';
+$motivo = $_GET['motivo'] ?? '';
+
+if ($motivo === 'acceso-denegado') {
+    header("Location: /teamtalks/includes/404/404.html");
+    exit;
+} else {
+    header("Location: /teamtalks/index.php");
+    exit;
+}
 
 ?>

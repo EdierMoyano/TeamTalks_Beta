@@ -33,6 +33,23 @@ $id_instructor = $_SESSION['documento'];
       /* ajusta según el ancho del sidebar colapsado */
     }
 
+    .ficha-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 25px rgba(0, 123, 255, 0.15);
+    }
+
+    .btn.btn-detalles {
+      background-color:rgb(255, 255, 255);
+      border: 1px solid #0E4A86;
+      color: #0E4A86;
+    }
+
+    .btn.btn-detalles:hover {
+      background-color: #e9f1ff;
+      border-color: #b6d4fe;
+      color: #0E4A86;
+    }
+
     .btn-blue-dark {
       background-color: #0E4A86;
       border-color: rgb(14, 74, 134);
@@ -83,7 +100,7 @@ $id_instructor = $_SESSION['documento'];
   <?php include 'design/sidebar.php'; ?>
 
   <div class="main-content">
-    <nav class="d-flex justify-content-center navbar" style="position: relative; right: 50px;">
+    <nav class="d-flex justify-content-center navbar">
       <div class="">
         <form class="d-flex" role="search">
           <button class="btn btn-blue-dark" type="button" style="margin-right: 10px;">
@@ -96,7 +113,7 @@ $id_instructor = $_SESSION['documento'];
       </div>
     </nav><br>
 
-    <h2 class="text-center mb-4" style="position: relative; right: 45px;">Tus transversales</h2>
+    <h2 class="text-center mb-4">Tus transversales</h2>
 
 
     <!-- Aquí se mostrarán los resultados de fichas -->
