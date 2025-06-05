@@ -6,6 +6,11 @@ if (!isset($_SESSION['documento'])) {
     exit;
 }
 
+if ($_SESSION['rol'] !== 2) {
+    header('Location: /teamtalks/includes/exit.php?motivo=acceso-denegado');
+    exit;
+}
+
 ?>
 
 

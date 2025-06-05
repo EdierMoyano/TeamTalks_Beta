@@ -63,6 +63,39 @@ $aprendices = $stmt->fetchAll(PDO::FETCH_ASSOC);
       margin-left: 160px;
     }
 
+    .ficha-aprendiz-card {
+      border-radius: 1rem;
+      background-color: #f9f9f9;
+      transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .ficha-aprendiz-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 10px 25px rgba(0, 74, 134, 0.15);
+    }
+
+    .ficha-aprendiz-card .card-title {
+      font-weight: 600;
+      font-size: 1.1rem;
+    }
+
+    .btn-detalles {
+      transition: all 0.2s ease-in-out;
+      font-weight: 500;
+      border-color: #0E4A86;
+      background-color: #0E4A86;
+      color: white;
+    }
+
+    .btn-detalles:hover {
+      color: black;
+      border-color: #0E4A86;
+    }
+
+
     .but {
       background-color: #0E4A86;
       border-color: rgb(14, 74, 134);
@@ -137,7 +170,9 @@ $aprendices = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
       <div class="d-flex justify-content-center mt-4">
         <nav>
-          <ul class="pagination" id="paginacion-aprendices"></ul>
+          <ul class="pagination" id="paginacion-aprendices">
+
+          </ul>
         </nav>
       </div>
     </div>
