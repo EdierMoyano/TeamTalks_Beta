@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Foros</title>
 
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -18,44 +19,40 @@
       background-color: #f4f4f9;
       font-family: Arial, sans-serif;
     }
-    
+
     .main-content {
       margin-left: 250px;
       transition: margin-left 0.4s ease;
     }
 
-    
+
     body.sidebar-collapsed .main-content {
-    margin-left: 100px; /* ajusta segúun el ancho del sidebar colapsado */
-}
-
-
-    .card-clase {
-      width: 90%;
-      margin: 0 auto;
-      transition: transform 0.2s, box-shadow 0.2s;
+      margin-left: 100px;
+      /* ajusta segúun el ancho del sidebar colapsado */
     }
 
-    .card-clase img {
-      height: 150px;
-      object-fit: cover;
+    .contenido-desplegable {
+      overflow: hidden;
+      height: 0;
+      transition: height 0.3s ease;
+      display: none;
     }
 
-    .card-clase .card-body {
-      font-size: 0.9rem;
+    .foro-card {
+      transition: box-shadow 0.3s ease;
     }
 
-    .card-clase .card-title {
-      font-size: 1rem;
-    }
-
-    .card-clase:hover {
-      transform: translateY(-5px);
+    .foro-card:hover {
       box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
     }
 
-    .card-title {
+    .flecha {
+      transition: transform 0.3s ease;
       color: #0E4A86;
+    }
+
+    .flecha.rotated {
+      transform: rotate(90deg);
     }
 
     .btn-blue-dark {
@@ -70,6 +67,8 @@
       color: white;
     }
 
+
+
     @media (max-width: 768px) {
       .sidebar {
         float: none;
@@ -77,39 +76,38 @@
         margin-left: 0;
       }
 
-      .main-content {
-        margin-left: 0;
-      }
     }
   </style>
 </head>
+
 <body class="sidebar-collapsed">
 
-<?php include '../includes/design/header.php'; ?><br><br>
+  <?php include '../includes/design/header.php'; ?><br><br>
 
-<?php include '../includes/design/sidebar.php'; ?>
+  <?php include '../includes/design/sidebar.php'; ?>
 
 
-<main class="main-content">
-  <div class="container-fluid">
-    <form class="d-flex mb-4" role="search" style="max-width: 1000px; margin: 0 auto;">
-      <input class="form-control me-2" type="search" placeholder="Buscar" aria-label="Search" style="font-size: 0.9rem; height: 40px;"/>
-      <button class="btn btn-blue-dark" type="submit" style="height: 40px; padding: 0 12px;">
-        <i class="bi bi-search"></i>
-      </button>
-    </form>
-    <br>
+  <main class="main-content">
+    <div class="container-fluid">
+      <form class="d-flex mb-4" role="search" style="max-width: 1000px; margin: 0 auto;">
+        <input class="form-control me-2" type="search" placeholder="Buscar" aria-label="Search" style="font-size: 0.9rem; height: 40px;" />
+        <button class="btn btn-blue-dark" type="submit" style="height: 40px; padding: 0 12px;">
+          <i class="bi bi-search"></i>
+        </button>
+      </form>
+      <br>
 
-    <div class="row" id="contenedor-foros">
-      <!-- Aquí se insertan los foros dinámicamente -->
+      <div class="row" id="contenedor-foros">
+        <!-- Aquí se insertan los foros dinámicamente -->
+      </div>
     </div>
-  </div>
-</main>
+  </main>
 
-<script>
-  window.ID_USER = <?php echo json_encode($_SESSION['documento']); ?>;
-</script>
-<script src="../js/foros.js"></script>
+  <script>
+    window.ID_USER = <?php echo json_encode($_SESSION['documento']); ?>;
+  </script>
+  <script src="../js/foros.js"></script>
 
 </body>
+
 </html>
