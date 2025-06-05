@@ -169,15 +169,15 @@ $lastname = $_SESSION['apellidos'] ?? 'Apellidos';
 <?php if ($usuario_logueado): ?>
 <script>
   (function(){
-    const timeoutInSeconds = <?= $timeout ?? 480 ?>; // Tiempo de inactividad en segundos
+    const timeoutInSeconds = <?= $timeout ?? 500000000000 ?>; // Tiempo de inactividad en segundos
     const timeoutMillis = timeoutInSeconds * 1000; // Tiempo en milisegundos
     let timeoutId;
 
     function cerrarSesion() {
-      fetch('<?= BASE_URL ?>/includes/exit.php')
+    efetch('<?= BASE_URL ?>/includes/exit.php')
         .then(() => {
-          alert('Tu sesión ha expirado por inactividad.');
-          window.location.href = '<?= BASE_URL ?>/login/login.php';
+        alert('Tu sesión ha expirado por inactividad.');
+        window.location.href = '<?= BASE_URL ?>/login/login.php';
         })
         .catch(() => {
           // Si no logra salir, al menos redirige

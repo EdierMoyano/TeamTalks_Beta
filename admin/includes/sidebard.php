@@ -114,12 +114,12 @@ $baseUrl = "/teamtalks/admin/"; // Asegúrate de que esta ruta sea correcta
                 </a>
                 <span class="nav-tooltip">Horarios</span>
             </li>
-            <li class="nav-item <?php echo ($currentPage == 'materias.php') ? 'active' : ''; ?>">
-                <a href="<?php echo $baseUrl; ?>materias.php" class="nav-link">
+            <li class="nav-item <?php echo ($currentPage == 'gestion_fichas.php') ? 'active' : ''; ?>">
+                <a href="<?php echo $baseUrl; ?>gestion_fichas/gestion_fichas.php" class="nav-link">
                     <span class="nav-icon"><i class="bi bi-journal-text"></i></span>
-                    <span class="nav-label">Materias</span>
+                    <span class="nav-label">Gestion Fichas</span>
                 </a>
-                <span class="nav-tooltip">Materias</span>
+                <span class="nav-tooltip">Gestion Fichas</span>
             </li>
             <li class="nav-item <?php echo ($currentPage == 'instructores.php') ? 'active' : ''; ?>">
                 <a href="<?php echo $baseUrl; ?>instructores.php" class="nav-link">
