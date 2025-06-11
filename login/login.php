@@ -138,12 +138,6 @@ $conex = $conexion->connect();
         </div>
     </div>
 
-<<<<<<< HEAD
-=======
-    <!-- Scripts -->
-    <script src="jslogin.js"></script>
-
->>>>>>> f40bf37013065e69cecb294ca8886d78676ae5be
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
         <script src="/login/jslogin.js"></script>
 
