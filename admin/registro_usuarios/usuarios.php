@@ -862,11 +862,22 @@ try {
                         <h4 class="mb-0">Lista de Usuarios</h4>
                     </div>
                     <div class="table-responsive">
-                        <div class="d-flex justify-content-end mt-3 mb-4">
+                        <div class="d-flex justify-content-between align-items-center mt-3 mb-4 px-3">
+                            <div>
+                                <label for="filasPorPagina" class="form-label me-2">Mostrar:</label>
+                                <select id="filasPorPagina" class="form-select form-select-sm d-inline-block w-auto" onchange="cambiarFilasPorPagina(this.value)">
+                                    <option value="5" selected>5</option>
+                                    <option value="10">10</option>
+                                    <option value="25">25</option>
+                                    <option value="50">50</option>
+                                    <option value="100">100</option>
+                                </select>
+                                <span class="ms-2 text-muted">registros por página</span>
+                            </div>
                             <input 
                                 type="text" 
                                 id="busquedaUsuario" 
-                                class="form-control me-3" 
+                                class="form-control" 
                                 style="max-width: 350px;" 
                                 placeholder="Buscar usuario (nombre, correo...)" 
                                 oninput="filtrarUsuario()"
@@ -1091,10 +1102,11 @@ try {
         });
     });
     </script>
-    <!-- PAGINACIÓN Y FILTRO JS -->
+    <!-- PAGINACIÓN Y FILTRO JS MEJORADO -->
     <script>
     let filasPorPaginaUsuarios = 5;
     let paginaActualUsuarios = 1;
+
     function obtenerFilasUsuariosFiltradas() {
         let filas = Array.from(document.querySelectorAll("#tablaUsuarios tbody tr"));
         let filtro = document.getElementById("busquedaUsuario").value.trim().toLowerCase();
@@ -1104,40 +1116,153 @@ try {
             return texto.includes(filtro);
         });
     }
+
     function mostrarPaginaUsuarios(pagina) {
         let filas = obtenerFilasUsuariosFiltradas();
         let totalPaginas = Math.ceil(filas.length / filasPorPaginaUsuarios);
+        
         if (pagina < 1) pagina = 1;
         if (pagina > totalPaginas) pagina = totalPaginas;
+        
+        // Ocultar todas las filas
         document.querySelectorAll("#tablaUsuarios tbody tr").forEach(fila => fila.style.display = "none");
+        
+        // Mostrar filas de la página actual
         let inicio = (pagina - 1) * filasPorPaginaUsuarios;
         let fin = inicio + filasPorPaginaUsuarios;
         for (let i = inicio; i < fin && i < filas.length; i++) {
             filas[i].style.display = "";
         }
-        let paginacion = document.getElementById("paginacionUsuarios");
-        paginacion.innerHTML = "";
-        if (totalPaginas <= 1) return;
-        paginacion.innerHTML += `<li class="page-item ${pagina === 1 ? 'disabled' : ''}">
-            <button class="page-link" onclick="cambiarPaginaUsuarios(${pagina - 1})">Anterior</button>
-        </li>`;
-        for (let i = 1; i <= totalPaginas; i++) {
-            paginacion.innerHTML += `<li class="page-item ${pagina === i ? 'active' : ''}">
-                <button class="page-link" onclick="cambiarPaginaUsuarios(${i})">${i}</button>
-            </li>`;
-        }
-        paginacion.innerHTML += `<li class="page-item ${pagina === totalPaginas ? 'disabled' : ''}">
-            <button class="page-link" onclick="cambiarPaginaUsuarios(${pagina + 1})">Siguiente</button>
-        </li>`;
+        
+        // Generar paginación inteligente
+        generarPaginacionInteligente(pagina, totalPaginas);
         paginaActualUsuarios = pagina;
     }
+
+    function generarPaginacionInteligente(paginaActual, totalPaginas) {
+        let paginacion = document.getElementById("paginacionUsuarios");
+        paginacion.innerHTML = "";
+        
+        if (totalPaginas <= 1) return;
+        
+        const maxPaginasVisibles = 5; // Máximo número de páginas a mostrar
+        let paginaInicio, paginaFin;
+        
+        // Calcular rango de páginas a mostrar
+        if (totalPaginas <= maxPaginasVisibles) {
+            paginaInicio = 1;
+            paginaFin = totalPaginas;
+        } else {
+            // Centrar la página actual en el rango visible
+            let mitad = Math.floor(maxPaginasVisibles / 2);
+            paginaInicio = Math.max(1, paginaActual - mitad);
+            paginaFin = Math.min(totalPaginas, paginaInicio + maxPaginasVisibles - 1);
+            
+            // Ajustar si estamos cerca del final
+            if (paginaFin - paginaInicio < maxPaginasVisibles - 1) {
+                paginaInicio = Math.max(1, paginaFin - maxPaginasVisibles + 1);
+            }
+        }
+        
+        // Botón "Primera" (solo si no estamos en la primera página)
+        if (paginaActual > 1) {
+            paginacion.innerHTML += `
+                <li class="page-item">
+                    <button class="page-link" onclick="cambiarPaginaUsuarios(1)" title="Primera página">
+                        <i class="bi bi-chevron-double-left"></i>
+                    </button>
+                </li>`;
+        }
+        
+        // Botón "Anterior"
+        paginacion.innerHTML += `
+            <li class="page-item ${paginaActual === 1 ? 'disabled' : ''}">
+                <button class="page-link" onclick="cambiarPaginaUsuarios(${paginaActual - 1})" title="Página anterior">
+                    <i class="bi bi-chevron-left"></i>
+                </button>
+            </li>`;
+        
+        // Mostrar "..." si hay páginas antes del rango visible
+        if (paginaInicio > 1) {
+            paginacion.innerHTML += `
+                <li class="page-item disabled">
+                    <span class="page-link">...</span>
+                </li>`;
+        }
+        
+        // Números de página
+        for (let i = paginaInicio; i <= paginaFin; i++) {
+            paginacion.innerHTML += `
+                <li class="page-item ${paginaActual === i ? 'active' : ''}">
+                    <button class="page-link" onclick="cambiarPaginaUsuarios(${i})">${i}</button>
+                </li>`;
+        }
+        
+        // Mostrar "..." si hay páginas después del rango visible
+        if (paginaFin < totalPaginas) {
+            paginacion.innerHTML += `
+                <li class="page-item disabled">
+                    <span class="page-link">...</span>
+                </li>`;
+        }
+        
+        // Botón "Siguiente"
+        paginacion.innerHTML += `
+            <li class="page-item ${paginaActual === totalPaginas ? 'disabled' : ''}">
+                <button class="page-link" onclick="cambiarPaginaUsuarios(${paginaActual + 1})" title="Página siguiente">
+                    <i class="bi bi-chevron-right"></i>
+                </button>
+            </li>`;
+        
+        // Botón "Última" (solo si no estamos en la última página)
+        if (paginaActual < totalPaginas) {
+            paginacion.innerHTML += `
+                <li class="page-item">
+                    <button class="page-link" onclick="cambiarPaginaUsuarios(${totalPaginas})" title="Última página">
+                        <i class="bi bi-chevron-double-right"></i>
+                    </button>
+                </li>`;
+        }
+        
+        // Mostrar información de página actual
+        mostrarInfoPaginacion(paginaActual, totalPaginas, obtenerFilasUsuariosFiltradas().length);
+    }
+
+    function mostrarInfoPaginacion(paginaActual, totalPaginas, totalRegistros) {
+        // Crear o actualizar el elemento de información si no existe
+        let infoPaginacion = document.getElementById("infoPaginacionUsuarios");
+        if (!infoPaginacion) {
+            infoPaginacion = document.createElement("div");
+            infoPaginacion.id = "infoPaginacionUsuarios";
+            infoPaginacion.className = "text-center mt-2 text-muted small";
+            document.getElementById("paginacionUsuarios").parentNode.appendChild(infoPaginacion);
+        }
+        
+        let registroInicio = ((paginaActual - 1) * filasPorPaginaUsuarios) + 1;
+        let registroFin = Math.min(paginaActual * filasPorPaginaUsuarios, totalRegistros);
+        
+        infoPaginacion.innerHTML = `
+            Mostrando ${registroInicio} a ${registroFin} de ${totalRegistros} registros 
+            (Página ${paginaActual} de ${totalPaginas})
+        `;
+    }
+
     function cambiarPaginaUsuarios(nuevaPagina) {
         mostrarPaginaUsuarios(nuevaPagina);
     }
+
     function filtrarUsuario() {
         paginaActualUsuarios = 1;
         mostrarPaginaUsuarios(paginaActualUsuarios);
     }
+
+    // Función para cambiar el número de filas por página
+    function cambiarFilasPorPagina(nuevasFilas) {
+        filasPorPaginaUsuarios = parseInt(nuevasFilas);
+        paginaActualUsuarios = 1;
+        mostrarPaginaUsuarios(paginaActualUsuarios);
+    }
+
     document.addEventListener("DOMContentLoaded", function() {
         mostrarPaginaUsuarios(paginaActualUsuarios);
     });
