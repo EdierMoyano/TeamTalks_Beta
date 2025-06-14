@@ -1,5 +1,10 @@
 <?php
 session_start();
+
+if ($_SESSION['rol'] !== 2) {
+    header('Location: ../../includes/exit.php?');
+    exit;
+}
 require_once '../../conexion/conexion.php';
 require_once '../../includes/functions.php';
 
@@ -44,7 +49,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
             WHERE id_ficha = ? AND id_materia = ? AND id_trimestre = ?
         ");
         $stmt->execute([$id_ficha, $id_materia, $id_trimestre]);
-        
+
         if ($stmt->fetch()) {
             $alertMessage = "Esta materia ya está asignada a la ficha en este trimestre";
             $alertType = "warning";
@@ -55,7 +60,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
                 VALUES (?, ?, ?, ?)
             ");
             $stmt->execute([$id_materia, $id_ficha, $id_instructor, $id_trimestre]);
-            
+
             $alertMessage = "Materia asignada correctamente a la ficha";
             $alertType = "success";
         }
@@ -75,7 +80,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
             UPDATE materia_ficha SET id_instructor = ? WHERE id_materia_ficha = ?
         ");
         $stmt->execute([$id_instructor, $id_materia_ficha]);
-        
+
         $alertMessage = "Instructor actualizado correctamente";
         $alertType = "success";
     } catch (PDOException $e) {
@@ -91,7 +96,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
     try {
         $stmt = $conexion->prepare("DELETE FROM materia_ficha WHERE id_materia_ficha = ?");
         $stmt->execute([$id_materia_ficha]);
-        
+
         $alertMessage = "Asignación eliminada correctamente";
         $alertType = "success";
     } catch (PDOException $e) {
@@ -234,6 +239,7 @@ try {
 
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -243,6 +249,7 @@ try {
     <link rel="stylesheet" href="../styles/sidebard.css">
     <link rel="stylesheet" href="../styles/main.css">
 </head>
+
 <body>
     <div class="wrapper">
         <?php include '../includes/sidebard.php'; ?>
@@ -325,8 +332,8 @@ try {
                             <div class="col-md-6">
                                 <div class="input-group">
                                     <span class="input-group-text"><i class="bi bi-search"></i></span>
-                                    <input type="text" class="form-control" id="buscarFicha" 
-                                           placeholder="Buscar por número de ficha, programa o instructor...">
+                                    <input type="text" class="form-control" id="buscarFicha"
+                                        placeholder="Buscar por número de ficha, programa o instructor...">
                                 </div>
                             </div>
                             <div class="col-md-3">
@@ -350,12 +357,12 @@ try {
                         <!-- Lista de fichas -->
                         <div class="row" id="fichasContainer">
                             <?php foreach ($fichas as $ficha): ?>
-                                <div class="col-md-6 col-lg-4 mb-4 ficha-item" 
-                                     data-ficha="<?php echo $ficha['id_ficha']; ?>"
-                                     data-programa="<?php echo strtolower($ficha['programa']); ?>"
-                                     data-instructor="<?php echo strtolower($ficha['instructor_lider']); ?>"
-                                     data-jornada="<?php echo $ficha['jornada']; ?>"
-                                     data-tipo="<?php echo $ficha['tipo_formacion']; ?>">
+                                <div class="col-md-6 col-lg-4 mb-4 ficha-item"
+                                    data-ficha="<?php echo $ficha['id_ficha']; ?>"
+                                    data-programa="<?php echo strtolower($ficha['programa']); ?>"
+                                    data-instructor="<?php echo strtolower($ficha['instructor_lider']); ?>"
+                                    data-jornada="<?php echo $ficha['jornada']; ?>"
+                                    data-tipo="<?php echo $ficha['tipo_formacion']; ?>">
                                     <div class="card h-100 border-primary">
                                         <div class="card-header bg-light">
                                             <div class="d-flex justify-content-between align-items-center">
@@ -376,7 +383,7 @@ try {
                                                     <i class="bi bi-person-badge"></i> <?php echo $ficha['instructor_lider'] ?? 'Sin asignar'; ?>
                                                 </small>
                                             </p>
-                                            
+
                                             <div class="row text-center">
                                                 <div class="col-6">
                                                     <div class="border-end">
@@ -392,8 +399,8 @@ try {
                                         </div>
                                         <div class="card-footer bg-transparent">
                                             <div class="d-grid gap-2">
-                                                <button class="btn btn-primary btn-sm ver-detalles" 
-                                                        data-ficha="<?php echo $ficha['id_ficha']; ?>">
+                                                <button class="btn btn-primary btn-sm ver-detalles"
+                                                    data-ficha="<?php echo $ficha['id_ficha']; ?>">
                                                     <i class="bi bi-eye"></i> Ver Detalles
                                                 </button>
                                             </div>
@@ -432,7 +439,7 @@ try {
                 <form action="" method="POST" id="asignarMateriaForm">
                     <div class="modal-body">
                         <input type="hidden" name="action" value="asignar_materia">
-                        
+
                         <div class="mb-3">
                             <label for="id_ficha" class="form-label">Ficha *</label>
                             <select class="form-select" id="id_ficha" name="id_ficha" required>
@@ -521,7 +528,7 @@ try {
                     <div class="modal-body">
                         <input type="hidden" name="action" value="actualizar_instructor">
                         <input type="hidden" name="id_materia_ficha" id="update_id_materia_ficha">
-                        
+
                         <div class="mb-3">
                             <label class="form-label">Materia:</label>
                             <p class="fw-bold" id="update_materia_nombre"></p>
@@ -565,17 +572,21 @@ try {
                                     <div class="row">
                                         <div class="col-md-6">
                                             <p><strong><i class="bi bi-person-badge"></i> Documento:</strong><br>
-                                            <span id="contacto_documento"></span></p>
-                                            
+                                                <span id="contacto_documento"></span>
+                                            </p>
+
                                             <p><strong><i class="bi bi-envelope"></i> Correo Electrónico:</strong><br>
-                                            <a href="#" id="contacto_correo_link"><span id="contacto_correo"></span></a></p>
+                                                <a href="#" id="contacto_correo_link"><span id="contacto_correo"></span></a>
+                                            </p>
                                         </div>
                                         <div class="col-md-6">
                                             <p><strong><i class="bi bi-telephone"></i> Teléfono:</strong><br>
-                                            <a href="#" id="contacto_telefono_link"><span id="contacto_telefono"></span></a></p>
-                                            
+                                                <a href="#" id="contacto_telefono_link"><span id="contacto_telefono"></span></a>
+                                            </p>
+
                                             <p><strong><i class="bi bi-geo-alt"></i> Dirección:</strong><br>
-                                            <span id="contacto_direccion"></span></p>
+                                                <span id="contacto_direccion"></span>
+                                            </p>
                                         </div>
                                     </div>
                                 </div>
@@ -597,208 +608,221 @@ try {
     <script src="../js/sidebard.js"></script>
 
     <script>
-    // Variables para paginación
-    let filasPorPagina = 6;
-    let paginaActual = 1;
+        // Variables para paginación
+        let filasPorPagina = 6;
+        let paginaActual = 1;
 
-    // Función para obtener fichas filtradas
-    function obtenerFichasFiltradas() {
-        const busqueda = document.getElementById('buscarFicha').value.toLowerCase();
-        const jornada = document.getElementById('filtroJornada').value;
-        const tipoFormacion = document.getElementById('filtroTipoFormacion').value;
-        
-        const fichas = Array.from(document.querySelectorAll('.ficha-item'));
-        
-        return fichas.filter(ficha => {
-            const fichaNum = ficha.dataset.ficha;
-            const programa = ficha.dataset.programa;
-            const instructor = ficha.dataset.instructor;
-            const fichaJornada = ficha.dataset.jornada;
-            const fichaTipo = ficha.dataset.tipo;
-            
-            const coincideBusqueda = fichaNum.includes(busqueda) || 
-                                   programa.includes(busqueda) || 
-                                   instructor.includes(busqueda);
-            
-            const coincideJornada = !jornada || fichaJornada === jornada;
-            const coincideTipo = !tipoFormacion || fichaTipo.includes(tipoFormacion);
-            
-            return coincideBusqueda && coincideJornada && coincideTipo;
-        });
-    }
+        // Función para obtener fichas filtradas
+        function obtenerFichasFiltradas() {
+            const busqueda = document.getElementById('buscarFicha').value.toLowerCase();
+            const jornada = document.getElementById('filtroJornada').value;
+            const tipoFormacion = document.getElementById('filtroTipoFormacion').value;
 
-    // Función para mostrar página específica
-    function mostrarPagina(pagina) {
-        const fichasFiltradas = obtenerFichasFiltradas();
-        const totalPaginas = Math.ceil(fichasFiltradas.length / filasPorPagina);
-        
-        if (pagina < 1) pagina = 1;
-        if (pagina > totalPaginas) pagina = totalPaginas;
+            const fichas = Array.from(document.querySelectorAll('.ficha-item'));
 
-        // Ocultar todas las fichas
-        document.querySelectorAll('.ficha-item').forEach(ficha => {
-            ficha.style.display = 'none';
-        });
+            return fichas.filter(ficha => {
+                const fichaNum = ficha.dataset.ficha;
+                const programa = ficha.dataset.programa;
+                const instructor = ficha.dataset.instructor;
+                const fichaJornada = ficha.dataset.jornada;
+                const fichaTipo = ficha.dataset.tipo;
 
-        // Mostrar fichas de la página actual
-        const inicio = (pagina - 1) * filasPorPagina;
-        const fin = inicio + filasPorPagina;
-        
-        for (let i = inicio; i < fin && i < fichasFiltradas.length; i++) {
-            fichasFiltradas[i].style.display = 'block';
+                const coincideBusqueda = fichaNum.includes(busqueda) ||
+                    programa.includes(busqueda) ||
+                    instructor.includes(busqueda);
+
+                const coincideJornada = !jornada || fichaJornada === jornada;
+                const coincideTipo = !tipoFormacion || fichaTipo.includes(tipoFormacion);
+
+                return coincideBusqueda && coincideJornada && coincideTipo;
+            });
         }
 
-        // Actualizar paginación
-        actualizarPaginacion(pagina, totalPaginas);
-        paginaActual = pagina;
-    }
+        // Función para mostrar página específica
+        function mostrarPagina(pagina) {
+            const fichasFiltradas = obtenerFichasFiltradas();
+            const totalPaginas = Math.ceil(fichasFiltradas.length / filasPorPagina);
 
-    // Función para actualizar controles de paginación
-    function actualizarPaginacion(paginaActual, totalPaginas) {
-        const paginacion = document.getElementById('paginacionFichas');
-        paginacion.innerHTML = '';
+            if (pagina < 1) pagina = 1;
+            if (pagina > totalPaginas) pagina = totalPaginas;
 
-        if (totalPaginas <= 1) return;
+            // Ocultar todas las fichas
+            document.querySelectorAll('.ficha-item').forEach(ficha => {
+                ficha.style.display = 'none';
+            });
 
-        // Botón anterior
-        paginacion.innerHTML += `
+            // Mostrar fichas de la página actual
+            const inicio = (pagina - 1) * filasPorPagina;
+            const fin = inicio + filasPorPagina;
+
+            for (let i = inicio; i < fin && i < fichasFiltradas.length; i++) {
+                fichasFiltradas[i].style.display = 'block';
+            }
+
+            // Actualizar paginación
+            actualizarPaginacion(pagina, totalPaginas);
+            paginaActual = pagina;
+        }
+
+        // Función para actualizar controles de paginación
+        function actualizarPaginacion(paginaActual, totalPaginas) {
+            const paginacion = document.getElementById('paginacionFichas');
+            paginacion.innerHTML = '';
+
+            if (totalPaginas <= 1) return;
+
+            // Botón anterior
+            paginacion.innerHTML += `
             <li class="page-item ${paginaActual === 1 ? 'disabled' : ''}">
                 <button class="page-link" onclick="cambiarPagina(${paginaActual - 1})">Anterior</button>
             </li>
         `;
 
-        // Números de página
-        for (let i = 1; i <= totalPaginas; i++) {
-            paginacion.innerHTML += `
+            // Números de página
+            for (let i = 1; i <= totalPaginas; i++) {
+                paginacion.innerHTML += `
                 <li class="page-item ${paginaActual === i ? 'active' : ''}">
                     <button class="page-link" onclick="cambiarPagina(${i})">${i}</button>
                 </li>
             `;
-        }
+            }
 
-        // Botón siguiente
-        paginacion.innerHTML += `
+            // Botón siguiente
+            paginacion.innerHTML += `
             <li class="page-item ${paginaActual === totalPaginas ? 'disabled' : ''}">
                 <button class="page-link" onclick="cambiarPagina(${paginaActual + 1})">Siguiente</button>
             </li>
         `;
-    }
-
-    // Función para cambiar página
-    function cambiarPagina(nuevaPagina) {
-        mostrarPagina(nuevaPagina);
-    }
-
-    // Función para filtrar fichas
-    function filtrarFichas() {
-        paginaActual = 1;
-        mostrarPagina(paginaActual);
-    }
-
-    // Event listeners para filtros
-    document.getElementById('buscarFicha').addEventListener('input', filtrarFichas);
-    document.getElementById('filtroJornada').addEventListener('change', filtrarFichas);
-    document.getElementById('filtroTipoFormacion').addEventListener('change', filtrarFichas);
-
-    // Ver detalles de ficha
-    document.addEventListener('click', function(event) {
-        if (event.target.closest('.ver-detalles')) {
-            const button = event.target.closest('.ver-detalles');
-            const idFicha = button.getAttribute('data-ficha');
-            cargarDetallesFicha(idFicha);
         }
-    });
 
-    // Función para cargar detalles de ficha
-    async function cargarDetallesFicha(idFicha) {
-        try {
-            const response = await fetch(`get_ficha_details.php?id_ficha=${idFicha}`);
-            const data = await response.json();
-            
-            if (data.success) {
-                document.getElementById('detallesFichaContent').innerHTML = data.html;
-                const modal = new bootstrap.Modal(document.getElementById('detallesFichaModal'));
-                modal.show();
-            } else {
+        // Función para cambiar página
+        function cambiarPagina(nuevaPagina) {
+            mostrarPagina(nuevaPagina);
+        }
+
+        // Función para filtrar fichas
+        function filtrarFichas() {
+            paginaActual = 1;
+            mostrarPagina(paginaActual);
+        }
+
+        // Event listeners para filtros
+        document.getElementById('buscarFicha').addEventListener('input', filtrarFichas);
+        document.getElementById('filtroJornada').addEventListener('change', filtrarFichas);
+        document.getElementById('filtroTipoFormacion').addEventListener('change', filtrarFichas);
+
+        // Ver detalles de ficha
+        document.addEventListener('click', function(event) {
+            if (event.target.closest('.ver-detalles')) {
+                const button = event.target.closest('.ver-detalles');
+                const idFicha = button.getAttribute('data-ficha');
+                cargarDetallesFicha(idFicha);
+            }
+        });
+
+        // Función para cargar detalles de ficha
+        async function cargarDetallesFicha(idFicha) {
+            try {
+                const response = await fetch(`get_ficha_details.php?id_ficha=${idFicha}`);
+                const data = await response.json();
+
+                if (data.success) {
+                    document.getElementById('detallesFichaContent').innerHTML = data.html;
+                    const modal = new bootstrap.Modal(document.getElementById('detallesFichaModal'));
+                    modal.show();
+                } else {
+                    alert('Error al cargar los detalles de la ficha');
+                }
+            } catch (error) {
+                console.error('Error:', error);
                 alert('Error al cargar los detalles de la ficha');
             }
-        } catch (error) {
-            console.error('Error:', error);
-            alert('Error al cargar los detalles de la ficha');
         }
-    }
 
-    // Manejar actualización de instructor
-    document.addEventListener('click', function(event) {
-        if (event.target.closest('.actualizar-instructor')) {
-            const button = event.target.closest('.actualizar-instructor');
-            const idMateriaFicha = button.getAttribute('data-id');
-            const materiaNombre = button.getAttribute('data-materia');
-            const instructorActual = button.getAttribute('data-instructor');
-            
-            document.getElementById('update_id_materia_ficha').value = idMateriaFicha;
-            document.getElementById('update_materia_nombre').textContent = materiaNombre;
-            document.getElementById('update_id_instructor').value = instructorActual || '';
-            
-            const modal = new bootstrap.Modal(document.getElementById('actualizarInstructorModal'));
-            modal.show();
-        }
-    });
+        // Manejar actualización de instructor
+        document.addEventListener('click', function(event) {
+            if (event.target.closest('.actualizar-instructor')) {
+                const button = event.target.closest('.actualizar-instructor');
+                const idMateriaFicha = button.getAttribute('data-id');
+                const materiaNombre = button.getAttribute('data-materia');
+                const instructorActual = button.getAttribute('data-instructor');
 
-    // Manejar eliminación de asignación
-    document.addEventListener('click', function(event) {
-        if (event.target.closest('.eliminar-asignacion')) {
-            const button = event.target.closest('.eliminar-asignacion');
-            const idMateriaFicha = button.getAttribute('data-id');
-            const materiaNombre = button.getAttribute('data-materia');
-            
-            if (confirm(`¿Está seguro que desea eliminar la asignación de "${materiaNombre}"?`)) {
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.innerHTML = `
+                document.getElementById('update_id_materia_ficha').value = idMateriaFicha;
+                document.getElementById('update_materia_nombre').textContent = materiaNombre;
+                document.getElementById('update_id_instructor').value = instructorActual || '';
+
+                const modal = new bootstrap.Modal(document.getElementById('actualizarInstructorModal'));
+                modal.show();
+            }
+        });
+
+        // Manejar eliminación de asignación
+        document.addEventListener('click', function(event) {
+            if (event.target.closest('.eliminar-asignacion')) {
+                const button = event.target.closest('.eliminar-asignacion');
+                const idMateriaFicha = button.getAttribute('data-id');
+                const materiaNombre = button.getAttribute('data-materia');
+
+                if (confirm(`¿Está seguro que desea eliminar la asignación de "${materiaNombre}"?`)) {
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.innerHTML = `
                     <input type="hidden" name="action" value="eliminar_asignacion">
                     <input type="hidden" name="id_materia_ficha" value="${idMateriaFicha}">
                 `;
-                document.body.appendChild(form);
-                form.submit();
+                    document.body.appendChild(form);
+                    form.submit();
+                }
             }
-        }
-    });
-
-    // Manejar visualización de contacto de aprendiz
-    document.addEventListener('click', function(event) {
-        if (event.target.closest('.ver-contacto-aprendiz')) {
-            const button = event.target.closest('.ver-contacto-aprendiz');
-            const documento = button.getAttribute('data-id');
-            const nombre = button.getAttribute('data-nombre');
-            const correo = button.getAttribute('data-correo');
-            const telefono = button.getAttribute('data-telefono') || 'No registrado';
-            const direccion = button.getAttribute('data-direccion') || 'No registrada';
-        
-            document.getElementById('contacto_documento').textContent = documento;
-            document.getElementById('contacto_nombre').textContent = nombre;
-            document.getElementById('contacto_correo').textContent = correo;
-            document.getElementById('contacto_correo_link').href = `mailto:${correo}`;
-            document.getElementById('contacto_telefono').textContent = telefono;
-            document.getElementById('contacto_telefono_link').href = `tel:${telefono}`;
-            document.getElementById('contacto_direccion').textContent = direccion;
-        
-            const modal = new bootstrap.Modal(document.getElementById('contactoAprendizModal'));
-            modal.show();
-        }
-    });
-
-    // Inicializar al cargar la página
-    document.addEventListener("DOMContentLoaded", function() {
-        // Mostrar primera página
-        mostrarPagina(1);
-
-        // Inicializar tooltips
-        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-        tooltipTriggerList.map(function (tooltipTriggerEl) {
-            return new bootstrap.Tooltip(tooltipTriggerEl);
         });
-    });
+
+        // Manejar visualización de contacto de aprendiz
+        document.addEventListener('click', function(event) {
+            if (event.target.closest('.ver-contacto-aprendiz')) {
+                const button = event.target.closest('.ver-contacto-aprendiz');
+                const documento = button.getAttribute('data-id');
+                const nombre = button.getAttribute('data-nombre');
+                const correo = button.getAttribute('data-correo');
+                const telefono = button.getAttribute('data-telefono') || 'No registrado';
+                const direccion = button.getAttribute('data-direccion') || 'No registrada';
+
+                document.getElementById('contacto_documento').textContent = documento;
+                document.getElementById('contacto_nombre').textContent = nombre;
+                document.getElementById('contacto_correo').textContent = correo;
+                document.getElementById('contacto_correo_link').href = `mailto:${correo}`;
+                document.getElementById('contacto_telefono').textContent = telefono;
+                document.getElementById('contacto_telefono_link').href = `tel:${telefono}`;
+                document.getElementById('contacto_direccion').textContent = direccion;
+
+                const modal = new bootstrap.Modal(document.getElementById('contactoAprendizModal'));
+                modal.show();
+            }
+        });
+
+        // Inicializar al cargar la página
+        document.addEventListener("DOMContentLoaded", function() {
+            // Mostrar primera página
+            mostrarPagina(1);
+
+            // Inicializar tooltips
+            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            tooltipTriggerList.map(function(tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+        });
     </script>
+
+    // Script para cerrar sesión al recargar la página
+    <script>
+        window.addEventListener('beforeunload', function() {
+            // Aquí puedes enviar una solicitud AJAX para cerrar la sesión en el servidor
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', '../../includes/exit.php', true);
+            xhr.send();
+        });
+    </script>
+    </>
+
 </body>
+
 </html>

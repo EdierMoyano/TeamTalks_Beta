@@ -60,59 +60,59 @@ try {
 echo '<?xml version="1.0" encoding="UTF-8"?>';
 ?>
 <Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
- xmlns:o="urn:schemas-microsoft-com:office:office"
- xmlns:x="urn:schemas-microsoft-com:office:excel"
- xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"
- xmlns:html="http://www.w3.org/TR/REC-html40">
- 
-<Worksheet ss:Name="Reporte Horarios">
-<Table>
-    <Row>
-        <Cell><Data ss:Type="String">REPORTE DE HORARIOS SENA</Data></Cell>
-    </Row>
-    <Row>
-        <Cell><Data ss:Type="String">Fecha de generación: <?php echo date('d/m/Y H:i:s'); ?></Data></Cell>
-    </Row>
-    <Row></Row>
-    
-    <!-- Encabezados -->
-    <Row>
-        <Cell><Data ss:Type="String">ID</Data></Cell>
-        <Cell><Data ss:Type="String">Nombre Horario</Data></Cell>
-        <Cell><Data ss:Type="String">Descripción</Data></Cell>
-        <Cell><Data ss:Type="String">Jornada</Data></Cell>
-        <Cell><Data ss:Type="String">Tipo</Data></Cell>
-        <Cell><Data ss:Type="String">Días</Data></Cell>
-        <Cell><Data ss:Type="String">Hora Inicio</Data></Cell>
-        <Cell><Data ss:Type="String">Hora Fin</Data></Cell>
-        <Cell><Data ss:Type="String">Fichas Asignadas</Data></Cell>
-        <Cell><Data ss:Type="String">Números de Fichas</Data></Cell>
-        <Cell><Data ss:Type="String">Estado</Data></Cell>
-        <Cell><Data ss:Type="String">Fecha Creación</Data></Cell>
-    </Row>
-    
-    <!-- Datos -->
-    <?php foreach ($horarios as $horario): ?>
-    <Row>
-        <Cell><Data ss:Type="Number"><?php echo htmlspecialchars($horario['id_horario']); ?></Data></Cell>
-        <Cell><Data ss:Type="String"><?php echo htmlspecialchars($horario['nombre_horario']); ?></Data></Cell>
-        <Cell><Data ss:Type="String"><?php echo htmlspecialchars($horario['descripcion'] ?? ''); ?></Data></Cell>
-        <Cell><Data ss:Type="String"><?php echo htmlspecialchars($horario['jornada'] ?? ''); ?></Data></Cell>
-        <Cell><Data ss:Type="String"><?php echo htmlspecialchars($horario['tipo_horario']); ?></Data></Cell>
-        <Cell><Data ss:Type="String"><?php echo htmlspecialchars($horario['dias_semana'] ?? ''); ?></Data></Cell>
-        <Cell><Data ss:Type="String"><?php echo htmlspecialchars($horario['hora_inicio'] ?? ''); ?></Data></Cell>
-        <Cell><Data ss:Type="String"><?php echo htmlspecialchars($horario['hora_fin'] ?? ''); ?></Data></Cell>
-        <Cell><Data ss:Type="Number"><?php echo $horario['fichas_asignadas']; ?></Data></Cell>
-        <Cell><Data ss:Type="String"><?php echo htmlspecialchars($horario['numeros_fichas'] ?? 'Sin asignar'); ?></Data></Cell>
-        <Cell><Data ss:Type="String"><?php echo htmlspecialchars($horario['estado'] ?? 'Activo'); ?></Data></Cell>
-        <Cell><Data ss:Type="String"><?php echo htmlspecialchars($horario['fecha_creacion']); ?></Data></Cell>
-    </Row>
-    <?php endforeach; ?>
-    
-    <Row></Row>
-    <Row>
-        <Cell><Data ss:Type="String">Total de horarios: <?php echo count($horarios); ?></Data></Cell>
-    </Row>
-</Table>
-</Worksheet>
+    xmlns:o="urn:schemas-microsoft-com:office:office"
+    xmlns:x="urn:schemas-microsoft-com:office:excel"
+    xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"
+    xmlns:html="http://www.w3.org/TR/REC-html40">
+
+    <Worksheet ss:Name="Reporte Horarios">
+        <Table>
+            <Row>
+                <Cell><Data ss:Type="String">REPORTE DE HORARIOS SENA</Data></Cell>
+            </Row>
+            <Row>
+                <Cell><Data ss:Type="String">Fecha de generación: <?php echo date('d/m/Y H:i:s'); ?></Data></Cell>
+            </Row>
+            <Row></Row>
+
+            <!-- Encabezados -->
+            <Row>
+                <Cell><Data ss:Type="String">ID</Data></Cell>
+                <Cell><Data ss:Type="String">Nombre Horario</Data></Cell>
+                <Cell><Data ss:Type="String">Descripción</Data></Cell>
+                <Cell><Data ss:Type="String">Jornada</Data></Cell>
+                <Cell><Data ss:Type="String">Tipo</Data></Cell>
+                <Cell><Data ss:Type="String">Días</Data></Cell>
+                <Cell><Data ss:Type="String">Hora Inicio</Data></Cell>
+                <Cell><Data ss:Type="String">Hora Fin</Data></Cell>
+                <Cell><Data ss:Type="String">Fichas Asignadas</Data></Cell>
+                <Cell><Data ss:Type="String">Números de Fichas</Data></Cell>
+                <Cell><Data ss:Type="String">Estado</Data></Cell>
+                <Cell><Data ss:Type="String">Fecha Creación</Data></Cell>
+            </Row>
+
+            <!-- Datos -->
+            <?php foreach ($horarios as $horario): ?>
+                <Row>
+                    <Cell><Data ss:Type="Number"><?php echo htmlspecialchars($horario['id_horario']); ?></Data></Cell>
+                    <Cell><Data ss:Type="String"><?php echo htmlspecialchars($horario['nombre_horario']); ?></Data></Cell>
+                    <Cell><Data ss:Type="String"><?php echo htmlspecialchars($horario['descripcion'] ?? ''); ?></Data></Cell>
+                    <Cell><Data ss:Type="String"><?php echo htmlspecialchars($horario['jornada'] ?? ''); ?></Data></Cell>
+                    <Cell><Data ss:Type="String"><?php echo htmlspecialchars($horario['tipo_horario']); ?></Data></Cell>
+                    <Cell><Data ss:Type="String"><?php echo htmlspecialchars($horario['dias_semana'] ?? ''); ?></Data></Cell>
+                    <Cell><Data ss:Type="String"><?php echo htmlspecialchars($horario['hora_inicio'] ?? ''); ?></Data></Cell>
+                    <Cell><Data ss:Type="String"><?php echo htmlspecialchars($horario['hora_fin'] ?? ''); ?></Data></Cell>
+                    <Cell><Data ss:Type="Number"><?php echo $horario['fichas_asignadas']; ?></Data></Cell>
+                    <Cell><Data ss:Type="String"><?php echo htmlspecialchars($horario['numeros_fichas'] ?? 'Sin asignar'); ?></Data></Cell>
+                    <Cell><Data ss:Type="String"><?php echo htmlspecialchars($horario['estado'] ?? 'Activo'); ?></Data></Cell>
+                    <Cell><Data ss:Type="String"><?php echo htmlspecialchars($horario['fecha_creacion']); ?></Data></Cell>
+                </Row>
+            <?php endforeach; ?>
+
+            <Row></Row>
+            <Row>
+                <Cell><Data ss:Type="String">Total de horarios: <?php echo count($horarios); ?></Data></Cell>
+            </Row>
+        </Table>
+    </Worksheet>
 </Workbook>

@@ -1,13 +1,13 @@
 <?php
 session_start();
-require_once '../../conexion/conexion.php';
-require_once '../../includes/functions.php';
 
-// Verificar si el usuario está autenticado
-if (!isset($_SESSION['documento'])) {
-    header('Location: ../login/login.php');
+if ($_SESSION['rol'] !== 2) {
+    header('Location: ../../includes/exit.php?');
     exit;
 }
+
+require_once '../../conexion/conexion.php';
+require_once '../../includes/functions.php';
 
 // Inicializar mensaje de alerta
 $alertMessage = '';
@@ -599,5 +599,15 @@ try {
         });
     });
     </script>
+
+    // Script para cerrar sesión al recargar la página
+<script>
+window.addEventListener('beforeunload', function () {
+    // Aquí puedes enviar una solicitud AJAX para cerrar la sesión en el servidor
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', '../../includes/exit.php', true);
+    xhr.send();
+});
+</script>
 </body>
 </html>
