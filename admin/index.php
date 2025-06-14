@@ -2,7 +2,7 @@
 session_start();
 
 if ($_SESSION['rol'] !== 2) {
-    header('Location: ../includes/exit.php?motivo=acceso-denegado');
+    header('Location: includes/exit.php?motivo=acceso-denegado');
     exit;
 }
 
@@ -28,7 +28,7 @@ if ($_SESSION['rol'] !== 2) {
 <body>
     <div class="wrapper">
         <!-- Incluir el sidebar -->
-        <?php include './includes/sidebard.php'; ?>
+        <?php include 'includes/sidebard.php'; ?>
         <!-- Contenido principal -->
         <main class="main-content">
             <header class="content-header">
@@ -102,15 +102,8 @@ if ($_SESSION['rol'] !== 2) {
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="js/sidebard.js"></script>
-    // Script para cerrar sesión al recargar la página
-    <script>
-        window.addEventListener('beforeunload', function() {
-            // Aquí puedes enviar una solicitud AJAX para cerrar la sesión en el servidor
-            var xhr = new XMLHttpRequest();
-            xhr.open('GET', '../../includes/exit.php', true);
-            xhr.send();
-        });
-    </script>
+    
+    
 </body>
 
 </html>

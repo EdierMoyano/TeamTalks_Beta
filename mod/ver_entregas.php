@@ -139,7 +139,7 @@ $numero_ficha = !empty($aprendices) ? $aprendices[0]['id_ficha'] : null;
                                         onmouseover="this.style.transform = 'scale(1.02)'; this.style.boxShadow = '0 8px 20px rgba(74,144,226,0.3)';"
                                         onmouseout="this.style.transform = 'scale(1)'; this.style.boxShadow = '0 1px 6px rgba(0,0,0,0.1)';">
                                         <div class="d-flex align-items-center p-2">
-                                            <img src="<?= BASE_URL ?>/uploads/avatars/<?= htmlspecialchars($aprendiz['avatar'] ?? 'default.png') ?>" alt="avatar"
+                                            <img src="../uploads/avatars/<?= htmlspecialchars($aprendiz['avatar'] ?? 'default.png') ?>" alt="avatar"
                                                 class="rounded-circle me-3" style="width: 48px; height: 48px; object-fit: cover;">
                                             <div>
                                                 <h6 class="mb-0" style="color: #0E4A86;"><?= htmlspecialchars($aprendiz['nombres'] . ' ' . $aprendiz['apellidos']) ?></h6>

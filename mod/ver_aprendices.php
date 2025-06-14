@@ -151,7 +151,7 @@ $aprendices = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <nav class="d-flex justify-content-center navbar" style="position: relative; right: 50px;">
       <div class="">
         <form class="d-flex" role="search">
-          <a href="<?= BASE_URL ?>/instructor/index.php"><button class="but btn" type="button" style="margin-right: 10px; cursor: pointer;">
+          <a href="../instructor/index.php"><button class="but btn" type="button" style="margin-right: 10px; cursor: pointer;">
               <i class="bi bi-arrow-90deg-left"></i>
             </button></a>
           <button class="but btn" type="button" style="margin-right: 10px;">
