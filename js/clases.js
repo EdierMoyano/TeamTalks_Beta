@@ -32,15 +32,16 @@ document.addEventListener("DOMContentLoaded", function () {
       const card = document.createElement("div");
       card.className = "card card-clase h-100 shadow-sm";
 
+      // Modificación: Usar id_clase como parámetro en la URL
       card.innerHTML = `
         <img src="${clase.imagen}" class="card-img-top" alt="Imagen de ${clase.nombre_clase}">
         <div class="card-body">
           <h5 class="card-title">${clase.nombre_clase}</h5>
-          <p class="card-text"><strong>Profesor:</strong> ${clase.nombre_profesor}</p>
-          <p class="card-text"><strong>Número de Ficha:</strong> ${clase.numero_fichas}</p>
+          <p class="card-text"><strong>Instructor:</strong> ${clase.nombre_profesor}</p>
+          <p class="card-text"><strong>Ficha:</strong> ${clase.numero_fichas}</p>
         </div>
         <div class="card-footer bg-transparent border-top-0">
-          <a href="#" class="btn btn-blue-dark w-100">Ingresar a Clase</a>
+          <a href="../aprendiz/clase/index.php?id_clase=${clase.id_clase}" class="btn btn-blue-dark w-100">Ingresar a Clase</a>
         </div>
       `;
 

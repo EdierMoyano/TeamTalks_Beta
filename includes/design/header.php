@@ -109,7 +109,7 @@ $logo_href = !$usuario_logueado ? BASE_URL . '/index.php' : $carpeta_inicio;
     }
 
     .select-options:hover {
-        background-color: #0E4A86;
+        background-color:rgb(15, 85, 155);
         color: white;
     }
 </style>
@@ -179,7 +179,6 @@ $logo_href = !$usuario_logueado ? BASE_URL . '/index.php' : $carpeta_inicio;
     </nav>
 </header>
 <?php if ($usuario_logueado): ?>
-<<<<<<< HEAD
 <script>
   (function(){
     const timeoutInSeconds = <?= $timeout ?? 500000000000 ?>; // Tiempo de inactividad en segundos
@@ -197,25 +196,6 @@ $logo_href = !$usuario_logueado ? BASE_URL . '/index.php' : $carpeta_inicio;
           window.location.href = '<?= BASE_URL ?>/login/login.php';
         });
     }
-=======
-    <script>
-        (function() {
-            const timeoutInSeconds = <?= $timeout ?? 100000 ?>; // Tiempo de inactividad en segundos
-            const timeoutMillis = timeoutInSeconds * 1000; // Tiempo en milisegundos
-            let timeoutId;
-
-            function cerrarSesion() {
-                fetch('<?= BASE_URL ?>/includes/exit.php')
-                    .then(() => {
-                        alert('Tu sesión ha expirado por inactividad.');
-                        window.location.href = '<?= BASE_URL ?>/login/login.php';
-                    })
-                    .catch(() => {
-                        // Si no logra salir, al menos redirige
-                        window.location.href = '<?= BASE_URL ?>/login/login.php';
-                    });
-            }
->>>>>>> f40bf37013065e69cecb294ca8886d78676ae5be
 
             function resetTimer() {
                 clearTimeout(timeoutId);
