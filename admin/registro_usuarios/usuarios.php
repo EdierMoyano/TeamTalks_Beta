@@ -1,5 +1,11 @@
 <?php
 session_start();
+
+if ($_SESSION['rol'] !== 2) {
+    header('Location: ../../includes/exit.php?');
+    exit;
+}
+
 require_once '../../conexion/conexion.php';
 require_once '../../includes/functions.php';
 
@@ -46,12 +52,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
     $id_tipo = $_POST['id_tipo'];
     $id_estado = 1; // Activo por defecto
     $id_ficha = !empty($_POST['id_ficha']) ? $_POST['id_ficha'] : null;
+    $id_materia = !empty($_POST['id_materia']) ? $_POST['id_materia'] : null;
     $fecha_registro = date('Y-m-d');
 
-    // Validar que el rol sea Instructor o Aprendiz
-    $rolesPermitidos = ['3', '4'];
+    // Validar que el rol sea Instructor, Aprendiz o Inst_Transversal
+    $rolesPermitidos = ['3', '4', '5'];
     if (!in_array($id_rol, $rolesPermitidos)) {
-        $alertMessage = "Solo se permite registrar usuarios con rol Instructor o Aprendiz";
+        $alertMessage = "Solo se permite registrar usuarios con rol Instructor, Aprendiz o Instructor Transversal";
         $alertType = "danger";
     } else {
         // Validar datos básicos
@@ -59,13 +66,29 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
             $alertMessage = "Los campos ID, Nombres, Correo y Contraseña son obligatorios";
             $alertType = "danger";
         } else {
-            // Si es un rol diferente a aprendiz, no se requiere ficha
-            $requiereFicha = ($id_rol == 4); // Rol 4 es Aprendiz
+            // Validaciones específicas por rol
+            $requiereFicha = ($id_rol == 4); // Solo aprendices requieren ficha
+            $requiereMateria = ($id_rol == 5); // Instructor transversal requiere materia
+            $esInstructorNormal = ($id_rol == 3); // Instructor normal
             
             if ($requiereFicha && empty($id_ficha)) {
                 $alertMessage = "Para aprendices, la ficha es obligatoria";
                 $alertType = "danger";
+            } elseif ($requiereMateria && empty($id_materia)) {
+                $alertMessage = "Para instructores transversales, la materia es obligatoria";
+                $alertType = "danger";
             } else {
+                // Obtener ID de la materia "Formacion Tecnica" para instructor normal
+                $id_materia_formacion_tecnica = null;
+                if ($esInstructorNormal) {
+                    $stmt = $conexion->prepare("SELECT id_materia FROM materias WHERE materia = 'Formacion Tecnica'");
+                    $stmt->execute();
+                    $materia_ft = $stmt->fetch(PDO::FETCH_ASSOC);
+                    if ($materia_ft) {
+                        $id_materia_formacion_tecnica = $materia_ft['id_materia'];
+                    }
+                }
+                
                 try {
                     // Verificar si la ficha existe y está activa (solo para aprendices)
                     if ($requiereFicha && !empty($id_ficha)) {
@@ -91,6 +114,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
                         }
                     }
                     
+                    // Verificar si la materia existe (para instructor transversal)
+                    if ($requiereMateria && !empty($id_materia)) {
+                        $stmt = $conexion->prepare("SELECT id_materia FROM materias WHERE id_materia = :id_materia");
+                        $stmt->bindParam(':id_materia', $id_materia, PDO::PARAM_INT);
+                        $stmt->execute();
+                        $materia = $stmt->fetch(PDO::FETCH_ASSOC);
+                        
+                        if (!$materia) {
+                            $alertMessage = "La materia especificada no existe";
+                            $alertType = "danger";
+                        }
+                    }
+                    
                     // Si todo está bien, proceder con el registro o actualización
                     if ($alertType != "danger") {
                         // Hash de la contraseña para seguridad
@@ -101,6 +137,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
                         $stmt->bindParam(':id', $id, PDO::PARAM_INT);
                         $stmt->execute();
                         $usuarioExistente = $stmt->fetch(PDO::FETCH_ASSOC);
+                        
+                        // Iniciar transacción
+                        $conexion->beginTransaction();
                         
                         if ($usuarioExistente) {
                             // Actualizar usuario existente
@@ -168,6 +207,54 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
                                         $stmt->execute();
                                     }
                                 }
+                                
+                                // Si es instructor normal, asignar automáticamente Formacion Tecnica
+                                if ($esInstructorNormal && !empty($id_materia_formacion_tecnica)) {
+                                    // Verificar si ya existe una relación
+                                    $stmt = $conexion->prepare("
+                                        SELECT id_detalles_instructor FROM materia_instructor 
+                                        WHERE id_instructor = :id_instructor AND id_materia = :id_materia
+                                    ");
+                                    $stmt->bindParam(':id_instructor', $id, PDO::PARAM_INT);
+                                    $stmt->bindParam(':id_materia', $id_materia_formacion_tecnica, PDO::PARAM_INT);
+                                    $stmt->execute();
+                                    $relacionExistente = $stmt->fetch(PDO::FETCH_ASSOC);
+                                    
+                                    if (!$relacionExistente) {
+                                        // Crear nueva relación
+                                        $stmt = $conexion->prepare("
+                                            INSERT INTO materia_instructor (id_instructor, id_materia) 
+                                            VALUES (:id_instructor, :id_materia)
+                                        ");
+                                        $stmt->bindParam(':id_instructor', $id, PDO::PARAM_INT);
+                                        $stmt->bindParam(':id_materia', $id_materia_formacion_tecnica, PDO::PARAM_INT);
+                                        $stmt->execute();
+                                    }
+                                }
+                                
+                                // Si es instructor transversal y tiene materia, actualizar o crear relación
+                                if ($requiereMateria && !empty($id_materia)) {
+                                    // Verificar si ya existe una relación
+                                    $stmt = $conexion->prepare("
+                                        SELECT id_detalles_instructor FROM materia_instructor 
+                                        WHERE id_instructor = :id_instructor AND id_materia = :id_materia
+                                    ");
+                                    $stmt->bindParam(':id_instructor', $id, PDO::PARAM_INT);
+                                    $stmt->bindParam(':id_materia', $id_materia, PDO::PARAM_INT);
+                                    $stmt->execute();
+                                    $relacionExistente = $stmt->fetch(PDO::FETCH_ASSOC);
+                                    
+                                    if (!$relacionExistente) {
+                                        // Crear nueva relación
+                                        $stmt = $conexion->prepare("
+                                            INSERT INTO materia_instructor (id_instructor, id_materia) 
+                                            VALUES (:id_instructor, :id_materia)
+                                        ");
+                                        $stmt->bindParam(':id_instructor', $id, PDO::PARAM_INT);
+                                        $stmt->bindParam(':id_materia', $id_materia, PDO::PARAM_INT);
+                                        $stmt->execute();
+                                    }
+                                }
                             } else {
                                 $alertMessage = "Error al actualizar el usuario";
                                 $alertType = "danger";
@@ -209,13 +296,40 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
                                     $stmt->bindParam(':id_ficha', $id_ficha, PDO::PARAM_INT);
                                     $stmt->execute();
                                 }
+                                
+                                // Si es instructor normal, asignar automáticamente Formacion Tecnica
+                                if ($esInstructorNormal && !empty($id_materia_formacion_tecnica)) {
+                                    $stmt = $conexion->prepare("
+                                        INSERT INTO materia_instructor (id_instructor, id_materia) 
+                                        VALUES (:id_instructor, :id_materia)
+                                    ");
+                                    $stmt->bindParam(':id_instructor', $id, PDO::PARAM_INT);
+                                    $stmt->bindParam(':id_materia', $id_materia_formacion_tecnica, PDO::PARAM_INT);
+                                    $stmt->execute();
+                                }
+                                
+                                // Si es instructor transversal y tiene materia, crear relación
+                                if ($requiereMateria && !empty($id_materia)) {
+                                    $stmt = $conexion->prepare("
+                                        INSERT INTO materia_instructor (id_instructor, id_materia) 
+                                        VALUES (:id_instructor, :id_materia)
+                                    ");
+                                    $stmt->bindParam(':id_instructor', $id, PDO::PARAM_INT);
+                                    $stmt->bindParam(':id_materia', $id_materia, PDO::PARAM_INT);
+                                    $stmt->execute();
+                                }
                             } else {
                                 $alertMessage = "Error al registrar el usuario";
                                 $alertType = "danger";
                             }
                         }
+                        
+                        // Confirmar transacción
+                        $conexion->commit();
                     }
                 } catch (PDOException $e) {
+                    // Rollback en caso de error
+                    $conexion->rollBack();
                     $alertMessage = "Error: " . $e->getMessage();
                     $alertType = "danger";
                 }
@@ -224,7 +338,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
     }
 }
 
-// Procesar Registro de usuarios de usuarios por Excel
+// Procesar Registro de usuarios por CSV
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['action'] == 'masivo') {
     if (isset($_FILES['excel_file']) && $_FILES['excel_file']['error'] == 0) {
         $nombreArchivo = $_FILES['excel_file']['tmp_name'];
@@ -241,7 +355,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
                 'errores_ficha' => 0,
                 'errores_formacion' => 0,
                 'errores_tipo_documento' => 0,
-                'actualizados' => 0
+                'errores_materia' => 0,
+                'actualizados' => 0,
+                'sin_materia' => 0
             ];
             
             $erroresDetalle = [];
@@ -256,13 +372,25 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
             } catch (PDOException $e) {
                 $alertMessage = "Error al obtener tipos de documento: " . $e->getMessage();
                 $alertType = "danger";
-                // Continuar con el procesamiento, pero registrar el error
                 $erroresDetalle[] = "Error al obtener tipos de documento: " . $e->getMessage();
+            }
+            
+            // Obtener ID de la materia "Formacion Tecnica"
+            $idFormacionTecnica = null;
+            try {
+                $stmt = $conexion->prepare("SELECT id_materia FROM materias WHERE materia = 'Formacion Tecnica'");
+                $stmt->execute();
+                $materia = $stmt->fetch(PDO::FETCH_ASSOC);
+                if ($materia) {
+                    $idFormacionTecnica = $materia['id_materia'];
+                }
+            } catch (PDOException $e) {
+                $erroresDetalle[] = "Error al obtener materia Formacion Tecnica: " . $e->getMessage();
             }
             
             // Leer archivo CSV
             if (($handle = fopen($nombreArchivo, "r")) !== FALSE) {
-                $esPrimera = true; // <--- Bandera para saltar la primera línea (encabezado)
+                $esPrimera = true;
 
                 // Iniciar transacción
                 $conexion->beginTransaction();
@@ -270,9 +398,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
                     while (($data = fgetcsv($handle, 1000, ";")) !== FALSE) {
                         if ($esPrimera) { 
                             $esPrimera = false; 
-                            continue; // <<< Salta la primera fila del archivo
+                            continue;
                         }
 
+                        // Verificar si hay suficientes columnas (ahora puede incluir materia)
                         if (count($data) < 10) {
                             $erroresDetalle[] = "Formato incorrecto en línea: " . implode(';', $data);
                             $resultados['errores']++;
@@ -287,15 +416,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
                         $avatar = trim($data[4]);
                         $telefono = trim($data[5]);
                         $id_rol = trim($data[6]);
-                        $id_estado = 1; // Activo por defecto
+                        $id_estado = 1;
                         $id_tipo = trim($data[8]);
                         $id_ficha = !empty(trim($data[9])) ? trim($data[9]) : null;
+                        $materia_nombre = isset($data[10]) ? trim($data[10]) : null; // Nueva columna para materia
                         $fecha_registro = date('Y-m-d');
                         
-                        // Validar que el rol sea Instructor o Aprendiz
-                        $rolesPermitidos = ['3', '4'];
+                        // Validar que el rol sea Instructor, Aprendiz o Inst_Transversal
+                        $rolesPermitidos = ['3', '4', '5'];
                         if (!in_array($id_rol, $rolesPermitidos)) {
-                            $erroresDetalle[] = "Solo se permite Instructor o Aprendiz para el usuario: " . $id . " - " . $nombres;
+                            $erroresDetalle[] = "Solo se permite Instructor, Aprendiz o Instructor Transversal para el usuario: " . $id . " - " . $nombres;
                             $resultados['errores']++;
                             continue;
                         }
@@ -307,7 +437,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
                             continue;
                         }
 
-                        // Validar que el tipo de documento exista (con la corrección de tipo)
+                        // Validar que el tipo de documento exista
                         if (!in_array((int)$id_tipo, array_map('intval', $tiposDocumentoValidos))) {
                             $erroresDetalle[] = "El tipo de documento " . $id_tipo . " no existe para usuario: " . $id . " - " . $nombres;
                             $resultados['errores_tipo_documento']++;
@@ -317,9 +447,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
                         // Hash de la contraseña para seguridad
                         $passwordHash = password_hash($password, PASSWORD_DEFAULT);
                         
-                        // Si es rol aprendiz, verificar que la ficha exista y esté activa
-                        $requiereFicha = ($id_rol == 4); // Rol 4 es Aprendiz
+                        // Validaciones específicas por rol
+                        $requiereFicha = ($id_rol == 4); // Aprendiz
+                        $esInstructor = ($id_rol == 3); // Instructor normal
+                        $esInstTransversal = ($id_rol == 5); // Instructor transversal
                         
+                        // Validar ficha para aprendices
                         if ($requiereFicha && !empty($id_ficha)) {
                             $stmt = $conexion->prepare("
                                 SELECT f.id_ficha, f.id_estado as ficha_estado, fo.id_estado as formacion_estado 
@@ -343,6 +476,37 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
                                 $erroresDetalle[] = "La formación de la ficha " . $id_ficha . " está inactiva para usuario: " . $id . " - " . $nombres;
                                 $resultados['errores_formacion']++;
                                 continue;
+                            }
+                        }
+                        
+                        // Determinar materia a asignar
+                        $id_materia_asignar = null;
+                        $registrar_sin_materia = false;
+                        
+                        if ($esInstructor) {
+                            // Instructor normal: asignar automáticamente Formacion Tecnica
+                            $id_materia_asignar = $idFormacionTecnica;
+                        } elseif ($esInstTransversal) {
+                            // Instructor transversal: validar materia del CSV
+                            if (!empty($materia_nombre)) {
+                                $stmt = $conexion->prepare("SELECT id_materia FROM materias WHERE materia = :materia_nombre");
+                                $stmt->bindParam(':materia_nombre', $materia_nombre, PDO::PARAM_STR);
+                                $stmt->execute();
+                                $materia = $stmt->fetch(PDO::FETCH_ASSOC);
+                                
+                                if ($materia) {
+                                    $id_materia_asignar = $materia['id_materia'];
+                                } else {
+                                    // Materia no encontrada, registrar sin materia
+                                    $registrar_sin_materia = true;
+                                    $erroresDetalle[] = "Materia '" . $materia_nombre . "' no encontrada para instructor transversal: " . $id . " - " . $nombres . ". Se registrará sin materia.";
+                                    $resultados['sin_materia']++;
+                                }
+                            } else {
+                                // No se proporcionó materia, registrar sin materia
+                                $registrar_sin_materia = true;
+                                $erroresDetalle[] = "No se proporcionó materia para instructor transversal: " . $id . " - " . $nombres . ". Se registrará sin materia.";
+                                $resultados['sin_materia']++;
                             }
                         }
                         
@@ -378,14 +542,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
                             $stmt->bindParam(':id_tipo', $id_tipo, PDO::PARAM_INT);
                             $stmt->bindParam(':id_estado', $id_estado, PDO::PARAM_INT);
                             $stmt->bindParam(':fecha_registro', $fecha_registro, PDO::PARAM_STR);
-                                                        $stmt->bindParam(':nit', $nitEmpresa, PDO::PARAM_INT);
+                            $stmt->bindParam(':nit', $nitEmpresa, PDO::PARAM_INT);
                             
                             if ($stmt->execute()) {
                                 $resultados['actualizados']++;
                                 
-                                // Si es aprendiz y tiene ficha, actualizar o crear relación en user_ficha
+                                // Manejar relaciones según el rol
                                 if ($requiereFicha && !empty($id_ficha)) {
-                                    // Verificar si ya existe una relación
+                                    // Gestionar relación user_ficha para aprendices
                                     $stmt = $conexion->prepare("
                                         SELECT id_user_ficha FROM user_ficha 
                                         WHERE id_user = :id_user AND id_ficha = :id_ficha
@@ -396,7 +560,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
                                     $relacionExistente = $stmt->fetch(PDO::FETCH_ASSOC);
                                     
                                     if ($relacionExistente) {
-                                        // Actualizar relación existente
                                         $stmt = $conexion->prepare("
                                             UPDATE user_ficha SET 
                                             id_estado = 1, 
@@ -407,13 +570,34 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
                                         $stmt->bindParam(':id_ficha', $id_ficha, PDO::PARAM_INT);
                                         $stmt->execute();
                                     } else {
-                                        // Crear nueva relación
                                         $stmt = $conexion->prepare("
                                             INSERT INTO user_ficha (id_user, id_ficha, fecha_asig, id_estado) 
                                             VALUES (:id_user, :id_ficha, CURRENT_DATE, 1)
                                         ");
                                         $stmt->bindParam(':id_user', $id, PDO::PARAM_INT);
                                         $stmt->bindParam(':id_ficha', $id_ficha, PDO::PARAM_INT);
+                                        $stmt->execute();
+                                    }
+                                }
+                                
+                                // Gestionar relación materia_instructor para instructores
+                                if (($esInstructor || $esInstTransversal) && !empty($id_materia_asignar)) {
+                                    $stmt = $conexion->prepare("
+                                        SELECT id_detalles_instructor FROM materia_instructor 
+                                        WHERE id_instructor = :id_instructor AND id_materia = :id_materia
+                                    ");
+                                    $stmt->bindParam(':id_instructor', $id, PDO::PARAM_INT);
+                                    $stmt->bindParam(':id_materia', $id_materia_asignar, PDO::PARAM_INT);
+                                    $stmt->execute();
+                                    $relacionExistente = $stmt->fetch(PDO::FETCH_ASSOC);
+                                    
+                                    if (!$relacionExistente) {
+                                        $stmt = $conexion->prepare("
+                                            INSERT INTO materia_instructor (id_instructor, id_materia) 
+                                            VALUES (:id_instructor, :id_materia)
+                                        ");
+                                        $stmt->bindParam(':id_instructor', $id, PDO::PARAM_INT);
+                                        $stmt->bindParam(':id_materia', $id_materia_asignar, PDO::PARAM_INT);
                                         $stmt->execute();
                                     }
                                 }
@@ -447,7 +631,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
                             if ($stmt->execute()) {
                                 $resultados['exitosos']++;
                                 
-                                // Si es aprendiz y tiene ficha, crear relación en user_ficha
+                                // Manejar relaciones según el rol
                                 if ($requiereFicha && !empty($id_ficha)) {
                                     $stmt = $conexion->prepare("
                                         INSERT INTO user_ficha (id_user, id_ficha, fecha_asig, id_estado) 
@@ -455,6 +639,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
                                     ");
                                     $stmt->bindParam(':id_user', $id, PDO::PARAM_INT);
                                     $stmt->bindParam(':id_ficha', $id_ficha, PDO::PARAM_INT);
+                                    $stmt->execute();
+                                }
+                                
+                                // Gestionar relación materia_instructor para instructores
+                                if (($esInstructor || $esInstTransversal) && !empty($id_materia_asignar)) {
+                                    $stmt = $conexion->prepare("
+                                        INSERT INTO materia_instructor (id_instructor, id_materia) 
+                                        VALUES (:id_instructor, :id_materia)
+                                    ");
+                                    $stmt->bindParam(':id_instructor', $id, PDO::PARAM_INT);
+                                    $stmt->bindParam(':id_materia', $id_materia_asignar, PDO::PARAM_INT);
                                     $stmt->execute();
                                 }
                             } else {
@@ -471,6 +666,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
                     $mensajeResultado = "Procesamiento completado: <br>";
                     $mensajeResultado .= "- Usuarios nuevos: " . $resultados['exitosos'] . "<br>";
                     $mensajeResultado .= "- Usuarios actualizados: " . $resultados['actualizados'] . "<br>";
+                    $mensajeResultado .= "- Instructores transversales sin materia: " . $resultados['sin_materia'] . "<br>";
                     $mensajeResultado .= "- Errores formación inactiva: " . $resultados['errores_formacion'] . "<br>";
                     $mensajeResultado .= "- Errores ficha no existente/inactiva: " . $resultados['errores_ficha'] . "<br>";
                     $mensajeResultado .= "- Errores tipo documento inválido: " . $resultados['errores_tipo_documento'] . "<br>";
@@ -516,10 +712,10 @@ try {
     $alertType = "danger";
 }
 
-// Obtener solo los roles Instructor y Aprendiz
+// Obtener roles permitidos (Instructor, Aprendiz, Inst_Transversal)
 $roles = [];
 try {
-    $stmt = $conexion->query("SELECT * FROM roles WHERE rol IN ('Instructor', 'Aprendiz') ORDER BY rol");
+    $stmt = $conexion->query("SELECT * FROM roles WHERE rol IN ('Instructor', 'Aprendiz', 'Inst_Transversal') ORDER BY rol");
     $roles = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
     $alertMessage = "Error al cargar roles: " . $e->getMessage();
@@ -539,6 +735,20 @@ try {
     $fichas = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
     $alertMessage = "Error al cargar fichas: " . $e->getMessage();
+    $alertType = "danger";
+}
+
+// Obtener materias (excluyendo Formacion Tecnica para instructores transversales)
+$materias = [];
+try {
+    $stmt = $conexion->query("
+        SELECT * FROM materias 
+        WHERE materia != 'Formacion Tecnica' 
+        ORDER BY materia
+    ");
+    $materias = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    $alertMessage = "Error al cargar materias: " . $e->getMessage();
     $alertType = "danger";
 }
 
@@ -570,17 +780,20 @@ $offset = ($paginaActual - 1) * $usuariosPorPagina;
 $usuarios = [];
 try {
     $stmt = $conexion->query("
-        SELECT u.id, u.nombres, u.apellidos, u.correo, u.telefono, 
+        SELECT u.id, u.nombres, u.apellidos, u.correo, u.telefono, u.fecha_registro,
                r.rol, td.tipo_doc, e.estado, 
-               GROUP_CONCAT(f.id_ficha) as fichas
+               GROUP_CONCAT(DISTINCT f.id_ficha) as fichas,
+               GROUP_CONCAT(DISTINCT m.materia) as materias
         FROM usuarios u
         LEFT JOIN roles r ON u.id_rol = r.id_rol
         LEFT JOIN tipo_documento td ON u.id_tipo = td.id_tipo
         LEFT JOIN estado e ON u.id_estado = e.id_estado
         LEFT JOIN user_ficha uf ON u.id = uf.id_user
         LEFT JOIN fichas f ON uf.id_ficha = f.id_ficha
+        LEFT JOIN materia_instructor mi ON u.id = mi.id_instructor
+        LEFT JOIN materias m ON mi.id_materia = m.id_materia
         GROUP BY u.id
-        ORDER BY u.id DESC
+        ORDER BY u.fecha_registro DESC, u.id DESC
     ");
     $usuarios = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
@@ -630,8 +843,9 @@ try {
                                     <label for="excel_file" class="form-label">Archivo CSV con usuarios:</label>
                                     <input type="file" class="form-control" id="excel_file" name="excel_file" accept=".csv" required>
                                     <div class="form-text">
-                                        Formato: Id_user;Nombres;Correo;Contrasena;Avatar;Telefono;Id_rol;Id_estado;Id_docu;ficha<br>
-                                        Ejemplo: 65904850;Pedro Gómez;pedrogomez@mail.com;clave123;;3001234567;4;1;1;14092006
+                                        Formato: Id_user;Nombres;Correo;Contrasena;Avatar;Telefono;Id_rol;Id_estado;Id_docu;ficha;materia<br>
+                                        Ejemplo: 65904850;Pedro Gómez;pedrogomez@mail.com;clave123;;3001234567;5;1;1;;Inglés<br>
+                                        <strong>Nota:</strong> Para instructores transversales (rol 5), incluir nombre de materia en la última columna
                                     </div>
                                 </div>
                                 <div class="col-md-5 mb-3">
@@ -654,11 +868,22 @@ try {
                         <h4 class="mb-0">Lista de Usuarios</h4>
                     </div>
                     <div class="table-responsive">
-                        <div class="d-flex justify-content-end mt-3 mb-4">
+                        <div class="d-flex justify-content-between align-items-center mt-3 mb-4 px-3">
+                            <div>
+                                <label for="filasPorPagina" class="form-label me-2">Mostrar:</label>
+                                <select id="filasPorPagina" class="form-select form-select-sm d-inline-block w-auto" onchange="cambiarFilasPorPagina(this.value)">
+                                    <option value="5" selected>5</option>
+                                    <option value="10">10</option>
+                                    <option value="25">25</option>
+                                    <option value="50">50</option>
+                                    <option value="100">100</option>
+                                </select>
+                                <span class="ms-2 text-muted">registros por página</span>
+                            </div>
                             <input 
                                 type="text" 
                                 id="busquedaUsuario" 
-                                class="form-control me-3" 
+                                class="form-control" 
                                 style="max-width: 350px;" 
                                 placeholder="Buscar usuario (nombre, correo...)" 
                                 oninput="filtrarUsuario()"
@@ -675,6 +900,7 @@ try {
                                     <th>Rol</th>
                                     <th>Estado</th>
                                     <th>Fichas</th>
+                                    <th>Materias</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -705,6 +931,18 @@ try {
                                                     }
                                                 } else {
                                                     echo '<span class="badge bg-secondary">Sin ficha</span>';
+                                                }
+                                                ?>
+                                            </td>
+                                            <td>
+                                                <?php
+                                                if (!empty($usuario['materias'])) {
+                                                    $materiasNombres = explode(',', $usuario['materias']);
+                                                    foreach ($materiasNombres as $materiaNombre) {
+                                                        echo '<span class="badge bg-warning me-1">' . htmlspecialchars($materiaNombre) . '</span>';
+                                                    }
+                                                } else {
+                                                    echo '<span class="badge bg-secondary">Sin materia</span>';
                                                 }
                                                 ?>
                                             </td>
@@ -786,7 +1024,7 @@ try {
                                 </select>
                             </div>
                         </div>
-                        <div class="mb-3 ficha-container">
+                        <div class="mb-3 ficha-container" style="display: none;">
                             <label for="id_ficha" class="form-label">Ficha (Solo para Aprendices)</label>
                             <select class="form-select" id="id_ficha" name="id_ficha" style="width:100%;">
                                 <option value="">Seleccione una ficha</option>
@@ -797,6 +1035,18 @@ try {
                                 <?php endforeach; ?>
                             </select>
                             <div class="form-text">La ficha solo es obligatoria para usuarios con rol de Aprendiz</div>
+                        </div>
+                        <div class="mb-3 materia-container" style="display: none;">
+                            <label for="id_materia" class="form-label">Materia (Para Instructores Transversales) *</label>
+                            <select class="form-select" id="id_materia" name="id_materia" style="width:100%;">
+                                <option value="">Seleccione una materia</option>
+                                <?php foreach ($materias as $materia): ?>
+                                    <option value="<?php echo $materia['id_materia']; ?>">
+                                        <?php echo htmlspecialchars($materia['materia']); ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                            <div class="form-text">La materia es obligatoria para instructores transversales (no incluye Formación Técnica)</div>
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -830,7 +1080,7 @@ try {
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="../js/sidebard.js"></script>
-    <!-- SELECT2 para campo de ficha -->
+    <!-- SELECT2 para campos de ficha y materia -->
     <script>
     $(document).ready(function() {
         $('#id_ficha').select2({
@@ -841,16 +1091,28 @@ try {
             allowClear: true,
             dropdownPosition: 'below'
         });
-        // Resetea el select2 cada vez que abras el modal
+        
+        $('#id_materia').select2({
+            dropdownParent: $('#userModal'),
+            dropdownAutoWidth: true,
+            width: '100%',
+            placeholder: "Seleccione una materia",
+            allowClear: true,
+            dropdownPosition: 'below'
+        });
+        
+        // Resetea los select2 cada vez que abras el modal
         $('#userModal').on('shown.bs.modal', function () {
             $('#id_ficha').val('').trigger('change');
+            $('#id_materia').val('').trigger('change');
         });
     });
     </script>
-    <!-- PAGINACIÓN Y FILTRO JS -->
+    <!-- PAGINACIÓN Y FILTRO JS MEJORADO -->
     <script>
     let filasPorPaginaUsuarios = 5;
     let paginaActualUsuarios = 1;
+
     function obtenerFilasUsuariosFiltradas() {
         let filas = Array.from(document.querySelectorAll("#tablaUsuarios tbody tr"));
         let filtro = document.getElementById("busquedaUsuario").value.trim().toLowerCase();
@@ -860,40 +1122,153 @@ try {
             return texto.includes(filtro);
         });
     }
+
     function mostrarPaginaUsuarios(pagina) {
         let filas = obtenerFilasUsuariosFiltradas();
         let totalPaginas = Math.ceil(filas.length / filasPorPaginaUsuarios);
+        
         if (pagina < 1) pagina = 1;
         if (pagina > totalPaginas) pagina = totalPaginas;
+        
+        // Ocultar todas las filas
         document.querySelectorAll("#tablaUsuarios tbody tr").forEach(fila => fila.style.display = "none");
+        
+        // Mostrar filas de la página actual
         let inicio = (pagina - 1) * filasPorPaginaUsuarios;
         let fin = inicio + filasPorPaginaUsuarios;
         for (let i = inicio; i < fin && i < filas.length; i++) {
             filas[i].style.display = "";
         }
-        let paginacion = document.getElementById("paginacionUsuarios");
-        paginacion.innerHTML = "";
-        if (totalPaginas <= 1) return;
-        paginacion.innerHTML += `<li class="page-item ${pagina === 1 ? 'disabled' : ''}">
-            <button class="page-link" onclick="cambiarPaginaUsuarios(${pagina - 1})">Anterior</button>
-        </li>`;
-        for (let i = 1; i <= totalPaginas; i++) {
-            paginacion.innerHTML += `<li class="page-item ${pagina === i ? 'active' : ''}">
-                <button class="page-link" onclick="cambiarPaginaUsuarios(${i})">${i}</button>
-            </li>`;
-        }
-        paginacion.innerHTML += `<li class="page-item ${pagina === totalPaginas ? 'disabled' : ''}">
-            <button class="page-link" onclick="cambiarPaginaUsuarios(${pagina + 1})">Siguiente</button>
-        </li>`;
+        
+        // Generar paginación inteligente
+        generarPaginacionInteligente(pagina, totalPaginas);
         paginaActualUsuarios = pagina;
     }
+
+    function generarPaginacionInteligente(paginaActual, totalPaginas) {
+        let paginacion = document.getElementById("paginacionUsuarios");
+        paginacion.innerHTML = "";
+        
+        if (totalPaginas <= 1) return;
+        
+        const maxPaginasVisibles = 5; // Máximo número de páginas a mostrar
+        let paginaInicio, paginaFin;
+        
+        // Calcular rango de páginas a mostrar
+        if (totalPaginas <= maxPaginasVisibles) {
+            paginaInicio = 1;
+            paginaFin = totalPaginas;
+        } else {
+            // Centrar la página actual en el rango visible
+            let mitad = Math.floor(maxPaginasVisibles / 2);
+            paginaInicio = Math.max(1, paginaActual - mitad);
+            paginaFin = Math.min(totalPaginas, paginaInicio + maxPaginasVisibles - 1);
+            
+            // Ajustar si estamos cerca del final
+            if (paginaFin - paginaInicio < maxPaginasVisibles - 1) {
+                paginaInicio = Math.max(1, paginaFin - maxPaginasVisibles + 1);
+            }
+        }
+        
+        // Botón "Primera" (solo si no estamos en la primera página)
+        if (paginaActual > 1) {
+            paginacion.innerHTML += `
+                <li class="page-item">
+                    <button class="page-link" onclick="cambiarPaginaUsuarios(1)" title="Primera página">
+                        <i class="bi bi-chevron-double-left"></i>
+                    </button>
+                </li>`;
+        }
+        
+        // Botón "Anterior"
+        paginacion.innerHTML += `
+            <li class="page-item ${paginaActual === 1 ? 'disabled' : ''}">
+                <button class="page-link" onclick="cambiarPaginaUsuarios(${paginaActual - 1})" title="Página anterior">
+                    <i class="bi bi-chevron-left"></i>
+                </button>
+            </li>`;
+        
+        // Mostrar "..." si hay páginas antes del rango visible
+        if (paginaInicio > 1) {
+            paginacion.innerHTML += `
+                <li class="page-item disabled">
+                    <span class="page-link">...</span>
+                </li>`;
+        }
+        
+        // Números de página
+        for (let i = paginaInicio; i <= paginaFin; i++) {
+            paginacion.innerHTML += `
+                <li class="page-item ${paginaActual === i ? 'active' : ''}">
+                    <button class="page-link" onclick="cambiarPaginaUsuarios(${i})">${i}</button>
+                </li>`;
+        }
+        
+        // Mostrar "..." si hay páginas después del rango visible
+        if (paginaFin < totalPaginas) {
+            paginacion.innerHTML += `
+                <li class="page-item disabled">
+                    <span class="page-link">...</span>
+                </li>`;
+        }
+        
+        // Botón "Siguiente"
+        paginacion.innerHTML += `
+            <li class="page-item ${paginaActual === totalPaginas ? 'disabled' : ''}">
+                <button class="page-link" onclick="cambiarPaginaUsuarios(${paginaActual + 1})" title="Página siguiente">
+                    <i class="bi bi-chevron-right"></i>
+                </button>
+            </li>`;
+        
+        // Botón "Última" (solo si no estamos en la última página)
+        if (paginaActual < totalPaginas) {
+            paginacion.innerHTML += `
+                <li class="page-item">
+                    <button class="page-link" onclick="cambiarPaginaUsuarios(${totalPaginas})" title="Última página">
+                        <i class="bi bi-chevron-double-right"></i>
+                    </button>
+                </li>`;
+        }
+        
+        // Mostrar información de página actual
+        mostrarInfoPaginacion(paginaActual, totalPaginas, obtenerFilasUsuariosFiltradas().length);
+    }
+
+    function mostrarInfoPaginacion(paginaActual, totalPaginas, totalRegistros) {
+        // Crear o actualizar el elemento de información si no existe
+        let infoPaginacion = document.getElementById("infoPaginacionUsuarios");
+        if (!infoPaginacion) {
+            infoPaginacion = document.createElement("div");
+            infoPaginacion.id = "infoPaginacionUsuarios";
+            infoPaginacion.className = "text-center mt-2 text-muted small";
+            document.getElementById("paginacionUsuarios").parentNode.appendChild(infoPaginacion);
+        }
+        
+        let registroInicio = ((paginaActual - 1) * filasPorPaginaUsuarios) + 1;
+        let registroFin = Math.min(paginaActual * filasPorPaginaUsuarios, totalRegistros);
+        
+        infoPaginacion.innerHTML = `
+            Mostrando ${registroInicio} a ${registroFin} de ${totalRegistros} registros 
+            (Página ${paginaActual} de ${totalPaginas})
+        `;
+    }
+
     function cambiarPaginaUsuarios(nuevaPagina) {
         mostrarPaginaUsuarios(nuevaPagina);
     }
+
     function filtrarUsuario() {
         paginaActualUsuarios = 1;
         mostrarPaginaUsuarios(paginaActualUsuarios);
     }
+
+    // Función para cambiar el número de filas por página
+    function cambiarFilasPorPagina(nuevasFilas) {
+        filasPorPaginaUsuarios = parseInt(nuevasFilas);
+        paginaActualUsuarios = 1;
+        mostrarPaginaUsuarios(paginaActualUsuarios);
+    }
+
     document.addEventListener("DOMContentLoaded", function() {
         mostrarPaginaUsuarios(paginaActualUsuarios);
     });
@@ -909,23 +1284,38 @@ try {
             resultadosModalBody.innerHTML = `<?php echo $modalMessage; ?>`;
             resultadosModal.show();
         <?php endif; ?>
+        
         // Inicializar tooltips
         const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
         tooltipTriggerList.map(function (tooltipTriggerEl) {
             return new bootstrap.Tooltip(tooltipTriggerEl);
         });
-        // Mostrar/ocultar campo de ficha según el rol seleccionado
+        
+        // Mostrar/ocultar campos según el rol seleccionado
         document.getElementById('id_rol').addEventListener('change', function() {
             const fichaContainer = document.querySelector('.ficha-container');
             const fichaSelect = document.getElementById('id_ficha');
+            const materiaContainer = document.querySelector('.materia-container');
+            const materiaSelect = document.getElementById('id_materia');
+            
+            // Ocultar todos los contenedores primero
+            fichaContainer.style.display = 'none';
+            materiaContainer.style.display = 'none';
+            fichaSelect.removeAttribute('required');
+            materiaSelect.removeAttribute('required');
+            
             if (this.value == '4') {
+                // Aprendiz: mostrar ficha
                 fichaContainer.style.display = 'block';
                 fichaSelect.setAttribute('required', 'required');
-            } else {
-                fichaContainer.style.display = 'block';
-                fichaSelect.removeAttribute('required');
+            } else if (this.value == '5') {
+                // Instructor Transversal: mostrar materia
+                materiaContainer.style.display = 'block';
+                materiaSelect.setAttribute('required', 'required');
             }
+            // Para instructor normal (rol 3) no se muestra nada adicional
         });
+        
         // Cargar datos para edición al hacer click en botón editar
         const editButtons = document.querySelectorAll('.edit-user');
         editButtons.forEach(button => {
@@ -947,18 +1337,35 @@ try {
                             document.getElementById('password').required = false;
                             document.getElementById('id_tipo').value = user.id_tipo;
                             document.getElementById('id_rol').value = user.id_rol;
+                            
                             const fichaContainer = document.querySelector('.ficha-container');
                             const fichaSelect = document.getElementById('id_ficha');
+                            const materiaContainer = document.querySelector('.materia-container');
+                            const materiaSelect = document.getElementById('id_materia');
+                            
+                            // Ocultar todos los contenedores
+                            fichaContainer.style.display = 'none';
+                            materiaContainer.style.display = 'none';
+                            fichaSelect.removeAttribute('required');
+                            materiaSelect.removeAttribute('required');
+                            
                             if (user.id_rol == '4') {
+                                // Aprendiz
                                 fichaContainer.style.display = 'block';
                                 if (user.id_ficha) {
                                     fichaSelect.value = user.id_ficha;
-                                    $('#id_ficha').trigger('change'); // Actualizar Select2
+                                    $('#id_ficha').trigger('change');
                                 }
-                            } else {
-                                fichaContainer.style.display = 'block';
-                                fichaSelect.removeAttribute('required');
+                            } else if (user.id_rol == '5') {
+                                // Instructor Transversal
+                                materiaContainer.style.display = 'block';
+                                materiaSelect.setAttribute('required', 'required');
+                                if (user.id_materia) {
+                                    materiaSelect.value = user.id_materia;
+                                    $('#id_materia').trigger('change');
+                                }
                             }
+                            
                             document.getElementById('userModalLabel').textContent = 'Editar Usuario';
                             const userModal = new bootstrap.Modal(document.getElementById('userModal'));
                             userModal.show();
@@ -972,6 +1379,7 @@ try {
                     });
             });
         });
+        
         // Resetear formulario cuando se cierra el modal
         document.getElementById('userModal').addEventListener('hidden.bs.modal', function() {
             document.getElementById('userForm').reset();
@@ -979,10 +1387,27 @@ try {
             document.getElementById('password').required = true;
             document.getElementById('password').placeholder = '';
             document.getElementById('userModalLabel').textContent = 'Nuevo Usuario';
-            $('#id_ficha').val('').trigger('change'); // Limpiar select2 también
+            
+            // Ocultar contenedores adicionales
+            document.querySelector('.ficha-container').style.display = 'none';
+            document.querySelector('.materia-container').style.display = 'none';
+            
+            // Limpiar select2
+            $('#id_ficha').val('').trigger('change');
+            $('#id_materia').val('').trigger('change');
         });
     });
     
     </script>
+
+    // Script para cerrar sesión al recargar la página
+<script>
+window.addEventListener('beforeunload', function () {
+    // Aquí puedes enviar una solicitud AJAX para cerrar la sesión en el servidor
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', '../../includes/exit.php', true);
+    xhr.send();
+});
+</script>
 </body>
 </html>

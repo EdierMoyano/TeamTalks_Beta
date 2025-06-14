@@ -67,7 +67,7 @@
 }
 
 .modal-content {
-  border-radius: 10px;
+  border-radius: 11px;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
 }
 
@@ -181,3 +181,129 @@
   background-color: #e9ecef;
   color: #0e4a86;
 }
+
+
+.jornada-card {
+            border-left: 4px solid #0d6efd;
+            height: 100%;
+        }
+        .bloque-time {
+            background: #f8f9fa;
+            padding: 5px 10px;
+            border-radius: 5px;
+            margin: 2px 0;
+            font-size: 0.9em;
+        }
+        .info-sistema {
+            background: #e7f3ff;
+            border: 1px solid #b3d9ff;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .horarios-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        @media (max-width: 768px) {
+            .horarios-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .ficha-dropdown {
+            position: relative;
+        }
+        
+        .lista-fichas {
+            position: absolute;
+            top: auto;
+            bottom: 100%;
+            left: 0;
+            right: 0;
+            z-index: 1050;
+            background: white;
+            border: 1px solid #ced4da;
+            border-radius: 0.375rem;
+            max-height: 200px;
+            overflow-y: auto;
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+            transform: translateY(-5px);
+        }
+        
+        .ficha-item {
+            padding: 8px 12px;
+            cursor: pointer;
+            border-bottom: 1px solid #eee;
+            font-size: 0.9em;
+        }
+        
+        .ficha-item:hover {
+            background-color: #e9ecef;
+        }
+        
+        .ficha-numero {
+            font-weight: bold;
+            color: #0d6efd;
+        }
+        
+        .ficha-programa {
+            color: #6c757d;
+            font-size: 0.85em;
+        }
+
+        /* Estilos mejorados para el modal */
+        .bloques-config {
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+            background-color: #f8f9fa;
+        }
+
+        .bloque-section {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .bloque-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .bloque-title {
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .validation-error {
+            border-color: #dc3545 !important;
+            box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
+        }
+
+        .error-message {
+            color: #dc3545;
+            font-size: 0.875em;
+            margin-top: 5px;
+        }
+
+        .success-message {
+            color: #198754;
+            font-size: 0.875em;
+            margin-top: 5px;
+        }
+
+        /* Estilos para filtros */
+        .filtros-container {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
