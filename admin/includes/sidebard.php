@@ -8,7 +8,7 @@ $nombreUsuario = "Usuario"; // Valor por defecto
 if (isset($_SESSION['documento'])) {
     // Conexión a la base de datos
     // Asumiendo que conexion.php está en la raíz del proyecto
-    $conexion = new mysqli("localhost", "root", "", "teamtalks");
+    $conexion = new mysqli("localhost", "u148394603_teamtalks", "TeamTalks2901879", "u148394603_teamtalks");
     
     // Verificar conexión
     if ($conexion->connect_error) {
@@ -35,7 +35,7 @@ if (isset($_SESSION['documento'])) {
 $currentPage = basename($_SERVER['PHP_SELF']);
 
 // Definir la ruta base para todas las URLs (ajustar según tu estructura)
-$baseUrl = "/teamtalks/admin/"; // Asegúrate de que esta ruta sea correcta
+$baseUrl = "/admin/"; // Asegúrate de que esta ruta sea correcta
 ?>
 
 <!DOCTYPE html>

@@ -1,6 +1,6 @@
 <?php
 // Incluir el autoload de Composer para cargar automáticamente PHPMailer y otras dependencias
-require '../vendor/autoload.php';  // Asegúrate de que esta ruta sea correcta
+require 'vendor/autoload.php';  // Asegúrate de que esta ruta sea correcta
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;

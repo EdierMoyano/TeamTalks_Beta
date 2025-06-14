@@ -142,7 +142,7 @@ $actividades = $stmt->fetchAll(PDO::FETCH_ASSOC);
         </div>
         <div class="ms-3 d-flex gap-2">
 
-          <a href="<?= BASE_URL ?>/mod/ver_entregas.php?id_actividad=<?= $act['id_actividad'] ?>" class="accion btn" title="Ver entregas">
+          <a href="../mod/ver_entregas.php?id_actividad=<?= $act['id_actividad'] ?>" class="accion btn" title="Ver entregas">
             <i class="bi bi-eye"></i>
           </a>
 
