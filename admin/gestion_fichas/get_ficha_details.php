@@ -1,5 +1,11 @@
 <?php
 session_start();
+
+if ($_SESSION['rol'] !== 2) {
+    header('Location: ../../includes/exit.php?');
+    exit;
+}
+
 require_once '../../conexion/conexion.php';
 
 // Verificar si el usuario está autenticado
@@ -146,7 +152,7 @@ try {
                     <h5><i class="bi bi-person-badge"></i> Instructor Líder</h5>
                 </div>
                 <div class="card-body">';
-    
+
     if ($ficha['instructor_lider']) {
         $html .= '
                     <table class="table table-sm">
@@ -157,7 +163,7 @@ try {
     } else {
         $html .= '<p class="text-muted">No hay instructor líder asignado</p>';
     }
-    
+
     $html .= '
                 </div>
             </div>
@@ -184,7 +190,7 @@ try {
                                 </tr>
                             </thead>
                             <tbody>';
-    
+
     if (!empty($materias)) {
         foreach ($materias as $materia) {
             $html .= '
@@ -218,12 +224,12 @@ try {
     } else {
         $html .= '<tr><td colspan="5" class="text-center text-muted p-3">No hay materias asignadas a esta ficha</td></tr>';
     }
-    
+
     $html .= '
                             </tbody>
                         </table>
                     </div>';
-    
+
     // Paginación para materias
     if (count($materias) > 6) {
         $html .= '
@@ -243,7 +249,7 @@ try {
                         </nav>
                     </div>';
     }
-    
+
     $html .= '
                 </div>
             </div>
@@ -271,7 +277,7 @@ try {
                                 </tr>
                             </thead>
                             <tbody>';
-    
+
     if (!empty($aprendices)) {
         foreach ($aprendices as $aprendiz) {
             $html .= '
@@ -287,12 +293,12 @@ try {
     } else {
         $html .= '<tr><td colspan="6" class="text-center text-muted p-3">No hay aprendices asignados a esta ficha</td></tr>';
     }
-    
+
     $html .= '
                             </tbody>
                         </table>
                     </div>';
-    
+
     // Paginación para aprendices
     if (count($aprendices) > 6) {
         $html .= '
@@ -312,7 +318,7 @@ try {
                         </nav>
                     </div>';
     }
-    
+
     $html .= '
                 </div>
             </div>
@@ -341,7 +347,7 @@ try {
                                     </tr>
                                 </thead>
                                 <tbody>';
-        
+
         foreach ($horarios as $horario) {
             $html .= '
                                     <tr class="horario-row">
@@ -352,12 +358,12 @@ try {
                                         <td>' . htmlspecialchars($horario['trimestre'] ?? 'Sin trimestre') . '</td>
                                     </tr>';
         }
-        
+
         $html .= '
                                 </tbody>
                             </table>
                         </div>';
-        
+
         // Paginación para horarios
         if (count($horarios) > 6) {
             $html .= '
@@ -377,7 +383,7 @@ try {
                             </nav>
                         </div>';
         }
-        
+
         $html .= '
                     </div>
                 </div>
@@ -386,11 +392,9 @@ try {
     }
 
     echo json_encode([
-        'success' => true, 
+        'success' => true,
         'html' => $html
     ]);
-
 } catch (PDOException $e) {
     echo json_encode(['success' => false, 'error' => 'Error en la base de datos: ' . $e->getMessage()]);
 }
-?>

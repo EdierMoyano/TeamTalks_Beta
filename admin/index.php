@@ -1,13 +1,8 @@
 <?php
 session_start();
-// Verificar si el usuario está autenticado
-if (!isset($_SESSION['documento'])) {
-    header('Location: ../login/login.php');
-    exit;
-}
 
 if ($_SESSION['rol'] !== 2) {
-    header('Location: /teamtalks/includes/exit.php?motivo=acceso-denegado');
+    header('Location: ../includes/exit.php?motivo=acceso-denegado');
     exit;
 }
 
@@ -16,10 +11,9 @@ if ($_SESSION['rol'] !== 2) {
 
 
 
-
-
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -30,6 +24,7 @@ if ($_SESSION['rol'] !== 2) {
     <!-- Estilos personalizados -->
     <link rel="stylesheet" href="styles/sidebard.css">
 </head>
+
 <body>
     <div class="wrapper">
         <!-- Incluir el sidebar -->
@@ -67,7 +62,7 @@ if ($_SESSION['rol'] !== 2) {
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="row">
                     <div class="col-md-6 mb-4">
                         <div class="card">
@@ -107,5 +102,15 @@ if ($_SESSION['rol'] !== 2) {
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="js/sidebard.js"></script>
+    // Script para cerrar sesión al recargar la página
+    <script>
+        window.addEventListener('beforeunload', function() {
+            // Aquí puedes enviar una solicitud AJAX para cerrar la sesión en el servidor
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', '../../includes/exit.php', true);
+            xhr.send();
+        });
+    </script>
 </body>
+
 </html>

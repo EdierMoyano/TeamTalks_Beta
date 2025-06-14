@@ -1,5 +1,11 @@
 <?php
 session_start();
+
+if ($_SESSION['rol'] !== 2) {
+    header('Location: ../../includes/exit.php?');
+    exit;
+}
+
 require_once '../../conexion/conexion.php';
 require_once '../../includes/functions.php';
 
@@ -1393,5 +1399,15 @@ try {
     });
     
     </script>
+
+    // Script para cerrar sesión al recargar la página
+<script>
+window.addEventListener('beforeunload', function () {
+    // Aquí puedes enviar una solicitud AJAX para cerrar la sesión en el servidor
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', '../../includes/exit.php', true);
+    xhr.send();
+});
+</script>
 </body>
 </html>
