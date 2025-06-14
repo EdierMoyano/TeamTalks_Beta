@@ -11,10 +11,10 @@ session_write_close();
 $motivo = $_GET['motivo'] ?? '';
 
 if ($motivo === 'acceso-denegado') {
-    header("Location: /teamtalks/includes/404/404.html");
+    header("Location: /public_html/includes/404/404.html");
     exit;
 } else {
-    header("Location: /teamtalks/index.php");
+    header("Location: /index.php");
     exit;
 }
 

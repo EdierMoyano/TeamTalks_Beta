@@ -1,5 +1,5 @@
 <?php
-require_once $_SERVER['DOCUMENT_ROOT'] . '/teamtalks/conexion/init.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/conexion/init.php';
 include 'session.php';
 
 $id_instructor = $_SESSION['documento'];
@@ -112,85 +112,86 @@ $id_instructor = $_SESSION['documento'];
     <div id="resultadoFichas" class="row g-3" style="margin-right: 0px">
 
     </div><br>
+  </div>
 
-
-    <!-- Modal para Detalles de Ficha -->
-    <div class="modal fade" id="modalDetallesFicha" tabindex="-1" aria-labelledby="modalDetallesFichaLabel" aria-hidden="true">
-      <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-          <div class="modal-header text-white" style="background-color: #0E4A86;">
-            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-          </div>
-          <div class="modal-body" id="contenido-modal-detalles">
-            <p>Cargando...</p>
-          </div>
+  <!-- Modal para Detalles de Ficha -->
+  <div class="modal fade" id="modalDetallesFicha" tabindex="-1" aria-labelledby="modalDetallesFichaLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header text-white" style="background-color: #0E4A86;">
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body" id="contenido-modal-detalles">
+          <p>Cargando...</p>
         </div>
       </div>
     </div>
+  </div>
 
 
 
-    <!-- Script para buscar fichas dinámicamente -->
-    <script>
-      function buscarFicha(page = 1) {
-        const query = document.getElementById('buscarficha').value.trim();
-        const xhr = new XMLHttpRequest();
-        xhr.open('GET', 'ajax/buscar_fichas.php?q=' + encodeURIComponent(query) + '&page=' + page, true);
-        xhr.onloadstart = function() {
-          document.getElementById('resultadoFichas').innerHTML = '<div class="text-center"><span class="spinner-border"></span> Cargando...</div>';
-        };
-        xhr.onload = function() {
-          if (xhr.status === 200) {
-            document.getElementById('resultadoFichas').innerHTML = xhr.responseText;
-            configurarEventosTarjetas(); // Reasignar eventos a nuevas tarjetas
-          }
-        };
-        xhr.send();
-      }
 
-      // Ejecutar búsqueda cuando el usuario escribe en el input
-      document.getElementById('buscarficha').addEventListener('input', function() {
-        buscarFicha(1);
-      });
-
-      // Cargar fichas automáticamente al cargar la página
-      window.onload = function() {
-        buscarFicha();
+  <!-- Script para buscar fichas dinámicamente -->
+  <script>
+    function buscarFicha(page = 1) {
+      const query = document.getElementById('buscarficha').value.trim();
+      const xhr = new XMLHttpRequest();
+      xhr.open('GET', '../ajax/buscar_fichas.php?q=' + encodeURIComponent(query) + '&page=' + page, true);
+      xhr.onloadstart = function() {
+        document.getElementById('resultadoFichas').innerHTML = '<div class="text-center"><span class="spinner-border"></span> Cargando...</div>';
       };
-    </script>
+      xhr.onload = function() {
+        if (xhr.status === 200) {
+          document.getElementById('resultadoFichas').innerHTML = xhr.responseText;
+          configurarEventosTarjetas(); // Reasignar eventos a nuevas tarjetas
+        }
+      };
+      xhr.send();
+    }
 
-    <!-- Script para manejar clic en botón "Detalles" y mostrar modal -->
-    <script>
-      function configurarEventosTarjetas() {
-        document.querySelectorAll('.btn-detalles').forEach(btn => {
-          btn.addEventListener('click', () => {
-            const idFicha = btn.getAttribute('data-id');
-            document.getElementById('contenido-modal-detalles').innerHTML = 'Cargando...';
+    // Ejecutar búsqueda cuando el usuario escribe en el input
+    document.getElementById('buscarficha').addEventListener('input', function() {
+      buscarFicha(1);
+    });
 
-            // Mostrar modal
-            const modal = new bootstrap.Modal(document.getElementById('modalDetallesFicha'));
-            modal.show();
+    // Cargar fichas automáticamente al cargar la página
+    window.onload = function() {
+      buscarFicha();
+    };
+  </script>
 
-            // Obtener contenido del modal vía AJAX
-            fetch('ajax/detalles_fichas.php?id=' + idFicha)
-              .then(response => response.text())
-              .then(html => {
-                document.getElementById('contenido-modal-detalles').innerHTML = html;
-              })
-              .catch(() => {
-                document.getElementById('contenido-modal-detalles').innerHTML = 'Error al cargar los detalles.';
-              });
-          });
+  <!-- Script para manejar clic en botón "Detalles" y mostrar modal -->
+  <script>
+    function configurarEventosTarjetas() {
+      document.querySelectorAll('.btn-detalles').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const idFicha = btn.getAttribute('data-id');
+          document.getElementById('contenido-modal-detalles').innerHTML = 'Cargando...';
+
+          // Mostrar modal
+          const modal = new bootstrap.Modal(document.getElementById('modalDetallesFicha'));
+          modal.show();
+
+          // Obtener contenido del modal vía AJAX
+          fetch('../ajax/detalles_fichas.php?id=' + idFicha)
+            .then(response => response.text())
+            .then(html => {
+              document.getElementById('contenido-modal-detalles').innerHTML = html;
+            })
+            .catch(() => {
+              document.getElementById('contenido-modal-detalles').innerHTML = 'Error al cargar los detalles.';
+            });
         });
-
-        // Aquí se podrían agregar otros eventos (por ejemplo, para ver aprendices)
-      }
-
-      // Ejecutar al finalizar carga del DOM
-      document.addEventListener('DOMContentLoaded', () => {
-        buscarFicha();
       });
-    </script>
+
+      // Aquí se podrían agregar otros eventos (por ejemplo, para ver aprendices)
+    }
+
+    // Ejecutar al finalizar carga del DOM
+    document.addEventListener('DOMContentLoaded', () => {
+      buscarFicha();
+    });
+  </script>
 
 
 

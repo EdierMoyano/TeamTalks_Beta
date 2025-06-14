@@ -86,7 +86,7 @@ if (isset($_POST['submit'])) {
             <div class="col-md-6 p-5 d-flex flex-column justify-content-center" style="background: #8ac5fe; border-top-right-radius: 10px; border-bottom-right-radius: 10px;">
                 <?php if ($success): ?>
                     <h2 class="mb-3">¡Contraseña actualizada!</h2>
-                    <p class="text-success">Tu contraseña ha sido actualizada exitosamente.</p>
+                    <p class="text-white">Tu contraseña ha sido actualizada exitosamente.</p>
                     <div class="text-center mt-4">
                         <a href="../login/login.php" class="btn btn-primary">Iniciar sesión</a>
                     </div>
