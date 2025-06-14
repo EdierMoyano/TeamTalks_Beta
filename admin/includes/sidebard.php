@@ -8,7 +8,7 @@ $nombreUsuario = "Usuario"; // Valor por defecto
 if (isset($_SESSION['documento'])) {
     // Conexión a la base de datos
     // Asumiendo que conexion.php está en la raíz del proyecto
-    $conexion = new mysqli("localhost", "root", "", "teamtalks");
+    $conexion = new mysqli("localhost", "root", "", "u148394603_teamtalks");
     
     // Verificar conexión
     if ($conexion->connect_error) {
