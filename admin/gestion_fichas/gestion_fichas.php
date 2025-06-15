@@ -812,16 +812,7 @@ try {
         });
     </script>
 
-    // Script para cerrar sesión al recargar la página
-    <script>
-        window.addEventListener('beforeunload', function() {
-            // Aquí puedes enviar una solicitud AJAX para cerrar la sesión en el servidor
-            var xhr = new XMLHttpRequest();
-            xhr.open('GET', '../../includes/exit.php', true);
-            xhr.send();
-        });
-    </script>
-    </>
+    
 
 </body>
 
