@@ -3,8 +3,8 @@
 class Database {
     private $hostname = 'localhost';
     private $database = 'u148394603_teamtalks';
-    private $username = 'root';
-    private $password = "";
+    private $username = 'u148394603_teamtalks';
+    private $password = "TeamTalks2901879";
     private $charset = "utf8";
 
     function connect() {

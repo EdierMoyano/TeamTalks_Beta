@@ -1,4 +1,9 @@
 <?php
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
+
 require_once $_SERVER['DOCUMENT_ROOT'] . '/conexion/init.php';
 include 'session.php';
 
@@ -13,7 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $totalSize = 0;
     $nombresFinales = [null, null, null]; // archivo1, archivo2, archivo3
 
-    $uploads_dir = $_SERVER['DOCUMENT_ROOT'] . '/teamtalks/uploads/';
+    $uploads_dir = $_SERVER['DOCUMENT_ROOT'] . '/uploads/';
     if (!is_dir($uploads_dir)) {
         mkdir($uploads_dir, 0755, true);
     }
@@ -80,8 +85,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // Insertar en actividades_user para cada aprendiz
         $sqlInsertActividadUser = "
-        INSERT INTO actividades_user (id_actividad, id_estado_actividad, contenido, archivo, fecha_entrega, id_user, nota)
-        VALUES (:id_actividad, 9, NULL, NULL, NULL, :id_user, NULL)
+        INSERT INTO actividades_user (id_actividad, id_estado_actividad, contenido, archivo1, archivo2, archivo3, fecha_entrega, id_user, nota)
+        VALUES (:id_actividad, 9, NULL, NULL, NULL, NULL, NULL, :id_user, NULL)
     ";
         $stmtInsertAU = $conex->prepare($sqlInsertActividadUser);
 
@@ -90,9 +95,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'id_actividad' => $id_actividad,
                 'id_user' => $aprendiz['id_user'],
             ]);
+            
         }
         $_SESSION['actividad_creada'] = $titulo;
-        header("Location: /teamtalks/instructor/actividades.php?id=" . (int)$id_ficha);
+        header("Location: /instructor/actividades.php?id=" . (int)$id_ficha);
         exit;
     }
 }
