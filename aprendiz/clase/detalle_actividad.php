@@ -533,33 +533,79 @@ $ficha = obtenerFicha($actividad['id_ficha']);
             }
         }
 
-        // Manejar previsualización de archivos
-        document.getElementById('archivos')?.addEventListener('change', (e) => {
-            const archivos = Array.from(e.target.files);
-            const contenedor = document.getElementById('previsualizacionArchivos');
-            contenedor.innerHTML = '';
+        // Lista global de archivos seleccionados
+        let archivosSeleccionados = [];
 
-            if (archivos.length > 3) {
+        document.getElementById('archivos')?.addEventListener('change', (e) => {
+            const nuevosArchivos = Array.from(e.target.files);
+            const contenedor = document.getElementById('previsualizacionArchivos');
+
+            // Agregar nuevos archivos a la lista existente
+            archivosSeleccionados = archivosSeleccionados.concat(nuevosArchivos);
+
+            // Limitar a 3 archivos
+            if (archivosSeleccionados.length > 3) {
                 mostrarNotificacion('Solo puedes seleccionar hasta 3 archivos', 'error');
-                e.target.value = ''; // Limpia selección
-                return;
+                archivosSeleccionados = archivosSeleccionados.slice(0, 3);
             }
 
-            archivos.forEach((archivo, index) => {
+            // Limpiar el contenedor y mostrar previsualización
+            contenedor.innerHTML = '';
+            archivosSeleccionados.forEach((archivo, index) => {
                 const div = document.createElement('div');
                 div.className = 'archivo-preview';
                 div.innerHTML = `
-            <div class="archivo-icon">
-                <i class="fas ${obtenerIconoArchivo(archivo.name)}"></i>
-            </div>
-            <div class="archivo-info">
-                <div class="archivo-nombre">${archivo.name}</div>
-                <div class="archivo-tamano">${formatearTamano(archivo.size)}</div>
-            </div>
-        `;
+                <div class="archivo-icon">
+                    <i class="fas ${obtenerIconoArchivo(archivo.name)}"></i>
+                </div>
+                <div class="archivo-info">
+                    <div class="archivo-nombre">${archivo.name}</div>
+                    <div class="archivo-tamano">${formatearTamano(archivo.size)}</div>
+                </div>
+                <button class="btn btn-sm btn-danger" onclick="eliminarArchivo(${index})">Eliminar</button>
+            `;
                 contenedor.appendChild(div);
             });
+
+            // Crear un nuevo DataTransfer para actualizar el input con los archivos seleccionados
+            const dataTransfer = new DataTransfer();
+            archivosSeleccionados.forEach(file => dataTransfer.items.add(file));
+            document.getElementById('archivos').files = dataTransfer.files;
+
+            // Limpiar el input para permitir seleccionar el mismo archivo otra vez si se desea
+            e.target.value = '';
         });
+
+        // Eliminar archivo por índice
+        function eliminarArchivo(index) {
+            archivosSeleccionados.splice(index, 1);
+
+            const contenedor = document.getElementById('previsualizacionArchivos');
+            contenedor.innerHTML = '';
+
+            archivosSeleccionados.forEach((archivo, idx) => {
+                const div = document.createElement('div');
+                div.className = 'archivo-preview';
+                div.innerHTML = `
+                <div class="archivo-icon">
+                    <i class="fas ${obtenerIconoArchivo(archivo.name)}"></i>
+                </div>
+                <div class="archivo-info">
+                    <div class="archivo-nombre">${archivo.name}</div>
+                    <div class="archivo-tamano">${formatearTamano(archivo.size)}</div>
+                </div>
+                <button class="btn btn-sm btn-danger" onclick="eliminarArchivo(${idx})">Eliminar</button>
+            `;
+                contenedor.appendChild(div);
+            });
+
+            // Actualizar input con archivos restantes
+            const dataTransfer = new DataTransfer();
+            archivosSeleccionados.forEach(file => dataTransfer.items.add(file));
+            document.getElementById('archivos').files = dataTransfer.files;
+        }
+
+
 
 
         // Función para obtener icono según tipo de archivo
@@ -587,19 +633,6 @@ $ficha = obtenerFicha($actividad['id_ficha']);
             const sizes = ['Bytes', 'KB', 'MB', 'GB'];
             const i = Math.floor(Math.log(bytes) / Math.log(k));
             return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-        }
-
-        // Función para eliminar archivo de la previsualización
-        function eliminarArchivo(index) {
-            const input = document.getElementById('archivos');
-            const dt = new DataTransfer();
-            const files = Array.from(input.files);
-
-            files.splice(index, 1);
-            files.forEach(file => dt.items.add(file));
-
-            input.files = dt.files;
-            input.dispatchEvent(new Event('change'));
         }
     </script>
 </body>
