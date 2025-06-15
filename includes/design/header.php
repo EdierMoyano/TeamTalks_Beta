@@ -2,6 +2,7 @@
 
 require_once $_SERVER['DOCUMENT_ROOT'] . '/conexion/init.php';
 
+
 $usuario_logueado = isset($_SESSION['documento']);
 $username = $_SESSION['nombres'] ?? 'Nombres';
 $lastname = $_SESSION['apellidos'] ?? 'Apellidos';

@@ -1,5 +1,6 @@
 <?php
 require_once $_SERVER['DOCUMENT_ROOT'] . '/conexion/init.php';
+
 include 'session.php';
 
 $id_actividad = (int) ($_POST['id_actividad'] ?? 0);

@@ -1,6 +1,7 @@
 <?php
 require_once $_SERVER['DOCUMENT_ROOT'] . '/conexion/init.php';
 
+
 $id = $_POST['id'];
 
 

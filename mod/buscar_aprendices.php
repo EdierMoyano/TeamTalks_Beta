@@ -1,6 +1,7 @@
 <?php
 require_once $_SERVER['DOCUMENT_ROOT'] . '/conexion/init.php';
 
+
 $id_ficha = $_POST['id_ficha'] ?? 0;
 $query = $_POST['query'] ?? '';
 $page = $_POST['page'] ?? 1;

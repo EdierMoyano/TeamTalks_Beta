@@ -1,4 +1,5 @@
 <?php
+
 // Carga las rutas base (define BASE_PATH y BASE_URL)
 require_once $_SERVER['DOCUMENT_ROOT'] . '/conexion/rutas.php';
 

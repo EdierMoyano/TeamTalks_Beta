@@ -1,6 +1,7 @@
 <?php
 require_once $_SERVER['DOCUMENT_ROOT'] . '/conexion/init.php';
 
+
 if (isset($_POST['submit'])) {
     $documento = $_POST['documento']; 
     $tipo = $_POST['tipo'];

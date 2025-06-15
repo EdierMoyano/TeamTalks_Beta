@@ -8,6 +8,7 @@ unset($_SESSION['estado']);
 unset($_SESSION['rol']);
 unset($_SESSION['nombre']);
 
+
 // Destruir la sesión
 session_destroy();
 
