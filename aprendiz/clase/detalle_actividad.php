@@ -535,28 +535,32 @@ $ficha = obtenerFicha($actividad['id_ficha']);
 
         // Manejar previsualización de archivos
         document.getElementById('archivos')?.addEventListener('change', (e) => {
-            const archivos = e.target.files;
+            const archivos = Array.from(e.target.files);
             const contenedor = document.getElementById('previsualizacionArchivos');
             contenedor.innerHTML = '';
 
-            Array.from(archivos).forEach((archivo, index) => {
+            if (archivos.length > 3) {
+                mostrarNotificacion('Solo puedes seleccionar hasta 3 archivos', 'error');
+                e.target.value = ''; // Limpia selección
+                return;
+            }
+
+            archivos.forEach((archivo, index) => {
                 const div = document.createElement('div');
                 div.className = 'archivo-preview';
                 div.innerHTML = `
-                    <div class="archivo-icon">
-                        <i class="fas ${obtenerIconoArchivo(archivo.name)}"></i>
-                    </div>
-                    <div class="archivo-info">
-                        <div class="archivo-nombre">${archivo.name}</div>
-                        <div class="archivo-tamano">${formatearTamano(archivo.size)}</div>
-                    </div>
-                    <button type="button" class="btn-eliminar" onclick="eliminarArchivo(${index})">
-                        <i class="fas fa-times"></i>
-                    </button>
-                `;
+            <div class="archivo-icon">
+                <i class="fas ${obtenerIconoArchivo(archivo.name)}"></i>
+            </div>
+            <div class="archivo-info">
+                <div class="archivo-nombre">${archivo.name}</div>
+                <div class="archivo-tamano">${formatearTamano(archivo.size)}</div>
+            </div>
+        `;
                 contenedor.appendChild(div);
             });
         });
+
 
         // Función para obtener icono según tipo de archivo
         function obtenerIconoArchivo(nombreArchivo) {
