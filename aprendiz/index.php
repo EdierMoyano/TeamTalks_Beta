@@ -126,7 +126,9 @@ $formaciones = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <body class="sidebar-collapsed">
 
   <!-- Header -->
+
   <?php include '../includes/design/header.php'; ?><br><br>
+
 
   <!-- Sidebar -->
   <?php include '../includes/design/sidebar.php'; ?>

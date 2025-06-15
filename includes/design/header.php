@@ -110,7 +110,7 @@ $logo_href = !$usuario_logueado ? BASE_URL . '/index.php' : $carpeta_inicio;
     }
 
     .select-options:hover {
-        background-color: #0E4A86;
+        background-color:rgb(15, 85, 155);
         color: white;
     }
 </style>

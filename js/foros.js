@@ -80,7 +80,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         btnIngresar.addEventListener('click', () => {
-          window.location.href = `foro_detalle.php?id=${foro.id_foro}`;
+          window.location.href = `respuesta_foro.php?id=${foro.id_foro}`;
         });
 
         col.appendChild(card);
