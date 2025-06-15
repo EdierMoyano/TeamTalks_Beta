@@ -559,7 +559,7 @@ $ficha = obtenerFicha($actividad['id_ficha']);
                     <i class="fas ${obtenerIconoArchivo(archivo.name)}"></i>
                 </div>
                 <div class="archivo-info">
-                    <div class="archivo-nombre">${archivo.name}</div>
+                <div class="archivo-nombre" style="word-break: break-word; white-space: normal;">${archivo.name}</div>
                     <div class="archivo-tamano">${formatearTamano(archivo.size)}</div>
                 </div>
                 <button class="btn btn-sm btn-danger" onclick="eliminarArchivo(${index})">Eliminar</button>
@@ -577,36 +577,30 @@ $ficha = obtenerFicha($actividad['id_ficha']);
         });
 
         // Eliminar archivo por índice
-        function eliminarArchivo(index) {
-            archivosSeleccionados.splice(index, 1);
-
-            const contenedor = document.getElementById('previsualizacionArchivos');
-            contenedor.innerHTML = '';
-
-            archivosSeleccionados.forEach((archivo, idx) => {
-                const div = document.createElement('div');
-                div.className = 'archivo-preview';
-                div.innerHTML = `
-                <div class="archivo-icon">
-                    <i class="fas ${obtenerIconoArchivo(archivo.name)}"></i>
-                </div>
-                <div class="archivo-info">
-                    <div class="archivo-nombre">${archivo.name}</div>
-                    <div class="archivo-tamano">${formatearTamano(archivo.size)}</div>
-                </div>
-                <button class="btn btn-sm btn-danger" onclick="eliminarArchivo(${idx})">Eliminar</button>
-            `;
-                contenedor.appendChild(div);
-            });
-
-            // Actualizar input con archivos restantes
-            const dataTransfer = new DataTransfer();
-            archivosSeleccionados.forEach(file => dataTransfer.items.add(file));
-            document.getElementById('archivos').files = dataTransfer.files;
-        }
+        archivosSeleccionados.forEach((archivo, idx) => {
+            const div = document.createElement('div');
+            div.className = 'archivo-preview';
+            div.innerHTML = `
+        <div class="archivo-icon">
+            <i class="fas ${obtenerIconoArchivo(archivo.name)}"></i>
+        </div>
+        <div class="archivo-info">
+            <div class="archivo-nombre" style="word-break: break-word; white-space: normal;">${archivo.name}</div>
+            <div class="archivo-tamano">${formatearTamano(archivo.size)}</div>
+        </div>
+        <button class="archivo-close" onclick="eliminarArchivo(${idx})">
+            <i class="fas fa-times"></i>
+        </button>
+    `;
+            contenedor.appendChild(div);
+        });
 
 
-
+        // Actualizar input con archivos restantes
+        const dataTransfer = new DataTransfer();
+        archivosSeleccionados.forEach(file => dataTransfer.items.add(file));
+        document.getElementById('archivos').files = dataTransfer.files;
+        
 
         // Función para obtener icono según tipo de archivo
         function obtenerIconoArchivo(nombreArchivo) {
