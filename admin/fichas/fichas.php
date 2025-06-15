@@ -1,18 +1,10 @@
 <?php
 session_start();
-
-
+require_once '../../conexion/conexion.php';
 if ($_SESSION['rol'] !== 2) {
     header('Location: ../../includes/exit.php?');
     exit;
 }
-
-
-
-require_once $_SERVER['DOCUMENT_ROOT'] . '/conexion/init.php';
-
-
-include 'functions.php';
 
 // Mostrar mensaje después de redireccionar tras editar
 if (isset($_SESSION['alertMessage'])) {
