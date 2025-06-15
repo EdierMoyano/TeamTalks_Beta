@@ -2,6 +2,7 @@
 // Detecta si estás en entorno local o en producción
 $isLocal = false;
 
+
 // Detectar por nombre del host
 if (
     strpos($_SERVER['HTTP_HOST'], 'localhost') !== false ||  // localhost

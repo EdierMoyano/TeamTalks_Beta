@@ -8,6 +8,7 @@ $rutaInit = $esLocal
 
 require_once $rutaInit;
 
+
 ?>
 
 <link rel="stylesheet" href="<?= BASE_URL ?>/styles/style_side.css">

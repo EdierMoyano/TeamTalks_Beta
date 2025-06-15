@@ -1,5 +1,6 @@
 <?php
 
+
 class Database {
     private $hostname = 'localhost';
     private $database = 'u148394603_teamtalks';

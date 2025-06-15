@@ -8,6 +8,7 @@ $rutaInit = $esLocal
 
 require_once $rutaInit;include 'session.php';
 
+
 $id_instructor = $_SESSION['documento'];
 
 $actividad_actualizada = '';

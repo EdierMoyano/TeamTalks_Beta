@@ -12,6 +12,7 @@ function formatDate($date) {
     return date('d/m/Y', strtotime($date));
 }
 
+
 /**
  * Verifica si un usuario tiene un rol específico
  * @param mysqli $conexion Conexión a la base de datos
