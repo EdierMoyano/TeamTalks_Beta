@@ -13,6 +13,7 @@ $host = 'localhost';
 $db = 'u148394603_teamtalks';
 $user = 'u148394603_teamtalks';
 $pass = 'TeamTalks2901879'; 
+
 $charset = 'utf8mb4';
 
 $dsn = "mysql:host=$host;dbname=$db;charset=$charset";

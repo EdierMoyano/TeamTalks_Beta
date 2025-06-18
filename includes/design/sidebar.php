@@ -7,7 +7,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/conexion/init.php';
 
 <link rel="stylesheet" href="<?= BASE_URL ?>/styles/style_side.css">
 
-<aside class="sidebar collapsed" style="height: 620px;">
+<aside class="sidebar collapsed">
   <!-- Sidebar header -->
   <header class="sidebar-header">
     <a href="#" class="header-logo">
@@ -16,9 +16,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/conexion/init.php';
     <button class="toggler sidebar-toggler">
       <span class="material-symbols-rounded">chevron_left</span>
     </button>
-    <button class="toggler menu-toggler">
-      <span class="material-symbols-rounded">menu</span>
-    </button>
+    
   </header>
 
   <nav class="sidebar-nav">
