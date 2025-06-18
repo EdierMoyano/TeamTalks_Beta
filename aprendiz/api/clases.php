@@ -11,8 +11,9 @@ $idAprendiz = $_SESSION['documento'];
 
 $host = 'localhost';
 $db = 'u148394603_teamtalks';
-$user = 'root';
-$pass = ''; 
+$user = 'u148394603_teamtalks';
+$pass = 'TeamTalks2901879'; 
+
 $charset = 'utf8mb4';
 
 $dsn = "mysql:host=$host;dbname=$db;charset=$charset";

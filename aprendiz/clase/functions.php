@@ -312,7 +312,6 @@ function verificarEntregaExistente($id_actividad, $id_usuario)
     return $result['count'] > 0;
 }
 
-// Guardar entrega de actividad (solo usando actividades_user)
 function guardarEntregaActividad($id_actividad, $id_usuario, $contenido, $archivos)
 {
     global $pdo;
@@ -327,22 +326,38 @@ function guardarEntregaActividad($id_actividad, $id_usuario, $contenido, $archiv
         if (verificarEntregaExistente($id_actividad, $id_usuario)) {
             return ['success' => false, 'message' => 'Ya has entregado esta actividad anteriormente.'];
         }
+        
+        if (count($archivos) > 3) {
+            return ['success' => false, 'message' => 'Solo se permiten hasta 3 archivos por entrega.'];
+        }
 
-        // Crear información de archivos como JSON para el campo archivo
-        $archivos_json = !empty($archivos) ? json_encode($archivos) : null;
+        // Extraer hasta tres archivos del array $archivos
+        $archivo1 = $archivos[0] ?? null;
+        $archivo2 = $archivos[1] ?? null;
+        $archivo3 = $archivos[2] ?? null;
 
-        // Insertar la entrega en actividades_user usando 'contenido' y 'archivo'
+        // Insertar la entrega en actividades_user
         $stmt = $pdo->prepare("
-            INSERT INTO actividades_user (id_actividad, id_user, contenido, archivo, fecha_entrega, id_estado_actividad)
-            VALUES (?, ?, ?, ?, NOW(), 1)
+            INSERT INTO actividades_user (
+                id_actividad,id_user,contenido,archivo1,archivo2,archivo3,fecha_entrega,id_estado_actividad
+            ) VALUES (?, ?, ?, ?, ?, ?, NOW(), 1)
         ");
-        $stmt->execute([$id_actividad, $id_usuario, $contenido, $archivos_json]);
+
+        $stmt->execute([
+            $id_actividad,
+            $id_usuario,
+            $contenido,
+            $archivo1,
+            $archivo2,
+            $archivo3
+        ]);
 
         return ['success' => true, 'message' => 'Entrega guardada exitosamente'];
     } catch (PDOException $e) {
         return ['success' => false, 'message' => 'Error al guardar la entrega: ' . $e->getMessage()];
     }
 }
+
 
 // Verificar si una actividad está vencida
 function actividadEstaVencida($id_actividad)
