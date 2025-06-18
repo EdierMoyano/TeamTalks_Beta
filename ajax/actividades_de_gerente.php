@@ -1,12 +1,6 @@
 <?php
-$esLocal = strpos($_SERVER['HTTP_HOST'], 'localhost') !== false || strpos($_SERVER['DOCUMENT_ROOT'], 'htdocs') !== false;
-
-// Ruta dinámica hacia init.php
-$rutaInit = $esLocal
-    ? $_SERVER['DOCUMENT_ROOT'] . '/teamtalks/conexion/init.php'
-    : $_SERVER['DOCUMENT_ROOT'] . '/conexion/init.php';
-
-require_once $rutaInit;include 'session.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/conexion/init.php';
+include 'session.php';
 
 $id_ficha = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 $id_instructor = (int) $_SESSION['documento'];
@@ -123,7 +117,6 @@ $actividades = $stmt->fetchAll(PDO::FETCH_ASSOC);
 </style>
 
 
-<!-- Botón Crear Actividad -->
 <div class="d-flex justify-content-between align-items-center mb-4">
   <h5 class="mb-0">Actividades de la Ficha <?= htmlspecialchars($id_ficha) ?></h5>
   <button class="actividad btn btn" data-bs-toggle="modal" data-bs-target="#crearActividadModal">

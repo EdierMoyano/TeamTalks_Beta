@@ -32,7 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             // Guardar con nombre único
-            $nombreFinal = uniqid("archivo{$i}_") . '_' . basename($archivo['name']);
+            $nombreFinal = uniqid("DOC{$i}_") . '_' . basename($archivo['name']);
             $destino = $uploads_dir . $nombreFinal;
 
             if (move_uploaded_file($archivo['tmp_name'], $destino)) {
@@ -80,8 +80,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // Insertar en actividades_user para cada aprendiz
         $sqlInsertActividadUser = "
-        INSERT INTO actividades_user (id_actividad, id_estado_actividad, contenido, archivo1, archivo2, archivo3, fecha_entrega, id_user, nota)
-        VALUES (:id_actividad, 9, NULL, NULL, NULL, NULL, NULL, :id_user, NULL)
+        INSERT INTO actividades_user (id_actividad, id_estado_actividad, contenido, archivo1, archivo2, archivo3, fecha_entrega, id_user, nota, comentario_inst)
+        VALUES (:id_actividad, 9, NULL, NULL, NULL, NULL, NULL, :id_user, NULL, NULL)
     ";
         $stmtInsertAU = $conex->prepare($sqlInsertActividadUser);
 

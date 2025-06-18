@@ -47,7 +47,6 @@ $logo_href = !$usuario_logueado ? BASE_URL . '/index.php' : $carpeta_inicio;
         box-shadow: 0 2px 8px white;
     }
 
-
     .l {
         text-decoration: none;
         color: white;
@@ -63,38 +62,36 @@ $logo_href = !$usuario_logueado ? BASE_URL . '/index.php' : $carpeta_inicio;
         text-decoration: none;
     }
 
-
+    ul {
+        list-style: none;
+        padding-left: 0;
+        margin-bottom: 0;
+    }
 
     li i {
         position: relative;
         cursor: pointer;
         color: white;
-        top: 25px;
-        right: 30px;
         font-size: 25px;
         text-shadow: 0 0 0 0;
         transition: text-shadow 0.2s ease;
+        margin-right: 20px;
     }
 
     li i:hover {
         text-shadow: 0 2px 8px white;
     }
 
-    ul {
-        list-style: none;
-
-    }
-
-
     .profile {
-        top: 8px;
-        background-color: none;
+        background-color: transparent;
         border-radius: 12px;
         cursor: pointer;
         color: white;
         transition: background-color 0.2s ease;
-        width: auto;
         height: 70px;
+        display: flex;
+        align-items: center;
+        padding: 0 10px;
     }
 
     .options {
@@ -105,13 +102,93 @@ $logo_href = !$usuario_logueado ? BASE_URL . '/index.php' : $carpeta_inicio;
         color: #0E4A86;
     }
 
+    .select-options:hover {
+        background-color: rgb(15, 85, 155);
+        color: white;
+    }
+
     .profile:hover {
         background-color: rgba(255, 255, 255, 0.48);
     }
 
-    .select-options:hover {
-        background-color:rgb(15, 85, 155);
-        color: white;
+    
+
+    /* ---------- Responsive header ---------- */
+    @media (max-width: 576px) {
+        .navbar-brand img {
+            height: 60px;
+        }
+
+        .navbar-collapse {
+            flex-direction: row;
+            justify-content: space-between !important;
+        }
+
+        .navbar-nav {
+            display: flex;
+            flex-direction: row !important;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 0.5rem;
+            width: 100%;
+            flex-wrap: nowrap;
+        }
+
+        .navbar-nav li {
+            margin-left: 0.3rem;
+            position: static !important;
+        }
+
+        .nav-item .nav-link,
+        .dropdown-toggle p {
+            font-size: 14px;
+            padding: 0 4px;
+            margin: 0;
+            position: static !important;
+        }
+
+        .profile img {
+            max-width: 35px;
+        }
+
+        .profile p {
+            font-size: 12px;
+            margin-left: 6px;
+            margin-bottom: 0;
+            white-space: nowrap;
+        }
+
+        li i.bi-bell-fill {
+            font-size: 20px;
+            margin-bottom: 30px;
+        }
+
+        .dropdown-menu.options {
+            left: auto !important;
+            right: 0;
+        }
+
+        .boton {
+            font-size: 14px;
+            padding: 6px 12px;
+            left: 0;
+        }
+
+        .navbar-toggler {
+            border-color: white;
+            background-color: white;
+        }
+
+        .navbar-nav .nav-item {
+            display: flex;
+            align-items: center;
+        }
+
+        .dropdown-menu.options {
+            position: absolute;
+            top: 185px;
+            right: 12px;
+        }
     }
 </style>
 
@@ -148,13 +225,13 @@ $logo_href = !$usuario_logueado ? BASE_URL . '/index.php' : $carpeta_inicio;
                         <li class="nav-item"><a class="l nav-link text-white" href="contact_us.php">Contáctanos</a></li>
                         <li class="nav-item"><a class="boton btn btn" href="login/login.php">Iniciar Sesión</a></li>
                     <?php else: ?>
-                        <li>
-                            <i class="not bi bi-bell-fill" data-bs-toggle="offcanvas" data-bs-target="#offcanvasWithBothOptions" aria-controls="offcanvasWithBothOptions"></i>
+                        <li class="nav-item">
+                            <i class="not bi bi-bell-fill" data-bs-toggle="offcanvas" data-bs-target="#offcanvasWithBothOptions" aria-controls="offcanvasWithBothOptions" style="position: relative; top: 15px"></i>
 
                         </li>
                         <!-- Menú para usuarios autenticados -->
                         <li class="nav-item">
-                            <a class="l nav-link text-white" href="<?= $carpeta_inicio ?>" style="position:relative; right: 15px; top:25px">Inicio</a>
+                            <a class="l nav-link text-white" style="position: relative; top: 15px" href="<?= $carpeta_inicio ?>">Inicio</a>
                         </li>
 
 
@@ -165,7 +242,7 @@ $logo_href = !$usuario_logueado ? BASE_URL . '/index.php' : $carpeta_inicio;
                                     <?php echo htmlspecialchars($username); ?>
                                 </p>
                             </a>
-                            <ul class="dropdown-menu options" style="left: 80px;">
+                            <ul class="dropdown-menu options" style="left: 85px;">
                                 <li><a class="dropdown-item select-options" href="<?= BASE_URL ?>/actions/edit.php">Editar perfil</a></li>
                                 <li><a class="dropdown-item select-options" href="<?= BASE_URL ?>/actions/config.php">Configuración</a></li>
                                 <li><a class="dropdown-item select-options" href="<?= BASE_URL ?>/includes/exit.php">Cerrar sesión</a></li>
@@ -180,23 +257,23 @@ $logo_href = !$usuario_logueado ? BASE_URL . '/index.php' : $carpeta_inicio;
     </nav>
 </header>
 <?php if ($usuario_logueado): ?>
-<script>
-(function(){
-    const timeoutInSeconds = <?= $timeout ?? 500000000000 ?>; // Tiempo de inactividad en segundos
-    const timeoutMillis = timeoutInSeconds * 1000; // Tiempo en milisegundos
-    let timeoutId;
+    <script>
+        (function() {
+            const timeoutInSeconds = <?= $timeout ?? 500000000000 ?>; // Tiempo de inactividad en segundos
+            const timeoutMillis = timeoutInSeconds * 1000; // Tiempo en milisegundos
+            let timeoutId;
 
-    function cerrarSesion() {
-    efetch('<?= BASE_URL ?>/includes/exit.php')
-        .then(() => {
-        alert('Tu sesión ha expirado por inactividad.');
-        window.location.href = '<?= BASE_URL ?>/login/login.php';
-        })
-        .catch(() => {
-          // Si no logra salir, al menos redirige
-        window.location.href = '<?= BASE_URL ?>/login/login.php';
-        });
-    }
+            function cerrarSesion() {
+                efetch('<?= BASE_URL ?>/includes/exit.php')
+                    .then(() => {
+                        alert('Tu sesión ha expirado por inactividad.');
+                        window.location.href = '<?= BASE_URL ?>/login/login.php';
+                    })
+                    .catch(() => {
+                        // Si no logra salir, al menos redirige
+                        window.location.href = '<?= BASE_URL ?>/login/login.php';
+                    });
+            }
 
             function resetTimer() {
                 clearTimeout(timeoutId);

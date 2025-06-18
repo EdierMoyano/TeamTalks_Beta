@@ -179,6 +179,59 @@ $numero_ficha = !empty($aprendices) ? $aprendices[0]['id_ficha'] : null;
                 .then(response => response.text())
                 .then(html => {
                     document.getElementById('contenedor-actividades').innerHTML = html;
+
+                    // 🧠 Aquí reactivamos el evento submit
+                    const form = document.getElementById('form-nota');
+                    if (form) {
+                        form.addEventListener('submit', function(e) {
+                            e.preventDefault();
+
+                            const nota = parseFloat(document.getElementById('nota').value);
+                            const comentario = document.getElementById('comentario').value;
+                            const idActividadUser = form.querySelector('input[name="id_actividad_user"]').value;
+
+                            const formData = new FormData();
+                            formData.append('nota', nota);
+                            formData.append('comentario_inst', comentario);
+                            formData.append('id_actividad_user', idActividadUser);
+
+                            fetch('../ajax/guardar_calificacion.php', {
+                                    method: 'POST',
+                                    body: formData
+                                })
+                                .then(r => r.json())
+                                .then(data => {
+                                    const mensaje = document.getElementById('mensajeCalificacion');
+                                    if (data.success) {
+                                        mensaje.innerHTML = '<div class="alert alert-success">' + data.message + '</div>';
+
+                                        // 🔁 Actualizar visualmente el estado si existe
+                                        const estadoElemento = document.querySelector("small.text-muted strong");
+                                        if (estadoElemento && data.nuevo_estado) {
+                                            estadoElemento.textContent = data.nuevo_estado;
+
+                                            // (Opcional) Cambiar el color del estado
+                                            estadoElemento.classList.remove("text-success", "text-danger", "text-warning");
+                                            if (data.nuevo_estado === "Aprobado") {
+                                                estadoElemento.classList.add("text-success");
+                                            } else if (data.nuevo_estado === "Desaprobado") {
+                                                estadoElemento.classList.add("text-danger");
+                                            } else {
+                                                estadoElemento.classList.add("text-warning");
+                                            }
+                                        }
+                                    } else {
+                                        mensaje.innerHTML = '<div class="alert alert-danger">' + data.message + '</div>';
+                                    }
+                                })
+
+                                .catch(() => {
+                                    document.getElementById('mensajeCalificacion').innerHTML =
+                                        '<div class="alert alert-danger">Error de conexión.</div>';
+                                });
+                        });
+                    }
+
                 })
                 .catch(err => {
                     console.error(err);
@@ -193,6 +246,9 @@ $numero_ficha = !empty($aprendices) ? $aprendices[0]['id_ficha'] : null;
             element.classList.add('selected');
         }
     </script>
+
+
+
 
 
 

@@ -10,10 +10,10 @@
 
 .sidebar {
   position: fixed;
-  top: 99px; 
+  top: 99px;
   left: 16px;
   width: 250px;
-  height: calc(95vh - 120px);
+  height: 680px;
   border-radius: 16px;
   background: #ffffff;
   transition: all 0.4s ease;
@@ -169,14 +169,12 @@
 }
 
 /* Responsive media query code for small screens */
-@media (max-width: 1024px) {
+@media (max-width: 524px) {
   .sidebar {
-    height: 56px;
+    height: 350px;
     margin: 13px;
     overflow-y: hidden;
     scrollbar-width: none;
-    width: calc(100% - 26px);
-    max-height: calc(100vh - 26px);
   }
 
   .sidebar.menu-active {
@@ -186,26 +184,31 @@
   .sidebar .sidebar-header {
     position: sticky;
     top: 0;
+    left: 13px;
     z-index: 20;
     border-radius: 16px;
-    background: #151A2D;
+    background: none;
     padding: 8px 10px;
   }
 
   .sidebar-header .header-logo img {
-    width: 40px;
-    height: 40px;
+    width: 60px;
+    height: 60px;
+  }
+
+  .nav-item {
+    position: relative;
+    bottom: 50px;
+    left: 12px;
   }
 
   .sidebar-header .sidebar-toggler,
   .sidebar-nav .nav-item:hover .nav-tooltip {
     display: none;
   }
-  
+
   .sidebar-header .menu-toggler {
-    display: flex;
-    height: 30px;
-    width: 30px;
+    display: none;
   }
 
   .sidebar-header .menu-toggler span {
@@ -266,5 +269,4 @@
 .sidebar.collapsed .submenu-arrow {
   display: none;
 }
-
 

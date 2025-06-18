@@ -1,12 +1,6 @@
 <?php
-$esLocal = strpos($_SERVER['HTTP_HOST'], 'localhost') !== false || strpos($_SERVER['DOCUMENT_ROOT'], 'htdocs') !== false;
-
-// Ruta dinámica hacia init.php
-$rutaInit = $esLocal
-    ? $_SERVER['DOCUMENT_ROOT'] . '/teamtalks/conexion/init.php'
-    : $_SERVER['DOCUMENT_ROOT'] . '/conexion/init.php';
-
-require_once $rutaInit;include 'session.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/conexion/init.php';
+include 'session.php';
 
 $id_instructor = (int)$_SESSION['documento'];
 $q = isset($_GET['q']) ? trim($_GET['q']) : '';

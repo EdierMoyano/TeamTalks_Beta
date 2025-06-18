@@ -10,7 +10,7 @@ if (!isset($_SESSION['documento'])) {
 $idAprendiz = $_SESSION['documento'];
 
 $host = 'localhost';
-$db = 'teamtalks';
+$db = 'u148394603_teamtalks';
 $user = 'root';
 $pass = ''; 
 $charset = 'utf8mb4';
