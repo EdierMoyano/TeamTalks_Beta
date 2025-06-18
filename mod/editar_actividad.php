@@ -35,12 +35,12 @@ for ($i = 1; $i <= 3; $i++) {
         $nombreOriginal = basename($_FILES[$key]['name']);
         $ext = pathinfo($nombreOriginal, PATHINFO_EXTENSION);
         $nuevoNombre = uniqid("act_{$i}_") . "." . $ext;
-        $destino = $_SERVER['DOCUMENT_ROOT'] . "/teamtalks/uploads/$nuevoNombre";
+        $destino = $_SERVER['DOCUMENT_ROOT'] . "/uploads/$nuevoNombre";
 
         if (move_uploaded_file($tmpName, $destino)) {
             // Eliminar archivo anterior si existe
-            if ($archivo_actual && file_exists($_SERVER['DOCUMENT_ROOT'] . "/teamtalks/uploads/$archivo_actual")) {
-                unlink($_SERVER['DOCUMENT_ROOT'] . "/teamtalks/uploads/$archivo_actual");
+            if ($archivo_actual && file_exists($_SERVER['DOCUMENT_ROOT'] . "/uploads/$archivo_actual")) {
+                unlink($_SERVER['DOCUMENT_ROOT'] . "/uploads/$archivo_actual");
             }
             $nuevo_archivo = $nuevoNombre;
         }
@@ -48,8 +48,8 @@ for ($i = 1; $i <= 3; $i++) {
 
     // Eliminar si se marcó checkbox y no se subió nuevo
     if ($checkbox && !$nuevo_archivo) {
-        if ($archivo_actual && file_exists($_SERVER['DOCUMENT_ROOT'] . "/teamtalks/uploads/$archivo_actual")) {
-            unlink($_SERVER['DOCUMENT_ROOT'] . "/teamtalks/uploads/$archivo_actual");
+        if ($archivo_actual && file_exists($_SERVER['DOCUMENT_ROOT'] . "/uploads/$archivo_actual")) {
+            unlink($_SERVER['DOCUMENT_ROOT'] . "/uploads/$archivo_actual");
         }
         $archivo_actual = null;
     }
@@ -80,5 +80,5 @@ $updateStmt->execute([
 ]);
 
 $_SESSION['actividad_actualizada'] = $titulo;
-header('Location: /teamtalks/instructor/actividades.php?id=' . $_POST['id_ficha']);
+header('Location: /instructor/actividades.php?id=' . $_POST['id_ficha']);
 exit;

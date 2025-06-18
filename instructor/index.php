@@ -84,6 +84,27 @@ $id_instructor = $_SESSION['documento'];
       color: white;
       border-color: #0E4A86;
     }
+
+    .buscar input {
+      width: 800px;
+    }
+
+    @media (max-width: 524px) {
+      .buscar input{
+        width: 300px;
+      }
+
+      .fichas {
+        position: relative;
+        width: 400px;
+        right: 50px;
+      }
+
+      .btn.btn-detalles {
+        right: 0px;
+      }
+      
+    }
   </style>
 </head>
 
@@ -95,12 +116,12 @@ $id_instructor = $_SESSION['documento'];
   <div class="main-content">
     <nav class="d-flex justify-content-center navbar">
       <div class="">
-        <form class="d-flex" role="search">
+        <form class="d-flex buscar" role="search">
           <button class="but btn" type="button" style="margin-right: 10px;">
             <i class="bi bi-search"></i>
           </button>
 
-          <input id="buscarficha" class="form-control me-2" type="search" placeholder="Buscar por ficha o nombre de formación" aria-label="Search" style="width: 800px;" />
+          <input id="buscarficha" class="form-control me-2" type="search" placeholder="Buscar por ficha o nombre de formación" aria-label="Search" style="max-width: 800px;" />
         </form>
       </div>
     </nav><br>
@@ -108,7 +129,7 @@ $id_instructor = $_SESSION['documento'];
     <h2 class="text-center mb-4">Ficha(s) que Gestionas</h2>
 
     <!-- Contenedor de resultados -->
-    <div id="resultadoFichas" class="row g-3" style="margin-right: 0px">
+    <div id="resultadoFichas" class="fichas row g-3" style="margin-right: 0px">
 
     </div><br>
   </div>
