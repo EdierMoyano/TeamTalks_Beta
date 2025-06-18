@@ -3,7 +3,7 @@ $esLocal = strpos($_SERVER['HTTP_HOST'], 'localhost') !== false || strpos($_SERV
 
 // Ruta dinámica hacia init.php
 $rutaInit = $esLocal
-    ? $_SERVER['DOCUMENT_ROOT'] . '/teamtalks/conexion/init.php'
+    ? $_SERVER['DOCUMENT_ROOT'] . '/conexion/init.php'
     : $_SERVER['DOCUMENT_ROOT'] . '/conexion/init.php';
 
 require_once $rutaInit;
