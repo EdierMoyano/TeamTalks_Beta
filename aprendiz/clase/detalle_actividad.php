@@ -562,7 +562,7 @@ $ficha = obtenerFicha($actividad['id_ficha']);
                 <div class="archivo-nombre" style="word-break: break-word; white-space: normal;">${archivo.name}</div>
                     <div class="archivo-tamano">${formatearTamano(archivo.size)}</div>
                 </div>
-                <button class="btn btn-sm btn-danger" onclick="eliminarArchivo(${index})">Eliminar</button>
+                <button type="button" class="btn btn-sm btn-danger" onclick="eliminarArchivo(${index})">Eliminar</button>
             `;
                 contenedor.appendChild(div);
             });
@@ -600,7 +600,7 @@ $ficha = obtenerFicha($actividad['id_ficha']);
         const dataTransfer = new DataTransfer();
         archivosSeleccionados.forEach(file => dataTransfer.items.add(file));
         document.getElementById('archivos').files = dataTransfer.files;
-        
+
 
         // Función para obtener icono según tipo de archivo
         function obtenerIconoArchivo(nombreArchivo) {
