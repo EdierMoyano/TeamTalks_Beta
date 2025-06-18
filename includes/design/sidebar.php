@@ -1,6 +1,12 @@
 <?php
 require_once $_SERVER['DOCUMENT_ROOT'] . '/conexion/init.php';
 
+// Ruta dinámica hacia init.php
+$rutaInit = $esLocal
+    ? $_SERVER['DOCUMENT_ROOT'] . '/conexion/init.php'
+    : $_SERVER['DOCUMENT_ROOT'] . '/conexion/init.php';
+
+require_once $rutaInit;
 
 
 ?>
