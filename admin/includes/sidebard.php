@@ -35,7 +35,7 @@ if (isset($_SESSION['documento'])) {
 $currentPage = basename($_SERVER['PHP_SELF']);
 
 // Definir la ruta base para todas las URLs (ajustar según tu estructura)
-$baseUrl = "/admin/"; // Asegúrate de que esta ruta sea correcta
+$baseUrl = "/teamtalks/admin/"; // Asegúrate de que esta ruta sea correcta
 ?>
 
 <!DOCTYPE html>
@@ -121,8 +121,8 @@ $baseUrl = "/admin/"; // Asegúrate de que esta ruta sea correcta
                 </a>
                 <span class="nav-tooltip">Gestion Fichas</span>
             </li>
-            <li class="nav-item <?php echo ($currentPage == 'instructores.php') ? 'active' : ''; ?>">
-                <a href="<?php echo $baseUrl; ?>instructores.php" class="nav-link">
+            <li class="nav-item <?php echo ($currentPage == 'gestion_instructores.php') ? 'active' : ''; ?>">
+                <a href="<?php echo $baseUrl; ?>instructores/gestion_instructores.php" class="nav-link">
                     <span class="nav-icon"><i class="bi bi-person-workspace"></i></span>
                     <span class="nav-label">Instructores</span>
                 </a>

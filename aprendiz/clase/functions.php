@@ -326,7 +326,7 @@ function guardarEntregaActividad($id_actividad, $id_usuario, $contenido, $archiv
         if (verificarEntregaExistente($id_actividad, $id_usuario)) {
             return ['success' => false, 'message' => 'Ya has entregado esta actividad anteriormente.'];
         }
-        
+
         if (count($archivos) > 3) {
             return ['success' => false, 'message' => 'Solo se permiten hasta 3 archivos por entrega.'];
         }
@@ -600,7 +600,8 @@ function puedeParticiparForo($id_usuario, $id_materia_ficha)
 
 
 if (!function_exists('formatearFecha')) {
-    function formatearFecha($fecha) {
+    function formatearFecha($fecha)
+    {
         if (!$fecha) return 'Sin fecha';
 
         $fechaObj = new DateTime($fecha);
@@ -620,7 +621,8 @@ if (!function_exists('formatearFecha')) {
 }
 
 if (!function_exists('obtenerIniciales')) {
-    function obtenerIniciales($nombre) {
+    function obtenerIniciales($nombre)
+    {
         $palabras = explode(' ', $nombre);
         $iniciales = '';
         foreach ($palabras as $palabra) {
@@ -632,7 +634,8 @@ if (!function_exists('obtenerIniciales')) {
     }
 }
 
-function eliminarEntregaActividad($id_actividad, $id_usuario) {
+function eliminarEntregaActividad($id_actividad, $id_usuario)
+{
     global $pdo;
 
     try {
@@ -650,6 +653,3 @@ function eliminarEntregaActividad($id_actividad, $id_usuario) {
         ];
     }
 }
-
-?>
-

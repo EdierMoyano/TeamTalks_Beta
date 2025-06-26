@@ -288,4 +288,3 @@ if ($data):
         <i class="bi bi-exclamation-circle-fill"></i> No se encontró la entrega del aprendiz.
     </div>
 <?php endif; ?>
-

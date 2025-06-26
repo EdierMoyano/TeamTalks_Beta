@@ -22,8 +22,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $mail->isSMTP();
         $mail->Host       = 'smtp.hostinger.com';                // Host SMTP
         $mail->SMTPAuth   = true;
-        $mail->Username   = 'soporte@teamtalks.com.co';          // Tu correo Titan
-        $mail->Password   = '1104940105Edier.';           // Contraseña de buzón o app password
+        $mail->Username   = 'reporte@teamtalks.com.co';          // Tu correo Titan
+        $mail->Password   = 'TeamTalks_2901879';           // Contraseña de buzón o app password
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;         // SSL
         $mail->Port       = 465;                                 // Puerto SSL
 
@@ -32,8 +32,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         // $mail->Port       = 587;
 
         // 4) Remitente y destinatarios
-        $mail->setFrom('soporte@teamtalks.com.co', 'Soporte TeamTalks');
-        $mail->addAddress('soporte@teamtalks.com.co', 'Equipo de Reportes');
+        $mail->setFrom('reporte@teamtalks.com.co', 'Soporte TeamTalks');
+        $mail->addAddress('reporte@teamtalks.com.co', 'Equipo de Reportes');
 
         // 5) Contenido HTML
         $mail->isHTML(true);

@@ -1,7 +1,6 @@
 <?php
 session_start();
 
-
 if ($_SESSION['rol'] !== 2) {
     header('Location: ../../includes/exit.php?');
     exit;
@@ -200,7 +199,7 @@ try {
     $alertType = "danger";
 }
 
-// Obtener instructores disponibles
+// Obtener instructores disponibles (para la carga inicial)
 $instructores = [];
 try {
     $stmt = $conexion->query("
@@ -800,6 +799,34 @@ try {
             }
         });
 
+        // AGREGADO: Actualizar instructores según materia seleccionada (AJAX)
+        $('#id_materia').on('change', function() {
+            var idMateria = $(this).val();
+            var $select = $('#id_instructor');
+            $select.html('<option value="">Cargando instructores...</option>');
+
+            if (!idMateria) {
+                $select.html('<option value="">Sin instructor asignado</option>');
+                return;
+            }
+
+            $.get('get_instructores_por_materia.php', { id_materia: idMateria }, function(res) {
+                if (res.success) {
+                    let opciones = '<option value="">Sin instructor asignado</option>';
+                    if (res.instructores.length > 0) {
+                        res.instructores.forEach(function(ins) {
+                            opciones += `<option value="${ins.id}">${ins.nombre_completo}</option>`;
+                        });
+                    } else {
+                        opciones += '<option value="">No hay instructores habilitados</option>';
+                    }
+                    $select.html(opciones);
+                } else {
+                    $select.html('<option value="">Error cargando instructores</option>');
+                }
+            }, 'json');
+        });
+
         // Inicializar al cargar la página
         document.addEventListener("DOMContentLoaded", function() {
             // Mostrar primera página
@@ -812,8 +839,6 @@ try {
             });
         });
     </script>
-
-    
 
 </body>
 

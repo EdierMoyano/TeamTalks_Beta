@@ -25,7 +25,7 @@ if (isset($_GET['mensaje']) && $_GET['mensaje'] == 'creado') {
 try {
     $db = new Database();
     $conn = $db->connect();
-    
+
     // Obtener información del usuario
     $stmt = $conn->prepare("SELECT u.*, e.empresa AS empresa_nombre, r.rol AS nombre_rol 
                            FROM usuarios u 
@@ -33,28 +33,27 @@ try {
                            LEFT JOIN roles r ON u.id_rol = r.id_rol 
                            WHERE u.id = ?");
     $stmt->execute([$id]);
-    
+
     if ($stmt->rowCount() == 0) {
         header('Location: usuarios.php');
         exit;
     }
-    
+
     $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
-    
+
     // Obtener cursos creados por el usuario
     $stmt = $conn->prepare("SELECT COUNT(*) FROM clases WHERE id_instructor = ?");
     $stmt->execute([$id]);
     $total_cursos = $stmt->fetchColumn();
-    
+
     // Obtener asistencias del usuario
     $stmt = $conn->prepare("SELECT COUNT(*) FROM asistencia WHERE id_user = ?");
     $stmt->execute([$id]);
     $total_asistencias = $stmt->fetchColumn();
-    
+
     // Verificar si existe la imagen del código de barras
     $ruta_codigo_barras = '../barcode/' . $id . '.png';
     $codigo_barras_existe = file_exists($ruta_codigo_barras);
-    
 } catch (PDOException $e) {
     $mensaje = "Error al obtener datos: " . $e->getMessage();
     $tipo_mensaje = "danger";
@@ -62,6 +61,7 @@ try {
 ?>
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -72,6 +72,7 @@ try {
         .sidebar {
             min-height: calc(100vh - 56px);
         }
+
         .barcode-container {
             background-color: #f8f9fa;
             border: 1px solid #dee2e6;
@@ -80,6 +81,7 @@ try {
             text-align: center;
             margin-top: 1rem;
         }
+
         .barcode-image {
             max-width: 100%;
             height: auto;
@@ -87,6 +89,7 @@ try {
         }
     </style>
 </head>
+
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-danger">
         <div class="container-fluid">
@@ -117,7 +120,9 @@ try {
                             <i class="bi bi-person-circle"></i> <?php echo $_SESSION['nombres']; ?>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end">
-                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
                             <li><a class="dropdown-item" href="../logout.php">Cerrar Sesión</a></li>
                         </ul>
                     </li>
@@ -125,7 +130,7 @@ try {
             </div>
         </div>
     </nav>
-    
+
     <div class="container-fluid">
         <div class="row">
             <!-- Sidebar -->
@@ -157,12 +162,12 @@ try {
                                 <i class="bi bi-tags"></i> Tipos de Licencia
                             </a>
                         </li>
-                        
+
                     </ul>
                 </div>
             </div>
-            
-        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
                 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
                     <h1 class="h2">Detalles de Usuario</h1>
                     <div class="btn-toolbar mb-2 mb-md-0">
@@ -176,14 +181,14 @@ try {
                         </a>
                     </div>
                 </div>
-                
+
                 <?php if (!empty($mensaje)): ?>
-                <div class="alert alert-<?php echo $tipo_mensaje; ?> alert-dismissible fade show" role="alert">
-                    <?php echo $mensaje; ?>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
+                    <div class="alert alert-<?php echo $tipo_mensaje; ?> alert-dismissible fade show" role="alert">
+                        <?php echo $mensaje; ?>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
                 <?php endif; ?>
-                
+
                 <div class="row">
                     <div class="col-md-8">
                         <div class="card mb-4">
@@ -202,7 +207,7 @@ try {
                                     </div>
                                     <div class="col-md-6">
                                         <p>
-                                            <strong>Empresa:</strong> 
+                                            <strong>Empresa:</strong>
                                             <?php if (!empty($usuario['empresa_nombre'])): ?>
                                                 <a href="empresas_ver.php?id=<?php echo $usuario['nit']; ?>">
                                                     <?php echo htmlspecialchars($usuario['empresa_nombre']); ?>
@@ -212,34 +217,34 @@ try {
                                             <?php endif; ?>
                                         </p>
                                         <p>
-                                            <strong>Rol:</strong> 
+                                            <strong>Rol:</strong>
                                             <?php echo htmlspecialchars($usuario['nombre_rol']); ?>
                                         </p>
                                     </div>
                                 </div>
-                                
+
                                 <?php if ($codigo_barras_existe): ?>
-                                <div class="barcode-container">
-                                    <h5 class="mb-3">Código de Barras del Usuario</h5>
-                                    <img src="<?php echo '../barcode/' . $id . '.png'; ?>" alt="Código de Barras" class="barcode-image">
-                                    <div class="d-flex justify-content-center gap-2">
-                                        <a href="<?php echo '../barcode/' . $id . '.png'; ?>" class="btn btn-primary" download="codigo_barras_<?php echo $id; ?>.png">
-                                            <i class="bi bi-download"></i> Descargar
-                                        </a>
-                                        <button class="btn btn-success" onclick="imprimirCodigo()">
-                                            <i class="bi bi-printer"></i> Imprimir
-                                        </button>
+                                    <div class="barcode-container">
+                                        <h5 class="mb-3">Código de Barras del Usuario</h5>
+                                        <img src="<?php echo '../barcode/' . $id . '.png'; ?>" alt="Código de Barras" class="barcode-image">
+                                        <div class="d-flex justify-content-center gap-2">
+                                            <a href="<?php echo '../barcode/' . $id . '.png'; ?>" class="btn btn-primary" download="codigo_barras_<?php echo $id; ?>.png">
+                                                <i class="bi bi-download"></i> Descargar
+                                            </a>
+                                            <button class="btn btn-success" onclick="imprimirCodigo()">
+                                                <i class="bi bi-printer"></i> Imprimir
+                                            </button>
+                                        </div>
                                     </div>
-                                </div>
                                 <?php else: ?>
-                                <div class="alert alert-warning">
-                                    <i class="bi bi-exclamation-triangle-fill me-2"></i> No se encontró la imagen del código de barras para este usuario.
-                                </div>
+                                    <div class="alert alert-warning">
+                                        <i class="bi bi-exclamation-triangle-fill me-2"></i> No se encontró la imagen del código de barras para este usuario.
+                                    </div>
                                 <?php endif; ?>
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="col-md-4">
                         <div class="card mb-4">
                             <div class="card-header bg-success text-white">
@@ -256,12 +261,12 @@ try {
                                     <div>Asistencias Registradas:</div>
                                     <span class="badge bg-info rounded-pill"><?php echo $total_asistencias; ?></span>
                                 </div>
-                                
+
                                 <div class="d-grid gap-2 mt-4">
                                     <?php if (!empty($usuario['nit'])): ?>
-                                    <a href="empresas_ver.php?id=<?php echo $usuario['nit']; ?>" class="btn btn-outline-primary">
-                                        <i class="bi bi-building"></i> Ver Empresa
-                                    </a>
+                                        <a href="empresas_ver.php?id=<?php echo $usuario['nit']; ?>" class="btn btn-outline-primary">
+                                            <i class="bi bi-building"></i> Ver Empresa
+                                        </a>
                                     <?php endif; ?>
                                     <a href="usuarios_editar.php?id=<?php echo $id; ?>" class="btn btn-warning">
                                         <i class="bi bi-pencil"></i> Editar Usuario
@@ -269,7 +274,7 @@ try {
                                 </div>
                             </div>
                         </div>
-                        
+
                         <div class="card">
                             <div class="card-header bg-info text-white">
                                 <h5 class="mb-0">
@@ -290,16 +295,16 @@ try {
             </main>
         </div>
     </div>
-    
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-    function imprimirCodigo() {
-        const imgSrc = '<?php echo '../barcode/' . $id . '.png'; ?>';
-        const codigo = '<?php echo $id; ?>';
-        const nombre = '<?php echo htmlspecialchars($usuario['nombres'] . ' ' . $usuario['apellidos']); ?>';
-        
-        const ventanaImpresion = window.open('', '_blank');
-        ventanaImpresion.document.write(`
+        function imprimirCodigo() {
+            const imgSrc = '<?php echo '../barcode/' . $id . '.png'; ?>';
+            const codigo = '<?php echo $id; ?>';
+            const nombre = '<?php echo htmlspecialchars($usuario['nombres'] . ' ' . $usuario['apellidos']); ?>';
+
+            const ventanaImpresion = window.open('', '_blank');
+            ventanaImpresion.document.write(`
             <!DOCTYPE html>
             <html>
             <head>
@@ -336,12 +341,14 @@ try {
                     window.onload = function() {
                         window.print();
                     }
-                </script>
-            </body>
-            </html>
-        `);
-        ventanaImpresion.document.close();
-    }
     </script>
 </body>
+
+</html>
+`);
+ventanaImpresion.document.close();
+}
+</script>
+</body>
+
 </html>
