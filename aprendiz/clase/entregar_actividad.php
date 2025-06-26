@@ -69,19 +69,13 @@ try {
                 $rutaCompleta = $directorioUsuario . $nombreArchivo;
 
                 if (move_uploaded_file($archivoTemporal, $rutaCompleta)) {
-                    $archivosSubidos[] = [
-                        'nombre_original' => $nombreOriginal,
-                        'nombre_archivo' => $nombreArchivo,
-                        'ruta' => $rutaCompleta,
-                        'tipo' => $tipoArchivo,
-                        'tamano' => $tamanoArchivo
-                    ];
+                    $archivosSubidos[] = $rutaCompleta; // Guardar solo la ruta
                 }
             }
         }
     }
 
-    // Guardar la entrega en la base de datos
+    // Guardar la entrega en la base de datos (solo rutas de archivos)
     $resultado = guardarEntregaActividad($id_actividad, $id_usuario, $contenido, $archivosSubidos);
 
     if ($resultado['success']) {

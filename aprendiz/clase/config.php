@@ -2,8 +2,9 @@
 // Configuración de la base de datos
 define('DB_HOST', 'localhost');
 define('DB_NAME', 'u148394603_teamtalks');
-define('DB_USER', 'root');
-define('DB_PASS', '');
+define('DB_USER', 'u148394603_teamtalks');
+define('DB_PASS', 'TeamTalks2901879');
+
 
 // Conexión a la base de datos
 try {
