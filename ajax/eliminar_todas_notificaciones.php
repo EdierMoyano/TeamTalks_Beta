@@ -1,5 +1,5 @@
 <?php
-require_once $_SERVER['DOCUMENT_ROOT'] . '/conexion/init.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/teamtalks/conexion/init.php';
 
 // Verificar que sea una petición AJAX
 if (!isset($_SERVER['HTTP_X_REQUESTED_WITH']) || strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) !== 'xmlhttprequest') {

@@ -1,5 +1,5 @@
 <?php
-require_once $_SERVER['DOCUMENT_ROOT'] . '/conexion/init.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/teamtalks/conexion/init.php';
 
 $usuario_logueado = isset($_SESSION['documento']);
 $id_usuario = $_SESSION['documento'] ?? null;
