@@ -1,8 +1,6 @@
 <?php
-require_once $_SERVER['DOCUMENT_ROOT'] . '/conexion/init.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/teamtalks/conexion/init.php';
 include 'session.php';
-
-
 
 $id_instructor = (int)$_SESSION['documento'];
 $q = isset($_GET['q']) ? trim($_GET['q']) : '';
