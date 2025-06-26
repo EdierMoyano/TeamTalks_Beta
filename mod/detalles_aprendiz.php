@@ -1,5 +1,5 @@
 <?php
-require_once $_SERVER['DOCUMENT_ROOT'] . '/conexion/init.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/teamtalks/conexion/init.php';
 
 
 $id = $_POST['id'];
@@ -7,7 +7,7 @@ $id = $_POST['id'];
 
 $sql = "
 SELECT 
-    u.id, u.nombres, u.apellidos, u.correo, u.telefono,
+    u.id, u.nombres, u.apellidos, u.correo, u.telefono, u.avatar,
     f.id_ficha AS ficha, fo.nombre AS formacion,
     tf.tipo_formacion AS tipo_formacion, tipof.tipo_ficha AS tipo_ficha, e.estado
 FROM usuarios u
@@ -44,6 +44,11 @@ if ($data): ?>
                 <div class="col-md-6 mb-3">
                     <h6 class="text-muted mb-1">Teléfono</h6>
                     <p class="mb-0"><?= htmlspecialchars($data['telefono']) ?></p>
+                    <img src="<?= BASE_URL ?>/<?= empty($data['avatar']) ? 'uploads/avatar/user.webp' : htmlspecialchars($user['avatar']) ?>" alt="Avatar" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 3px solid #ffffff; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); position: absolute; top: 100px; right: 100px">
+
+                </div>
+
+                <div class="col-md-6 mb-3">
                 </div>
             </div>
 
@@ -55,7 +60,7 @@ if ($data): ?>
                     <span class="badge bg-primary fs-6"><?= htmlspecialchars($data['ficha']) ?></span>
                 </div>
                 <div class="col-md-6 mb-3">
-                    <h6 class="text-muted mb-1">Tipo de Ficha</h6>
+                    <h6 class="text-muted mb-1">Modalidad</h6>
                     <span class="badge bg-secondary fs-6"><?= htmlspecialchars($data['tipo_ficha']) ?></span>
                 </div>
             </div>
@@ -74,9 +79,20 @@ if ($data): ?>
                 </div>
 
                 <div class="col-md-6 mb-3">
-                    <h6 class="text-muted mb-1">Estado</h6>
-                    <span class="badge bg-primary fs-6"><?= htmlspecialchars($data['estado']) ?></span>
+                    <div class="mb-3">
+                        <h6 class="text-muted mb-1">Estado</h6>
+                        <span class="badge bg-primary fs-6"><?= htmlspecialchars($data['estado']) ?></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <h6 class="text-muted mb-1">Entregas del aprendiz</h6>
+                        <a href="actividades_aprendiz.php?id=<?= $data['id'] ?>"><span class="fs-6" style="color: #0E4A86;">Ver aquí las actividades del aprendiz <i class="bi bi-box-arrow-up-right"></i></span></a>
+                    </div>
+
                 </div>
+
+
+
             </div>
         </div>
     </div>

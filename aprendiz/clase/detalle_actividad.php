@@ -427,208 +427,158 @@ $ficha = obtenerFicha($actividad['id_ficha']);
     <script src="script.js"></script>
 
     <script>
-        // Función para mostrar notificaciones
-        function mostrarNotificacion(mensaje, tipo = 'success') {
-            // Crear elemento de notificación
-            const notification = document.createElement('div');
-            notification.className = `notification ${tipo}`;
-            notification.innerHTML = `
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <i class="fas ${tipo === 'success' ? 'fa-check-circle' : tipo === 'error' ? 'fa-exclamation-triangle' : 'fa-info-circle'}"></i>
-                    <span>${mensaje}</span>
-                </div>
-            `;
-
-            // Agregar al body
-            document.body.appendChild(notification);
-
-            // Mostrar con animación
+    // Función para mostrar notificaciones
+    function mostrarNotificacion(mensaje, tipo = 'success') {
+        const notification = document.createElement('div');
+        notification.className = `notification ${tipo}`;
+        notification.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <i class="fas ${tipo === 'success' ? 'fa-check-circle' : tipo === 'error' ? 'fa-exclamation-triangle' : 'fa-info-circle'}"></i>
+                <span>${mensaje}</span>
+            </div>
+        `;
+        document.body.appendChild(notification);
+        setTimeout(() => {
+            notification.classList.add('show');
+        }, 100);
+        setTimeout(() => {
+            notification.classList.remove('show');
             setTimeout(() => {
-                notification.classList.add('show');
-            }, 100);
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 300);
+        }, 4000);
+    }
 
-            // Ocultar después de 4 segundos
-            setTimeout(() => {
-                notification.classList.remove('show');
-                setTimeout(() => {
-                    if (notification.parentNode) {
-                        notification.parentNode.removeChild(notification);
-                    }
-                }, 300);
-            }, 4000);
-        }
+    // Manejar envío del formulario de entrega
+    document.getElementById('formEntregarActividad')?.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        const submitBtn = this.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Entregando...';
+        fetch('entregar_actividad.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Error en la respuesta del servidor');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    mostrarNotificacion('¡Actividad entregada exitosamente!', 'success');
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 2000);
+                } else {
+                    mostrarNotificacion(data.message || 'Error al entregar la actividad', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                mostrarNotificacion('Error de conexión. Por favor, intenta nuevamente.', 'error');
+            })
+            .finally(() => {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+            });
+    });
 
-        // Manejar envío del formulario de entrega
-        document.getElementById('formEntregarActividad')?.addEventListener('submit', function(e) {
-            e.preventDefault();
+    function cancelarEntrega() {
+        if (confirm('¿Estás seguro de que deseas anular tu entrega? Esta acción no se puede deshacer.')) {
+            const formData = new FormData();
+            formData.append('id_actividad', '<?php echo $id_actividad; ?>');
+            formData.append('id_usuario', '<?php echo $id_usuario_actual; ?>');
+            formData.append('cancelar_entrega', '1');
 
-            const formData = new FormData(this);
-            const submitBtn = this.querySelector('button[type="submit"]');
-            const originalText = submitBtn.innerHTML;
-
-            // Deshabilitar botón durante el envío
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Entregando...';
-
-            fetch('entregar_actividad.php', {
+            fetch('cancelar_entrega.php', {
                     method: 'POST',
                     body: formData
                 })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Error en la respuesta del servidor');
-                    }
-                    return response.json();
-                })
+                .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        mostrarNotificacion('¡Actividad entregada exitosamente!', 'success');
-
-                        // Recargar la página para mostrar el cambio de estado
+                        mostrarNotificacion('Entrega cancelada exitosamente', 'info');
                         setTimeout(() => {
                             window.location.reload();
-                        }, 2000);
+                        }, 1500);
                     } else {
-                        mostrarNotificacion(data.message || 'Error al entregar la actividad', 'error');
+                        mostrarNotificacion(data.message || 'Error al cancelar la entrega', 'error');
                     }
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    mostrarNotificacion('Error de conexión. Por favor, intenta nuevamente.', 'error');
-                })
-                .finally(() => {
-                    // Rehabilitar botón
-                    submitBtn.disabled = false;
-                    submitBtn.innerHTML = originalText;
+                    mostrarNotificacion('Error de conexión', 'error');
                 });
-        });
+        }
+    }
 
-        // Función para cancelar entrega
-        function cancelarEntrega() {
-            if (confirm('¿Estás seguro de que deseas anular tu entrega? Esta acción no se puede deshacer.')) {
-                const formData = new FormData();
-                formData.append('id_actividad', '<?php echo $id_actividad; ?>');
-                formData.append('id_usuario', '<?php echo $id_usuario_actual; ?>');
-                formData.append('cancelar_entrega', '1');
+    let archivosSeleccionados = [];
 
-                fetch('cancelar_entrega.php', {
-                        method: 'POST',
-                        body: formData
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            mostrarNotificacion('Entrega cancelada exitosamente', 'info');
-                            setTimeout(() => {
-                                window.location.reload();
-                            }, 1500);
-                        } else {
-                            mostrarNotificacion(data.message || 'Error al cancelar la entrega', 'error');
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        mostrarNotificacion('Error de conexión', 'error');
-                    });
-            }
+    document.getElementById('archivos')?.addEventListener('change', (e) => {
+        const nuevosArchivos = Array.from(e.target.files);
+        const contenedor = document.getElementById('previsualizacionArchivos');
+
+        archivosSeleccionados = archivosSeleccionados.concat(nuevosArchivos);
+        if (archivosSeleccionados.length > 3) {
+            mostrarNotificacion('Solo puedes seleccionar hasta 3 archivos', 'error');
+            archivosSeleccionados = archivosSeleccionados.slice(0, 3);
         }
 
-        // Lista global de archivos seleccionados
-        let archivosSeleccionados = [];
-
-        document.getElementById('archivos')?.addEventListener('change', (e) => {
-            const nuevosArchivos = Array.from(e.target.files);
-            const contenedor = document.getElementById('previsualizacionArchivos');
-
-            // Agregar nuevos archivos a la lista existente
-            archivosSeleccionados = archivosSeleccionados.concat(nuevosArchivos);
-
-            // Limitar a 3 archivos
-            if (archivosSeleccionados.length > 3) {
-                mostrarNotificacion('Solo puedes seleccionar hasta 3 archivos', 'error');
-                archivosSeleccionados = archivosSeleccionados.slice(0, 3);
-            }
-
-            // Limpiar el contenedor y mostrar previsualización
-            contenedor.innerHTML = '';
-            archivosSeleccionados.forEach((archivo, index) => {
-                const div = document.createElement('div');
-                div.className = 'archivo-preview';
-                div.innerHTML = `
+        contenedor.innerHTML = '';
+        archivosSeleccionados.forEach((archivo, index) => {
+            const div = document.createElement('div');
+            div.className = 'archivo-preview';
+            div.innerHTML = `
                 <div class="archivo-icon">
                     <i class="fas ${obtenerIconoArchivo(archivo.name)}"></i>
                 </div>
                 <div class="archivo-info">
-                <div class="archivo-nombre" style="word-break: break-word; white-space: normal;">${archivo.name}</div>
+                    <div class="archivo-nombre" style="word-break: break-word; white-space: normal;">${archivo.name}</div>
                     <div class="archivo-tamano">${formatearTamano(archivo.size)}</div>
                 </div>
-                <button class="btn btn-sm btn-danger" onclick="eliminarArchivo(${index})">Eliminar</button>
+                <button type="button" class="btn btn-sm btn-danger" onclick="eliminarArchivo(${index})">Eliminar</button>
             `;
-                contenedor.appendChild(div);
-            });
-
-            // Crear un nuevo DataTransfer para actualizar el input con los archivos seleccionados
-            const dataTransfer = new DataTransfer();
-            archivosSeleccionados.forEach(file => dataTransfer.items.add(file));
-            document.getElementById('archivos').files = dataTransfer.files;
-
-            // Limpiar el input para permitir seleccionar el mismo archivo otra vez si se desea
-            e.target.value = '';
-        });
-
-        // Eliminar archivo por índice
-        archivosSeleccionados.forEach((archivo, idx) => {
-            const div = document.createElement('div');
-            div.className = 'archivo-preview';
-            div.innerHTML = `
-        <div class="archivo-icon">
-            <i class="fas ${obtenerIconoArchivo(archivo.name)}"></i>
-        </div>
-        <div class="archivo-info">
-            <div class="archivo-nombre" style="word-break: break-word; white-space: normal;">${archivo.name}</div>
-            <div class="archivo-tamano">${formatearTamano(archivo.size)}</div>
-        </div>
-        <button class="archivo-close" onclick="eliminarArchivo(${idx})">
-            <i class="fas fa-times"></i>
-        </button>
-    `;
             contenedor.appendChild(div);
         });
 
-
-        // Actualizar input con archivos restantes
         const dataTransfer = new DataTransfer();
         archivosSeleccionados.forEach(file => dataTransfer.items.add(file));
         document.getElementById('archivos').files = dataTransfer.files;
-        
+        e.target.value = '';
+    });
 
-        // Función para obtener icono según tipo de archivo
-        function obtenerIconoArchivo(nombreArchivo) {
-            const extension = nombreArchivo.split('.').pop().toLowerCase();
-            const iconos = {
-                'pdf': 'fa-file-pdf',
-                'doc': 'fa-file-word',
-                'docx': 'fa-file-word',
-                'txt': 'fa-file-alt',
-                'jpg': 'fa-file-image',
-                'jpeg': 'fa-file-image',
-                'png': 'fa-file-image',
-                'gif': 'fa-file-image',
-                'zip': 'fa-file-archive',
-                'rar': 'fa-file-archive'
-            };
-            return iconos[extension] || 'fa-file';
-        }
+    function eliminarArchivo(index) {
+        archivosSeleccionados.splice(index, 1);
+        const contenedor = document.getElementById('previsualizacionArchivos');
+        contenedor.innerHTML = '';
+        archivosSeleccionados.forEach((archivo, i) => {
+            const div = document.createElement('div');
+            div.className = 'archivo-preview';
+            div.innerHTML = `
+                <div class="archivo-icon">
+                    <i class="fas ${obtenerIconoArchivo(archivo.name)}"></i>
+                </div>
+                <div class="archivo-info">
+                    <div class="archivo-nombre" style="word-break: break-word; white-space: normal;">${archivo.name}</div>
+                    <div class="archivo-tamano">${formatearTamano(archivo.size)}</div>
+                </div>
+                <button type="button" class="btn btn-sm btn-danger" onclick="eliminarArchivo(${i})">Eliminar</button>
+            `;
+            contenedor.appendChild(div);
+        });
 
-        // Función para formatear tamaño de archivo
-        function formatearTamano(bytes) {
-            if (bytes === 0) return '0 Bytes';
-            const k = 1024;
-            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-            const i = Math.floor(Math.log(bytes) / Math.log(k));
-            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-        }
-    </script>
+        const dataTransfer = new DataTransfer();
+        archivosSeleccionados.forEach(file => dataTransfer.items.add(file));
+        document.getElementById('archivos').files = dataTransfer.files;
+    }
+</script>
+
 </body>
 
 </html>

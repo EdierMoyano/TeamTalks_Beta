@@ -1,5 +1,5 @@
 <?php
-require_once $_SERVER['DOCUMENT_ROOT'] . '/conexion/init.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/teamtalks/conexion/init.php';
 include 'session.php';
 
 // Obtener el ID de la ficha desde la URL, asegurándose de que sea un entero
@@ -70,7 +70,7 @@ if ($ficha): ?>
 
             <div class="row g-3 mt-3">
                 <div class="col-md-6">
-                    <h6 class="text-muted mb-1">Tipo de Ficha</h6>
+                    <h6 class="text-muted mb-1">Modalidad</h6>
                     <span class="badge bg-secondary"><?= htmlspecialchars($ficha['tipo_ficha']) ?></span>
                 </div>
                 <div class="col-md-6">
