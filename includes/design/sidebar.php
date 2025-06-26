@@ -6,6 +6,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/conexion/init.php';
 
 ?>
 
+
 <link rel="stylesheet" href="<?= BASE_URL ?>/styles/style_side.css">
 
 <aside class="sidebar collapsed">
