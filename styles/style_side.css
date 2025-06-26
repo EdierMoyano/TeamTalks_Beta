@@ -104,11 +104,11 @@
 .sidebar-nav .nav-link {
   color: #000000;
   display: flex;
+  align-items: center;
   gap: 12px;
   white-space: nowrap;
   border-radius: 8px;
-  padding: 12px 15px;
-  align-items: center;
+  padding: 12px 32px 12px 15px; /* Aumenta el padding derecho aún más */
   text-decoration: none;
   transition: 0.4s ease;
 }
@@ -257,8 +257,13 @@
 
 /* Flecha animada */
 .submenu-arrow {
-  margin-left: auto;
+  margin-left: 0;
+  margin-right: 0;
+  position: static;
+  color: black;
   transition: transform 0.3s ease;
+  font-size: 1.3em; /* Aumenta el tamaño de la flecha */
+  align-self: center;
 }
 
 /* Flecha hacia arriba cuando el submenú está abierto */

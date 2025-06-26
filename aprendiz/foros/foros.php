@@ -1,14 +1,25 @@
 <?php
 session_start();
-require_once 'functions.php';
+require_once '../../aprendiz/clase/functions.php';
 
-// Simulamos un usuario logueado (en producción esto vendría de la sesión)
-$id_usuario_actual = 1107977746;
-$id_ficha_actual = 2323; // Ficha ADSI
+// Verificar si el usuario ha iniciado sesión
+if (!isset($_SESSION['documento'])) {
+    header('Location: ../login.php');
+    exit;
+}
+
+// Obtener datos de sesión del usuario
+$datosSesion = obtenerDatosSesion();
+if (!$datosSesion) {
+    die("Error: No se pudieron obtener los datos del usuario.");
+}
+
+$id_usuario_actual = $datosSesion['id'];
+$id_ficha_actual = $datosSesion['id_ficha'];
 
 // Obtener datos de la ficha actual
 $ficha = obtenerFicha($id_ficha_actual);
-$foros = obtenerForosFicha($id_ficha_actual);
+$foros = obtenerForosSesion(); // Usar función que obtiene datos de sesión
 
 // Obtener información de la materia principal para el breadcrumb
 $materiaPrincipalData = obtenerMateriaPrincipal($id_ficha_actual);
@@ -22,7 +33,6 @@ $materiaPrincipal = $materiaPrincipalData ? $materiaPrincipalData['materia'] : '
     <meta charset="UTF-8">
     <title>Foros - TeamTalks</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <!-- Bootstrap y fuentes -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
@@ -32,125 +42,27 @@ $materiaPrincipal = $materiaPrincipalData ? $materiaPrincipalData['materia'] : '
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0">
+    <link rel="icon" href="../../assets/img/icon2.png">
 
 
     <link rel="stylesheet" href="../css/styles.css">
-
-    <style>
-        body.sidebar-collapsed .main-content {
-            margin-left: 100px;
-        }
-
-        .main-content {
-            padding: 20px;
-        }
-
-        .foro-card {
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-            border-radius: 12px;
-            overflow: hidden;
-        }
-
-        .foro-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
-        }
-
-        .foro-header {
-            background-color: #0E4A86;
-            color: white;
-            padding: 20px;
-        }
-
-        .foro-stats {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin-top: 10px;
-        }
-
-        .stat-item {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .foro-content {
-            padding: 20px;
-        }
-
-        .foro-description {
-            color: #555;
-            margin-bottom: 15px;
-        }
-
-        .foro-footer {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px 20px;
-            background-color: #f8f9fa;
-            border-top: 1px solid #eee;
-        }
-
-        .foro-instructor {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .instructor-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background-color: #0E4A86;
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 600;
-        }
-
-        .breadcrumb-custom {
-            background: none;
-            padding: 0;
-            margin-bottom: 20px;
-        }
-
-        .breadcrumb-custom .breadcrumb-item a {
-            color: #0E4A86;
-            text-decoration: none;
-        }
-
-        .breadcrumb-custom .breadcrumb-item a:hover {
-            text-decoration: underline;
-        }
-
-        .page-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-        }
-    </style>
 </head>
 
 <body class="sidebar-collapsed">
+    <!-- Header y Sidebar iguales -->
 
-    <!-- Header -->
     <?php include '../../includes/design/header.php'; ?>
 
     <!-- Sidebar -->
     <?php include '../../includes/design/sidebar.php'; ?>
 
-    <!-- Contenido principal -->
     <main class="main-content">
         <div class="container-fluid">
-            <!-- Breadcrumb -->
+            <!-- Breadcrumb corregido -->
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb breadcrumb-custom">
                     <li class="breadcrumb-item">
-                        <a href="index.php">
+                        <a href="javascript:void(0)" onclick="volverAClase()">
                             <i class="fas fa-home"></i> <?php echo htmlspecialchars($materiaPrincipal); ?>
                         </a>
                     </li>
@@ -189,7 +101,7 @@ $materiaPrincipal = $materiaPrincipalData ? $materiaPrincipalData['materia'] : '
                                         Espacio de discusión para la materia <?php echo htmlspecialchars($foro['materia']); ?>.
                                         Participa activamente en los debates y resuelve tus dudas.
                                     </p>
-                                    <a href="temas_foro.php?id=<?php echo $foro['id_foro']; ?>" class="btn btn-primary">
+                                    <a href="temas_foro.php?id=<?php echo $foro['id_foro']; ?>" class="btn btn-primary btn-azul-custom">
                                         <i class="bi bi-chat-text"></i> Ver temas
                                     </a>
                                 </div>
@@ -216,10 +128,140 @@ $materiaPrincipal = $materiaPrincipalData ? $materiaPrincipalData['materia'] : '
                     </div>
                 <?php endif; ?>
             </div>
+
         </div>
     </main>
+
+    <script>
+        // Función corregida para volver a la clase
+        function volverAClase() {
+            const idMateriaFicha = <?php echo json_encode($datosSesion['id_materia_ficha']); ?>;
+            if (idMateriaFicha) {
+                window.location.href = `index.php?id_clase=${idMateriaFicha}`;
+            } else {
+                window.location.href = '../index.php';
+            }
+        }
+    </script>
 
     <script src="../js/script.js"></script>
 </body>
 
 </html>
+
+<style>
+    .foro-card {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    .foro-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .foro-header {
+        background-color: #0E4A86;
+        color: white;
+        padding: 20px;
+    }
+
+    .foro-stats {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-top: 10px;
+    }
+
+    .stat-item {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .foro-content {
+        padding: 20px;
+    }
+
+    .foro-description {
+        color: #555;
+        margin-bottom: 15px;
+    }
+
+    .foro-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px 20px;
+        background-color: #f8f9fa;
+        border-top: 1px solid #eee;
+    }
+
+    .foro-instructor {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .instructor-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background-color: #0E4A86;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+    }
+
+    .breadcrumb-custom {
+        background: none;
+        padding: 0;
+        margin-bottom: 20px;
+    }
+
+    .breadcrumb-custom .breadcrumb-item a {
+        color: #0E4A86;
+        text-decoration: none;
+    }
+
+    .breadcrumb-custom .breadcrumb-item a:hover {
+        text-decoration: underline;
+    }
+
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+    }
+
+    .btn-azul-custom {
+        background-color: #0E4A86 !important;
+        border-color: #0E4A86 !important;
+        color: #fff !important;
+        transition: background 0.2s, color 0.2s;
+    }
+
+    .btn-azul-custom:hover,
+    .btn-azul-custom:focus {
+        background-color: #08325a !important;
+        border-color: #08325a !important;
+        color: #fff !important;
+    }
+
+    /* Ajusta el margen izquierdo del contenido principal según el estado del sidebar */
+    body:not(.sidebar-collapsed) .main-content {
+        margin-left: 250px;
+        /* Ancho del sidebar abierto */
+        transition: margin-left 0.4s;
+    }
+
+    body.sidebar-collapsed .main-content {
+        margin-left: 100px;
+        /* Ancho del sidebar colapsado */
+        transition: margin-left 0.4s;
+    }
+</style>

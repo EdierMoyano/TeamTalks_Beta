@@ -1,5 +1,4 @@
 <?php
-
 require_once $_SERVER['DOCUMENT_ROOT'] . '/teamtalks/conexion/init.php';
 
 ?>
@@ -58,7 +57,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/teamtalks/conexion/init.php';
       <!-- Solo para Aprendiz (rol 4) -->
       <?php if ($_SESSION['rol'] == 4): ?>
         <li class="nav-item">
-          <a href="<?= BASE_URL ?>/aprendiz/index.php" class="nav-link">
+          <a href="<?= BASE_URL ?>/aprendiz/tarjeta_formacion/index.php" class="nav-link">
             <i class="side bi bi-backpack-fill"></i>
             <span class="nav-label">Formaciones</span>
           </a>
@@ -67,7 +66,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/teamtalks/conexion/init.php';
           <a href="#" class="nav-link submenu-toggle">
             <i class="side bi bi-people-fill"></i>
             <span class="nav-label">Clases Inscritas</span>
-            <i class="bi bi-chevron-down submenu-arrow" style="position: relative; top: 0px; left: 0px; color: black;"></i>
+            <i class="bi bi-chevron-down submenu-arrow"></i>
           </a>
           <ul class="submenu">
             <li><a href="<?= BASE_URL ?>/aprendiz/" class="nav-link small"><i class="side bi bi-briefcase-fill"></i>Actividades</a></li>
@@ -76,7 +75,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/teamtalks/conexion/init.php';
         </li>
 
         <li class="nav-item">
-          <a href="<?= BASE_URL ?>/aprendiz/clase/foros.php" class="nav-link">
+          <a href="<?= BASE_URL ?>/aprendiz/foros/foros.php" class="nav-link">
             <i class="side bi bi-pencil-square"></i>
             <span class="nav-label">Foros</span>
           </a>

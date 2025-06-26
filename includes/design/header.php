@@ -14,7 +14,7 @@ if (strpos($uri, '/instructor/') !== false) {
 } elseif (strpos($uri, '/transversal/') !== false) {
     $carpeta_inicio = BASE_URL . '/transversal/index.php';
 } elseif (strpos($uri, '/aprendiz/') !== false) {
-    $carpeta_inicio = BASE_URL . '/aprendiz/index.php';
+    $carpeta_inicio = BASE_URL . '/aprendiz/tarjeta_formacion/index.php';
 } elseif (strpos($uri, '/mod/') !== false) {
     // Para rutas compartidas, usamos el rol para definir a qué dashboard enviar
     if ($rol == 3) { // Instructor gerente
