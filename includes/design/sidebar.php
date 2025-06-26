@@ -1,30 +1,20 @@
 <?php
-// Definir si está en entorno local
-$esLocal = in_array($_SERVER['REMOTE_ADDR'], ['127.0.0.1', '::1']);
+require_once $_SERVER['DOCUMENT_ROOT'] . '/teamtalks/conexion/init.php';
 
-require_once $_SERVER['DOCUMENT_ROOT'] . '/conexion/init.php';
-
-// Ruta dinámica hacia init.php (aunque en este caso es la misma)
-$rutaInit = $esLocal
-    ? $_SERVER['DOCUMENT_ROOT'] . '/conexion/init.php'
-    : $_SERVER['DOCUMENT_ROOT'] . '/conexion/init.php';
-
-require_once $rutaInit;
 ?>
-
 
 <link rel="stylesheet" href="<?= BASE_URL ?>/styles/style_side.css">
 
 <aside class="sidebar collapsed">
   <!-- Sidebar header -->
   <header class="sidebar-header">
-    <a href="#" class="header-logo">
+    <div href="#" class="header-logo">
       <img src="<?= BASE_URL ?>/assets/img/logo.png" alt="CodingNepal">
-    </a>
+    </div>
     <button class="toggler sidebar-toggler">
       <span class="material-symbols-rounded">chevron_left</span>
     </button>
-    
+
   </header>
 
   <nav class="sidebar-nav">
@@ -41,6 +31,12 @@ require_once $rutaInit;
           </a>
         </li>
 
+        <li class="nav-item">
+          <a href="<?= BASE_URL ?>/instructor/horario.php" class="nav-link">
+            <i class="side bi bi-calendar2-range-fill"></i>
+            <span class="nav-label">Horarios</span>
+          </a>
+        </li>
 
         <li class="nav-item">
           <a href="<?= BASE_URL ?>/instructor/actividades.php" class="nav-link">
@@ -48,8 +44,9 @@ require_once $rutaInit;
             <span class="nav-label">Actividades</span>
           </a>
         </li>
+
         <li class="nav-item">
-          <a href="#" class="nav-link">
+          <a href="<?= BASE_URL ?>/instructor/foros.php" class="nav-link">
             <i class="side bi bi-pencil-square"></i>
             <span class="nav-label">Foros</span>
           </a>
@@ -95,6 +92,12 @@ require_once $rutaInit;
           </a>
         </li>
 
+        <li class="nav-item">
+          <a href="<?= BASE_URL ?>/transversal/horario.php" class="nav-link">
+            <i class="side bi bi-calendar2-range-fill"></i>
+            <span class="nav-label">Horarios</span>
+          </a>
+        </li>
 
         <li class="nav-item">
           <a href="<?= BASE_URL ?>/transversal/actividades.php" class="nav-link">
@@ -103,7 +106,7 @@ require_once $rutaInit;
           </a>
         </li>
         <li class="nav-item">
-          <a href="#" class="nav-link">
+          <a href="<?= BASE_URL ?>/transversal/foros.php" class="nav-link">
             <i class="side bi bi-pencil-square"></i>
             <span class="nav-label">Foros</span>
           </a>

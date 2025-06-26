@@ -1,16 +1,22 @@
 <?php
-require_once $_SERVER['DOCUMENT_ROOT'] . '/conexion/init.php';
-
+require_once $_SERVER['DOCUMENT_ROOT'] . '/teamtalks/conexion/init.php';
 include 'session.php';
 
 $id_instructor = $_SESSION['documento'];
-
+$id_aprendiz = $_GET['id_aprendiz'] ?? null;
 $id_actividad = $_GET['id_actividad'] ?? null;
+$rol = $_SESSION['rol'] ?? '';
+$redirecciones = [
+    3 => '/instructor/actividades.php',
+    5 => '/transversal/actividades.php'
+];
+
+$destino = BASE_URL . ($redirecciones[$rol] ?? '/index.php');
 
 $aprendices = [];
 if ($id_actividad) {
     $stmt = $conex->prepare("
-        SELECT DISTINCT us.id, us.nombres, us.apellidos, us.avatar,
+        SELECT DISTINCT us.id, us.nombres, us.apellidos, us.avatar, us.id,
             f.id_ficha,
             fo.nombre AS nombre_formacion,
             m.materia AS nombre_materia
@@ -58,7 +64,7 @@ $numero_ficha = !empty($aprendices) ? $aprendices[0]['id_ficha'] : null;
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css" />
     <style>
         .main-content {
-            margin-left: 260px;
+            margin-left: 300px;
             transition: margin-left 0.4s ease;
         }
 
@@ -112,6 +118,51 @@ $numero_ficha = !empty($aprendices) ? $aprendices[0]['id_ficha'] : null;
             background-color: #e7f0ff;
             box-shadow: 0 0 0 2px #0d6efd;
         }
+
+        .but {
+            background-color: #0E4A86;
+            border-color: rgb(14, 74, 134);
+            color: white;
+            cursor: default;
+        }
+
+        .but:hover {
+            background-color: rgb(9, 50, 91);
+            border-color: rgb(23, 101, 180);
+            color: white;
+            cursor: default;
+        }
+
+        .spinner-border {
+            width: 3rem;
+            height: 3rem;
+            animation: spinner-grow 0.8s linear infinite;
+        }
+
+        @keyframes spinner-grow {
+            0% {
+                transform: scale(0.4);
+                opacity: 0.3;
+            }
+
+            50% {
+                transform: scale(1);
+                opacity: 1;
+            }
+
+            100% {
+                transform: scale(0.4);
+                opacity: 0.3;
+            }
+        }
+
+        #buscaraprendiz:focus {
+            box-shadow: 0 0 0 0.15rem rgba(14, 74, 134, 0.25);
+        }
+
+        .input-group-text {
+            background-color: transparent;
+        }
     </style>
 </head>
 
@@ -125,22 +176,53 @@ $numero_ficha = !empty($aprendices) ? $aprendices[0]['id_ficha'] : null;
     <div class="main-content">
         <div class="row gx-3" style="margin-right: 0px;">
             <div class="col-12 col-md-6 border-md-end p-3 fichas-scroll" style="max-height: 60vh; overflow-y: auto;">
-                <h5 class="mb-3">Aprendices<?= $numero_ficha ? " de la ficha $numero_ficha" : "" ?></h5>
+
+
+                <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+                    <div class="d-flex align-items-center">
+                        <a href="<?= $destino ?>">
+                            <button class="but btn me-2" type="button" style="margin-right: 10px; cursor: pointer;">
+                                <i class="bi bi-arrow-90deg-left"></i>
+                            </button>
+                        </a>
+                        <h5 class="mb-0">
+                            Aprendices<?= $numero_ficha ? " de la ficha $numero_ficha" : "" ?>
+                        </h5>
+                    </div>
+
+                    <div class="input-group shadow-sm rounded-pill" style="max-width: 250px;">
+                        <span class="input-group-text bg-white border-0 ps-3" id="search-icon">
+                            <i class="bi bi-search text-muted"></i>
+                        </span>
+                        <input id="buscaraprendiz" type="search"
+                            value="<?= $id_aprendiz ?>"
+                            class="form-control border-0 rounded-end-pill ps-2"
+                            placeholder="N° Doc. o Nombres"
+                            aria-label="Buscar"
+                            aria-describedby="search-icon">
+                    </div>
+                </div>
+
+
+
                 <div id="contenedor-aprendices">
                     <?php if (empty($aprendices)): ?>
                         <div class="text-center text-muted">No hay aprendices asignados.</div>
                     <?php else: ?>
                         <div class="list-group">
+
                             <?php foreach ($aprendices as $aprendiz): ?>
                                 <div class="col-12 mb-2">
                                     <div
                                         class="card shadow-sm aprendiz-item d-flex align-items-start"
+                                        data-nombre="<?= strtolower($aprendiz['nombres'] . ' ' . $aprendiz['apellidos']) ?>"
+                                        data-documento="<?= $aprendiz['id'] ?>"
                                         onclick="seleccionarAprendiz(this); cargarEntrega(<?= $aprendiz['id'] ?>);"
                                         style="cursor: pointer; border-left: 5px solid #0E4A86; transition: transform 0.2s ease;"
                                         onmouseover="this.style.transform = 'scale(1.02)'; this.style.boxShadow = '0 8px 20px rgba(74,144,226,0.3)';"
                                         onmouseout="this.style.transform = 'scale(1)'; this.style.boxShadow = '0 1px 6px rgba(0,0,0,0.1)';">
                                         <div class="d-flex align-items-center p-2">
-                                            <img src="../uploads/avatars/<?= htmlspecialchars($aprendiz['avatar'] ?? 'default.png') ?>" alt="avatar"
+                                            <img src="<?= BASE_URL ?>/<?= empty($aprendiz['avatar']) ? 'uploads/avatar/user.webp' : htmlspecialchars($aprendiz['avatar']) ?>" alt="avatar"
                                                 class="rounded-circle me-3" style="width: 48px; height: 48px; object-fit: cover;">
                                             <div>
                                                 <h6 class="mb-0" style="color: #0E4A86;"><?= htmlspecialchars($aprendiz['nombres'] . ' ' . $aprendiz['apellidos']) ?></h6>
@@ -157,6 +239,11 @@ $numero_ficha = !empty($aprendices) ? $aprendices[0]['id_ficha'] : null;
                             <?php endforeach; ?>
 
                         </div>
+                        <div id="mensajeNoCoincidencias" class="text-center text-muted mt-4" style="display: none;">
+                            <i class="bi bi-search fs-2"></i><br>
+                            <span class="fs-5">No se encontraron coincidencias.</span>
+                        </div>
+
 
 
                     <?php endif; ?>
@@ -175,6 +262,12 @@ $numero_ficha = !empty($aprendices) ? $aprendices[0]['id_ficha'] : null;
     <script>
         function cargarEntrega(id_user) {
             const id_actividad = <?= json_encode($id_actividad) ?>;
+            document.getElementById('contenedor-actividades').innerHTML = `
+            <div class="d-flex justify-content-center align-items-center flex-column text-secondary" style="height: 100%;">
+                <div class="spinner-border text-primary mb-3" role="status"></div>
+                <div class="fs-5">Cargando entrega del aprendiz...</div>
+            </div>`;
+
             fetch(`../ajax/cargar_entrega.php?id_actividad=${id_actividad}&id_user=${id_user}`)
                 .then(response => response.text())
                 .then(html => {
@@ -246,6 +339,55 @@ $numero_ficha = !empty($aprendices) ? $aprendices[0]['id_ficha'] : null;
             element.classList.add('selected');
         }
     </script>
+
+    <script>
+        function normalize(str) {
+            return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+        }
+
+        document.getElementById('buscaraprendiz').addEventListener('input', function() {
+            const query = normalize(this.value);
+            const items = document.querySelectorAll('.aprendiz-item');
+            let hayCoincidencias = false;
+
+            items.forEach(item => {
+                const nombre = normalize(item.getAttribute('data-nombre'));
+                const documento = normalize(item.getAttribute('data-documento'));
+
+                if (nombre.includes(query) || documento.includes(query)) {
+                    item.parentElement.style.display = '';
+                    hayCoincidencias = true;
+                } else {
+                    item.parentElement.style.display = 'none';
+                }
+            });
+
+            // Mostrar mensaje si no hay coincidencias
+            const mensaje = document.getElementById('mensajeNoCoincidencias');
+            mensaje.style.display = hayCoincidencias ? 'none' : 'block';
+        });
+    </script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', () => {
+            const input = document.getElementById('buscaraprendiz');
+            if (input.value) {
+                input.dispatchEvent(new Event('input')); // Fuerza el filtro al cargar
+            }
+
+            // Si solo hay un aprendiz visible tras el filtro, lo seleccionamos automáticamente
+            setTimeout(() => {
+                const visibles = [...document.querySelectorAll('.aprendiz-item')].filter(item => {
+                    return item.parentElement.style.display !== 'none';
+                });
+
+                if (visibles.length === 1) {
+                    visibles[0].click(); // Simula click en el aprendiz
+                }
+            }, 100); // Espera breve para asegurar que el filtro ya se aplicó
+        });
+    </script>
+
 
 
 

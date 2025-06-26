@@ -1,5 +1,5 @@
 <?php
-require_once $_SERVER['DOCUMENT_ROOT'] . '/conexion/init.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/teamtalks/conexion/init.php';
 include 'session.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -9,11 +9,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $fecha_entrega = $_POST['fecha_entrega'] ?? '';
     $id_materia_ficha = $_POST['id_materia_ficha'] ?? 0;
 
-    $archivosPermitidos = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'jpg', 'jpeg', 'png', 'gif', 'mp4', 'avi', 'mov', 'wmv', 'mkv'];
-    $totalSize = 0;
-    $nombresFinales = [null, null, null]; // archivo1, archivo2, archivo3
+    $archivosPermitidos = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'jpg', 'jpeg', 'png', 'gif', 'mp4', 'avi', 'mov', 'wmv', 'mkv', 'txt'];
+    $nombresFinales = [null, null, null]; // Para archivo1, archivo2, archivo3
+    $uploads_dir = '../uploads/';
 
-    $uploads_dir = $_SERVER['DOCUMENT_ROOT'] . '/uploads/';
     if (!is_dir($uploads_dir)) {
         mkdir($uploads_dir, 0755, true);
     }
@@ -22,34 +21,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $archivo = $_FILES['archivo' . $i] ?? null;
 
         if ($archivo && $archivo['error'] === UPLOAD_ERR_OK) {
-            $totalSize += $archivo['size'];
-
-            // Validar extensión
             $ext = strtolower(pathinfo($archivo['name'], PATHINFO_EXTENSION));
+            $size = $archivo['size'];
+
+            // ✅ Validar extensión
             if (!in_array($ext, $archivosPermitidos)) {
-                echo "El archivo {$i} tiene una extensión no permitida.";
+                $_SESSION['error_actividad'] = "El archivo {$i} tiene una extensión no permitida.";
+                header("Location: ../instructor/actividades.php?id=" . (int)$id_ficha);
                 exit;
             }
 
-            // Guardar con nombre único
+            // ✅ Validar tamaño máximo por archivo (20MB)
+            if ($size > 20 * 1024 * 1024) {
+                $_SESSION['error_actividad'] = "El archivo {$i} excede el límite de 20MB.";
+                header("Location: ../instructor/actividades.php?id=" . (int)$id_ficha);
+                exit;
+            }
+
             $nombreFinal = uniqid("DOC{$i}_") . '_' . basename($archivo['name']);
             $destino = $uploads_dir . $nombreFinal;
 
             if (move_uploaded_file($archivo['tmp_name'], $destino)) {
                 $nombresFinales[$i - 1] = $nombreFinal;
             } else {
-                echo "Error al subir el archivo {$i}.";
+                $_SESSION['error_actividad'] = "Error al subir el archivo {$i}.";
+                header("Location: ../instructor/actividades.php?id=" . (int)$id_ficha);
                 exit;
             }
         }
     }
 
-    if ($totalSize > 50 * 1024 * 1024) {
-        echo "La suma total de los archivos no puede superar los 50 MB.";
-        exit;
-    }
-
-    // Insertar en la base de datos
+    // ✅ Insertar actividad
     $sql = "INSERT INTO actividades (titulo, descripcion, fecha_entrega, archivo1, archivo2, archivo3, id_materia_ficha)
             VALUES (:titulo, :descripcion, :fecha_entrega, :archivo1, :archivo2, :archivo3, :id_materia_ficha)";
     $stmt = $conex->prepare($sql);
@@ -64,25 +66,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($stmt->execute()) {
         $id_actividad = $conex->lastInsertId();
 
-        // Obtener todos los aprendices de la ficha relacionada
+        // ✅ Obtener aprendices asociados
         $sqlAprendices = "
-        SELECT u.id AS id_user
-        FROM materia_ficha mf
-        JOIN fichas f ON f.id_ficha = mf.id_ficha
-        JOIN user_ficha uf ON uf.id_ficha = f.id_ficha
-        JOIN usuarios u ON u.id = uf.id_user
-        WHERE mf.id_materia_ficha = :id_materia_ficha
-        AND u.id_rol = 4
-    ";
+            SELECT u.id AS id_user
+            FROM materia_ficha mf
+            JOIN fichas f ON f.id_ficha = mf.id_ficha
+            JOIN user_ficha uf ON uf.id_ficha = f.id_ficha
+            JOIN usuarios u ON u.id = uf.id_user
+            WHERE mf.id_materia_ficha = :id_materia_ficha
+            AND u.id_rol = 4
+        ";
         $stmtAprendices = $conex->prepare($sqlAprendices);
         $stmtAprendices->execute(['id_materia_ficha' => $id_materia_ficha]);
         $aprendices = $stmtAprendices->fetchAll(PDO::FETCH_ASSOC);
 
-        // Insertar en actividades_user para cada aprendiz
         $sqlInsertActividadUser = "
-        INSERT INTO actividades_user (id_actividad, id_estado_actividad, contenido, archivo1, archivo2, archivo3, fecha_entrega, id_user, nota, comentario_inst)
-        VALUES (:id_actividad, 9, NULL, NULL, NULL, NULL, NULL, :id_user, NULL, NULL)
-    ";
+            INSERT INTO actividades_user 
+            (id_actividad, id_estado_actividad, contenido, archivo1, archivo2, archivo3, fecha_entrega, id_user, nota, comentario_inst)
+            VALUES (:id_actividad, 9, NULL, NULL, NULL, NULL, NULL, :id_user, NULL, NULL)
+        ";
         $stmtInsertAU = $conex->prepare($sqlInsertActividadUser);
 
         foreach ($aprendices as $aprendiz) {
@@ -90,10 +92,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'id_actividad' => $id_actividad,
                 'id_user' => $aprendiz['id_user'],
             ]);
-            
         }
+
         $_SESSION['actividad_creada'] = $titulo;
-        header("Location: /instructor/actividades.php?id=" . (int)$id_ficha);
+        header("Location: ../instructor/actividades.php?id=" . (int)$id_ficha);
+        exit;
+    } else {
+        $_SESSION['error_actividad'] = "Ocurrió un error al guardar la actividad.";
+        header("Location: ../instructor/actividades.php?id=" . (int)$id_ficha);
         exit;
     }
 }

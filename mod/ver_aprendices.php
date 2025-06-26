@@ -1,9 +1,15 @@
 <?php
-require_once $_SERVER['DOCUMENT_ROOT'] . '/conexion/init.php';
-
+require_once $_SERVER['DOCUMENT_ROOT'] . '/teamtalks/conexion/init.php';
 include 'session.php';
 
 $id_instructor = $_SESSION['documento'];
+$rol = $_SESSION['rol'] ?? '';
+$redirecciones = [
+  3 => '/instructor/index.php',
+  5 => '/transversal/index.php'
+];
+
+$destino = BASE_URL . ($redirecciones[$rol] ?? '/index.php');
 $id_ficha = isset($_GET['id_ficha']) ? (int)$_GET['id_ficha'] : 0;
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $limit = 6;
@@ -152,9 +158,11 @@ $aprendices = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <nav class="d-flex justify-content-center navbar" style="position: relative; right: 50px;">
       <div class="">
         <form class="d-flex" role="search">
-          <a href="../instructor/index.php"><button class="but btn" type="button" style="margin-right: 10px; cursor: pointer;">
+          <a href="<?= $destino ?>">
+            <button class="but btn" type="button" style="margin-right: 10px; cursor: pointer;">
               <i class="bi bi-arrow-90deg-left"></i>
-            </button></a>
+            </button>
+          </a>
           <button class="but btn" type="button" style="margin-right: 10px;">
             <i class="bi bi-search"></i>
           </button>
@@ -183,7 +191,7 @@ $aprendices = $stmt->fetchAll(PDO::FETCH_ASSOC);
   <div class="modal fade" id="modalAprendiz" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg">
       <div class="modal-content">
-        <div class="modal-header">
+        <div class="modal-header" style="background-color: #0E4A86;">
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body" id="modalContenido">

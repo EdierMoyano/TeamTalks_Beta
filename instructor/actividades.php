@@ -1,6 +1,5 @@
 <?php
-require_once $_SERVER['DOCUMENT_ROOT'] . '/conexion/init.php';
-
+require_once $_SERVER['DOCUMENT_ROOT'] . '/teamtalks/conexion/init.php';
 include 'session.php';
 
 
@@ -17,6 +16,8 @@ if (isset($_SESSION['actividad_creada'])) {
   $actividad_creada = $_SESSION['actividad_creada'];
   unset($_SESSION['actividad_creada']);
 }
+
+
 ?>
 
 <!DOCTYPE html>
@@ -41,12 +42,12 @@ if (isset($_SESSION['actividad_creada'])) {
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css" />
   <style>
     .main-content {
-      margin-left: 260px;
+      margin-left: 280px;
       transition: margin-left 0.4s ease;
     }
 
     body.sidebar-collapsed .main-content {
-      margin-left: 160px;
+      margin-left: 180px;
     }
 
     /* Scroll estilizado solo para la columna de fichas */
@@ -112,12 +113,33 @@ if (isset($_SESSION['actividad_creada'])) {
       left: 0;
       animation: progressAnim 3s linear forwards;
     }
+
+    .size {
+      max-width: 800px;
+      position: relative;
+      left: 650px;
+    }
+
+    .img {
+      max-width: 200px;
+      top: 20px;
+    }
   </style>
 </head>
 
 <body style="padding-top:180px;" class="sidebar-collapsed">
   <?php include 'design/header.php'; ?>
   <?php include 'design/sidebar.php'; ?>
+
+  <?php if (isset($_SESSION['error_actividad'])): ?>
+    <div class="size alert alert-danger alert-dismissible fade show rounded-3 mt-3 d-flex justify-content-end" role="alert">
+      <?= htmlspecialchars($_SESSION['error_actividad']) ?>
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+    </div>
+    <?php unset($_SESSION['error_actividad']); ?>
+  <?php endif; ?>
+
+
 
 
 
@@ -156,7 +178,10 @@ if (isset($_SESSION['actividad_creada'])) {
       </div>
 
       <div class="col-12 col-md-6 d-flex flex-column p-3 fichas-scroll" style="max-height: 65vh; overflow-y: auto; " id="contenedor-actividades">
-        <div class="text-center text-muted fs-5 mt-5">Aquí se mostrarán las actividades de la ficha.</div>
+        <div class="text-center text-muted fs-5 mt-5">Aquí se mostrarán las actividades de la ficha. <br>
+          <img src="../assets/img/monstruo.webp" alt="" class="img-fluid img">
+        </div>
+
       </div>
     </div>
   </div>
@@ -214,6 +239,8 @@ if (isset($_SESSION['actividad_creada'])) {
       }
     });
   </script>
+
+
 
 
 

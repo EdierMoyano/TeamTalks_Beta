@@ -1,5 +1,5 @@
 <?php
-require_once $_SERVER['DOCUMENT_ROOT'] . '/conexion/init.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/teamtalks/conexion/init.php';
 include 'session.php';
 
 
@@ -288,4 +288,3 @@ if ($data):
         <i class="bi bi-exclamation-circle-fill"></i> No se encontró la entrega del aprendiz.
     </div>
 <?php endif; ?>
-
