@@ -35,7 +35,7 @@ if (isset($_SESSION['documento'])) {
 $currentPage = basename($_SERVER['PHP_SELF']);
 
 // Definir la ruta base para todas las URLs (ajustar según tu estructura)
-$baseUrl = "/teamtalks/admin/"; // Asegúrate de que esta ruta sea correcta
+$baseUrl = "/admin/"; // Asegúrate de que esta ruta sea correcta
 ?>
 
 <!DOCTYPE html>
