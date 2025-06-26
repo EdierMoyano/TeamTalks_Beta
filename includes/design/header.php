@@ -12,7 +12,7 @@ $uri = $_SERVER['REQUEST_URI'];
 if (strpos($uri, '/instructor/') !== false) {
     $carpeta_inicio = BASE_URL . '/instructor/index.php';
 } elseif (strpos($uri, '/aprendiz/') !== false) {
-    $carpeta_inicio = BASE_URL . '/aprendiz/index.php';
+    $carpeta_inicio = BASE_URL . '/aprendiz/tarjeta_formacion/index.php';
 } else {
     $carpeta_inicio = BASE_URL . '/index.php'; // fallback por si acaso
 }

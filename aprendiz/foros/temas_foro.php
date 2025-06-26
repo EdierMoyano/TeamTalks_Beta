@@ -1,9 +1,20 @@
 <?php
 session_start();
-require_once 'functions.php';
+require_once '../clase/functions.php';
 
-// Simulamos un usuario logueado (en producción esto vendría de la sesión)
-$id_usuario_actual = 1107977746;
+// Verificar si el usuario ha iniciado sesión
+if (!isset($_SESSION['documento'])) {
+    header('Location: ../login.php');
+    exit;
+}
+
+// Obtener datos de sesión del usuario
+$datosSesion = obtenerDatosSesion();
+if (!$datosSesion) {
+    die("Error: No se pudieron obtener los datos del usuario.");
+}
+
+$id_usuario_actual = $datosSesion['id'];
 
 // Obtener el ID del foro desde la URL
 $id_foro = $_GET['id'] ?? null;
@@ -26,7 +37,7 @@ $temas = obtenerTemasForo($id_foro);
 // Verificar si el usuario puede participar en este foro
 $puedeParticipar = puedeParticiparForo($id_usuario_actual, $foro['id_materia_ficha']);
 
-// Verificar si el usuario es instructor (solo instructores pueden crear temas)
+// Verificar si el usuario es instructor
 $esInstructor = esInstructorMateriaFicha($id_usuario_actual, $foro['id_materia_ficha']);
 
 // Procesar la creación de un nuevo tema (solo para instructores)
@@ -41,12 +52,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['crear_tema']) && $esI
         $mensaje = 'El título del tema es obligatorio';
         $tipoMensaje = 'danger';
     } else {
-        $resultado = crearTemaForo($id_foro, $titulo, $descripcion, $id_usuario_actual);
+        $resultado = crearTemaForoSesion($id_foro, $titulo, $descripcion);
 
         if ($resultado['success']) {
             $mensaje = 'Tema creado exitosamente';
             $tipoMensaje = 'success';
-            // Recargar los temas para mostrar el nuevo
             $temas = obtenerTemasForo($id_foro);
         } else {
             $mensaje = $resultado['message'];
@@ -56,8 +66,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['crear_tema']) && $esI
 }
 
 // Obtener información de la materia para el breadcrumb
-$materiaPrincipalData = obtenerMateriaPrincipal($foro['id_ficha']);
+$stmt = $pdo->prepare("
+    SELECT m.materia, mf.id_materia_ficha
+    FROM materia_ficha mf
+    JOIN materias m ON mf.id_materia = m.id_materia
+    WHERE mf.id_ficha = ?
+    ORDER BY mf.id_materia_ficha ASC
+    LIMIT 1
+");
+$stmt->execute([$foro['id_ficha']]);
+$materiaPrincipalData = $stmt->fetch();
 $materiaPrincipal = $materiaPrincipalData ? $materiaPrincipalData['materia'] : 'Sin materia asignada';
+$idMateriaFicha = $materiaPrincipalData ? $materiaPrincipalData['id_materia_ficha'] : null;
 ?>
 
 <!DOCTYPE html>
@@ -77,7 +97,6 @@ $materiaPrincipal = $materiaPrincipalData ? $materiaPrincipalData['materia'] : '
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0">
-
 
     <link rel="stylesheet" href="../css/styles.css">
 
@@ -196,6 +215,20 @@ $materiaPrincipal = $materiaPrincipalData ? $materiaPrincipalData['materia'] : '
         .breadcrumb-custom .breadcrumb-item a:hover {
             text-decoration: underline;
         }
+
+        .btn-azul-custom {
+            background-color: #0E4A86 !important;
+            border-color: #0E4A86 !important;
+            color: #fff !important;
+            transition: background 0.2s, color 0.2s;
+        }
+
+        .btn-azul-custom:hover,
+        .btn-azul-custom:focus {
+            background-color: #08325a !important;
+            border-color: #08325a !important;
+            color: #fff !important;
+        }
     </style>
 </head>
 
@@ -210,22 +243,6 @@ $materiaPrincipal = $materiaPrincipalData ? $materiaPrincipalData['materia'] : '
     <!-- Contenido principal -->
     <main class="main-content">
         <div class="container-fluid">
-            <!-- Breadcrumb -->
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb breadcrumb-custom">
-                    <li class="breadcrumb-item">
-                        <a href="index.php">
-                            <i class="fas fa-home"></i> <?php echo htmlspecialchars($materiaPrincipal); ?>
-                        </a>
-                    </li>
-                    <li class="breadcrumb-item">
-                        <a href="foros.php">Foros de discusión</a>
-                    </li>
-                    <li class="breadcrumb-item active" aria-current="page">
-                        <?php echo htmlspecialchars($foro['materia']); ?>
-                    </li>
-                </ol>
-            </nav>
 
             <!-- Encabezado del foro -->
             <div class="foro-header">
@@ -273,7 +290,7 @@ $materiaPrincipal = $materiaPrincipalData ? $materiaPrincipalData['materia'] : '
                                     <?php if ($tema['descripcion']): ?>
                                         <p class="tema-description"><?php echo nl2br(htmlspecialchars($tema['descripcion'])); ?></p>
                                     <?php endif; ?>
-                                    <a href="detalle_tema.php?id=<?php echo $tema['id_tema_foro']; ?>" class="btn btn-outline-primary">
+                                    <a href="detalle_tema.php?id=<?php echo $tema['id_tema_foro']; ?>" class="btn btn-outline-primary btn-azul-custom">
                                         <i class="bi bi-chat-text"></i> Ver discusión
                                     </a>
                                 </div>
@@ -332,6 +349,17 @@ $materiaPrincipal = $materiaPrincipalData ? $materiaPrincipalData['materia'] : '
     <?php endif; ?>
 
     <script src="../js/script.js"></script>
+
+    <script>
+        // Función corregida para volver a la clase
+        function volverAClase() {
+            <?php if ($idMateriaFicha): ?>
+                window.location.href = `index.php?id_clase=<?php echo $idMateriaFicha; ?>`;
+            <?php else: ?>
+                window.location.href = '../index.php';
+            <?php endif; ?>
+        }
+    </script>
 </body>
 
 </html>

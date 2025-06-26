@@ -5,7 +5,6 @@ define('DB_NAME', 'u148394603_teamtalks');
 define('DB_USER', 'u148394603_teamtalks');
 define('DB_PASS', 'TeamTalks2901879');
 
-
 // Conexión a la base de datos
 try {
     $pdo = new PDO("mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=utf8mb4", DB_USER, DB_PASS);
@@ -14,4 +13,3 @@ try {
 } catch (PDOException $e) {
     die("Error de conexión: " . $e->getMessage());
 }
-?>

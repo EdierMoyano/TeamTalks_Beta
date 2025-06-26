@@ -7,10 +7,14 @@ const sidebarToggler = document.querySelector(".sidebar-toggler");
 sidebarToggler.addEventListener("click", () => {
   sidebar.classList.toggle("collapsed");
   document.body.classList.toggle("sidebar-collapsed", sidebar.classList.contains("collapsed"));
+});
 
-  // Cerrar todos los submenús si se colapsa el sidebar
-  if (sidebar.classList.contains("collapsed")) {
-    document.querySelectorAll(".has-submenu").forEach(item => item.classList.remove("open"));
-  }
+// Desplegar submenús al hacer clic en el toggle
+document.querySelectorAll('.submenu-toggle').forEach(toggle => {
+  toggle.addEventListener('click', function(e) {
+    e.preventDefault();
+    const parent = this.closest('.has-submenu');
+    parent.classList.toggle('open');
+  });
 });
 
