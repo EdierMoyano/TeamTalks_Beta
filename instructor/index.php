@@ -91,12 +91,22 @@ $id_instructor = $_SESSION['documento'];
 
     @media (max-width: 524px) {
       .buscar input{
-        width: 300px;
+        width: 200px;
+      }
+
+      .buscar {
+        position: relative;
+        right: 30px;
+      }
+
+      .text-center {
+        position: relative;
+        right: 30px;
       }
 
       .fichas {
         position: relative;
-        width: 400px;
+        width: 300px;
         right: 50px;
       }
 
@@ -109,8 +119,8 @@ $id_instructor = $_SESSION['documento'];
 </head>
 
 <body style="padding-top:180px;" class="sidebar-collapsed">
-  <?php include '../includes/design/header.php'; ?>
-  <?php include '../includes/design/sidebar.php'; ?>
+  <?php include 'design/header.php'; ?>
+  <?php include 'design/sidebar.php'; ?>
 
 
   <div class="main-content">
