@@ -1,3 +1,4 @@
+
 document.addEventListener("DOMContentLoaded", function () {
   const ITEMS_POR_PAGINA = 6;
   let clasesTotales = [];
@@ -10,7 +11,7 @@ document.addEventListener("DOMContentLoaded", function () {
   contenedor.parentNode.appendChild(paginacion);
 
   const formBusqueda = document.querySelector("form[role='search']");
-  const inputBusqueda = formBusqueda.querySelector("input[type='search']");
+  const inputBusqueda = document.getElementById("input-busqueda"); // Actualizado
 
   function renderizarPagina(pagina) {
     contenedor.innerHTML = "";
@@ -32,7 +33,6 @@ document.addEventListener("DOMContentLoaded", function () {
       const card = document.createElement("div");
       card.className = "card card-clase h-100 shadow-sm";
 
-      // Modificación: Usar id_clase como parámetro en la URL
       card.innerHTML = `
         <img src="${clase.imagen}" class="card-img-top" alt="Imagen de ${clase.nombre_clase}">
         <div class="card-body">
@@ -41,7 +41,7 @@ document.addEventListener("DOMContentLoaded", function () {
           <p class="card-text"><strong>Ficha:</strong> ${clase.numero_fichas}</p>
         </div>
         <div class="card-footer bg-transparent border-top-0">
-          <a href="../aprendiz/clase/index.php?id_clase=${clase.id_clase}" class="btn btn-blue-dark w-100">Ingresar a Clase</a>
+          <a href="../../aprendiz/clase/index.php?id_clase=${clase.id_clase}" class="btn btn-blue-dark w-100">Ingresar a Clase</a>
         </div>
       `;
 
@@ -76,7 +76,8 @@ document.addEventListener("DOMContentLoaded", function () {
     } else {
       clasesFiltradas = clasesTotales.filter(clase =>
         clase.nombre_clase.toLowerCase().includes(texto) ||
-        clase.nombre_profesor.toLowerCase().includes(texto)
+        clase.nombre_profesor.toLowerCase().includes(texto) ||
+        clase.numero_fichas.toString().toLowerCase().includes(texto)
       );
     }
 
@@ -84,7 +85,7 @@ document.addEventListener("DOMContentLoaded", function () {
     renderizarPagina(paginaActual);
   }
 
-  fetch("api/clases.php")
+  fetch("../api/clases.php")
     .then(res => res.json())
     .then(clases => {
       clasesTotales = clases;

@@ -1,7 +1,8 @@
 <?php
 
 // Carga las rutas base (define BASE_PATH y BASE_URL)
-require_once $_SERVER['DOCUMENT_ROOT'] . '/teamtalks/conexion/rutas.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/conexion/rutas.php';
+
 
 // Conexión a la base de datos
 require_once BASE_PATH . '/conexion/conexion.php';

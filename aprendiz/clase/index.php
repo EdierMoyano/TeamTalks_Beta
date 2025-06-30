@@ -5,7 +5,8 @@ require_once 'functions.php';
 
 // Verificar si el usuario ha iniciado sesión
 if (!isset($_SESSION['documento'])) {
-    die("Usuario no autenticado.");
+    header('Location: ../login.php');
+    exit;
 }
 
 $documento_usuario = $_SESSION['documento'];
@@ -20,8 +21,6 @@ if (!$usuario) {
 }
 
 $id_usuario_actual = $usuario['id'];
-
-
 
 // Obtener el ID de la clase desde la URL
 $id_clase = isset($_GET['id_clase']) ? intval($_GET['id_clase']) : null;
@@ -54,12 +53,9 @@ $stmt = $pdo->prepare("
 $stmt->execute([$id_usuario_actual, $materiaFichaData['id_ficha']]);
 $result = $stmt->fetch();
 
-
 if (!isset($result['count']) || intval($result['count']) === 0) {
     die("Error: No tienes acceso a esta clase.");
 }
-
-
 
 // Asignar los valores necesarios para el resto del código
 $id_materia_seleccionada = $materiaFichaData['id_materia'];
@@ -96,105 +92,44 @@ if (!$materiaActual) {
     die("Error: No se pudo obtener información de la materia.");
 }
 
-// Obtener actividades de la materia
-$stmt = $pdo->prepare("
-    SELECT a.*, m.materia, u.nombres, u.apellidos,
-           au.id_actividad_user as entrega_id,
-           CASE 
-               WHEN au.id_actividad_user IS NOT NULL THEN 'entregada'
-               WHEN a.fecha_entrega < NOW() THEN 'vencida'
-               ELSE 'pendiente'
-           END as estado_entrega
-    FROM actividades a
-    JOIN materia_ficha mf ON a.id_materia_ficha = mf.id_materia_ficha
-    JOIN materias m ON mf.id_materia = m.id_materia
-    JOIN usuarios u ON mf.id_instructor = u.id
-    LEFT JOIN actividades_user au ON a.id_actividad = au.id_actividad AND au.id_user = ?
-    WHERE a.id_materia_ficha = ?
-    ORDER BY a.fecha_entrega ASC
-");
-$stmt->execute([$id_usuario_actual, $idMateriaFicha]);
-$todasActividades = $stmt->fetchAll();
-
-// Obtener actividades completadas
-$stmt = $pdo->prepare("
-    SELECT a.*, m.materia, u.nombres, u.apellidos, au.fecha_entrega as fecha_entregada, au.nota
-    FROM actividades_user au
-    JOIN actividades a ON au.id_actividad = a.id_actividad
-    JOIN materia_ficha mf ON a.id_materia_ficha = mf.id_materia_ficha
-    JOIN materias m ON mf.id_materia = m.id_materia
-    JOIN usuarios u ON mf.id_instructor = u.id
-    WHERE au.id_user = ? AND a.id_materia_ficha = ?
-    ORDER BY au.fecha_entrega DESC
-");
-$stmt->execute([$id_usuario_actual, $idMateriaFicha]);
-$actividadesCompletadas = $stmt->fetchAll();
+// Obtener actividades usando la función corregida
+$todasActividades = obtenerTodasActividadesConEstado($idMateriaFicha, $id_usuario_actual);
 
 // Obtener temas recientes del foro
-$stmt = $pdo->prepare("
-    SELECT tf.*, u.nombres, u.apellidos, f.fecha_foro
-    FROM temas_foro tf
-    JOIN foros f ON tf.id_foro = f.id_foro
-    JOIN materia_ficha mf ON f.id_materia_ficha = mf.id_materia_ficha
-    JOIN usuarios u ON tf.id_user = u.id
-    WHERE mf.id_materia_ficha = ?
-    ORDER BY tf.fecha_creacion DESC
-    LIMIT 5
-");
-$stmt->execute([$idMateriaFicha]);
-$temasRecientes = $stmt->fetchAll();
+$temasRecientes = obtenerTemasForoRecientes($idMateriaFicha);
 
 // Obtener anuncios recientes
-$stmt = $pdo->prepare("
-    SELECT ai.id_anuncio, ai.titulo, ai.contenido as descripcion, ai.fecha_creacion, 
-           u.nombres, u.apellidos
-    FROM anuncios_instructor ai
-    JOIN materia_ficha mf ON ai.id_materia_ficha = mf.id_materia_ficha
-    JOIN usuarios u ON mf.id_instructor = u.id
-    WHERE ai.id_materia_ficha = ? AND ai.id_estado = 1
-    ORDER BY ai.fecha_creacion DESC
-    LIMIT 5
-");
-$stmt->execute([$idMateriaFicha]);
-$anuncios = $stmt->fetchAll();
+$anuncios = obtenerAnunciosRecientes($idMateriaFicha);
 
 // Obtener instructores de la materia
-$stmt = $pdo->prepare("
-    SELECT u.id, u.nombres, u.apellidos
-    FROM materia_ficha mf
-    JOIN usuarios u ON mf.id_instructor = u.id
-    WHERE mf.id_materia_ficha = ?
-");
-$stmt->execute([$idMateriaFicha]);
-$instructores = $stmt->fetchAll();
+$instructores = obtenerInstructoresFicha($id_ficha_actual, $id_materia_seleccionada);
 
 // Verificar si el usuario actual es instructor de esta materia_ficha
-$stmt = $pdo->prepare("
-    SELECT COUNT(*) as count
-    FROM materia_ficha mf
-    WHERE mf.id_instructor = ? AND mf.id_materia_ficha = ?
-");
-$stmt->execute([$id_usuario_actual, $idMateriaFicha]);
-$result = $stmt->fetch();
-$esInstructor = $result['count'] > 0;
+$esInstructor = esInstructorMateriaFicha($id_usuario_actual, $idMateriaFicha);
 
-// Separar actividades por estado
-$actividadesPendientes = array_filter($todasActividades, function ($actividad) {
-    return $actividad['estado_entrega'] === 'pendiente';
-});
+// Separar actividades por estado - LÓGICA CORREGIDA
+$actividadesPendientes = [];
+$actividadesVencidas = [];
+$actividadesEntregadas = [];
 
-$actividadesVencidas = array_filter($todasActividades, function ($actividad) {
-    return $actividad['estado_entrega'] === 'vencida';
-});
+foreach ($todasActividades as $actividad) {
+    // Usar el estado ya calculado en la función
+    switch ($actividad['estado_entrega']) {
+        case 'entregada':
+            $actividadesEntregadas[] = $actividad;
+            break;
+        case 'vencida':
+            $actividadesVencidas[] = $actividad;
+            break;
+        case 'pendiente':
+        default:
+            $actividadesPendientes[] = $actividad;
+            break;
+    }
+}
 
-$actividadesEntregadas = array_filter($todasActividades, function ($actividad) {
-    return $actividad['estado_entrega'] === 'entregada';
-});
-
-// Para el tablón, solo mostrar próximas entregas (pendientes)
-$proximasEntregas = array_filter($todasActividades, function ($actividad) {
-    return $actividad['estado_entrega'] === 'pendiente' && strtotime($actividad['fecha_entrega']) >= time();
-});
+// Para el tablón, mostrar próximas entregas (actividades pendientes)
+$proximasEntregas = $actividadesPendientes;
 
 // Función para formatear fechas
 function formatearFecha($fecha)
@@ -238,12 +173,24 @@ function obtenerIniciales($nombre_completo)
     <link rel="stylesheet" href="../css/styles.css">
 
     <style>
-        body.sidebar-collapsed .main-content {
-            margin-left: 140px;
+        /* Ajusta el margen izquierdo del contenido principal según el estado del sidebar */
+        body:not(.sidebar-collapsed) .main-content {
+            margin-left: 250px;
+            /* Ancho del sidebar abierto */
+            transition: margin-left 0.4s;
         }
 
-        .main-content {
-            padding: 20px;
+        body.sidebar-collapsed .main-content {
+            margin-left: 100px;
+            /* Ancho del sidebar colapsado */
+            transition: margin-left 0.4s;
+        }
+
+        .main-content .container-fluid {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding-left: 24px;
+            padding-right: 24px;
         }
 
         .clase-info-card {
@@ -321,7 +268,7 @@ function obtenerIniciales($nombre_completo)
         .task-icon i {
             color: #111;
             font-size: 1.5rem;
-            transform: translate(30px, -25px);
+            transform: translateX(10px);
         }
 
         .task-info {
@@ -378,7 +325,6 @@ function obtenerIniciales($nombre_completo)
 
         .task-icon.status-vencida i {
             color: white !important;
-            transform: none !important;
         }
 
         .status-badge.vencida {
@@ -457,6 +403,73 @@ function obtenerIniciales($nombre_completo)
             font-size: 0.75rem;
             font-weight: 600;
         }
+
+        .actividad-entregada {
+            border-left: 4px solid #28a745;
+            background-color: #f8fff8;
+            margin-bottom: 18px;           /* Separación entre tarjetas */
+            border-radius: 10px;
+            padding: 18px 18px 12px 18px;  /* Espaciado interno */
+            box-shadow: 0 2px 8px rgba(40, 167, 69, 0.04);
+            border: 1px solid #e6f4ea;     /* Borde sutil */
+        }
+
+        .task-list .actividad-entregada:last-child {
+            margin-bottom: 0;
+        }
+
+        .nota-comentario {
+            background-color: #e8f5e8;
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 12px;
+            border-left: 3px solid #28a745;
+            margin-bottom: 0;
+        }
+
+        .nota-valor {
+            font-weight: bold;
+            color: #155724;
+            font-size: 1.1rem;
+        }
+
+        .comentario-instructor {
+            color: #155724;
+            font-style: italic;
+            margin-top: 5px;
+        }
+
+        .task-list .task-item.vencida {
+            margin-bottom: 16px;
+            /* Espacio entre tarjetas */
+            border-radius: 8px;
+            border: 1px solid #ffd6d6;
+            box-shadow: 0 2px 8px rgba(220, 53, 69, 0.04);
+        }
+
+        .task-list .task-item.vencida:last-child {
+            margin-bottom: 0;
+        }
+
+        .btn-volver-xs {
+            padding: 9px 5px !important;
+            font-size: 0.75rem !important;
+            line-height: 1.2 !important;
+            border-radius: 6px !important;
+            max-width: 120px;
+            /* Limita el ancho máximo */
+            white-space: nowrap;
+            /* Evita que el texto se divida en dos líneas */
+            overflow: hidden;
+            /* Oculta el texto que sobrepase el ancho */
+        }
+
+        .actividad-entregada:hover {
+            background-color: #f3fcf3;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(40, 167, 69, 0.10);
+            transition: background 0.2s, box-shadow 0.2s, transform 0.2s;
+        }
     </style>
 </head>
 
@@ -472,14 +485,17 @@ function obtenerIniciales($nombre_completo)
     <main class="main-content">
         <div class="container-fluid">
             <div class="row" id="contenedor-clases">
-                <!-- Aquí irán las tarjetas -->
                 <div class="col-12">
-                    <div class="clase-info-card card mb-4 p-3 shadow-sm bg-white">
+                    <!-- Información de la clase -->
+                    <div class="clase-info-card card mb-4 p-3 shadow-sm bg-white" data-id-clase="<?php echo $idMateriaFicha; ?>">
                         <h2 class="mb-1"><?php echo htmlspecialchars($materiaActual['materia']); ?></h2>
                         <p class="text-muted mb-0">
                             Ficha: <?php echo htmlspecialchars($ficha['id_ficha']); ?> •
                             Instructor: <?php echo !empty($instructores) ? htmlspecialchars($instructores[0]['nombres'] . ' ' . $instructores[0]['apellidos']) : 'No asignado'; ?>
                         </p>
+                        <button class="btn btn-outline-black btn-sm btn-volver-xs mt-2" onclick="volverAClase()">
+                            <i class="bi bi-arrow-return-left"></i> Volver a clases
+                        </button>
                     </div>
 
                     <!-- Alerta de tareas vencidas -->
@@ -575,7 +591,7 @@ function obtenerIniciales($nombre_completo)
                                     <?php if (count($temasRecientes) > 0): ?>
                                         <ul class="task-list">
                                             <?php foreach ($temasRecientes as $tema): ?>
-                                                <li class="task-item" onclick="window.location.href='detalle_tema.php?id=<?php echo $tema['id_tema_foro']; ?>'">
+                                                <li class="task-item" onclick="window.location.href='../foros/detalle_tema.php?id=<?php echo $tema['id_tema_foro']; ?>'">
                                                     <div class="task-icon"><i class="bi bi-chat-dots"></i></div>
                                                     <div class="task-info">
                                                         <p class="task-title"><?php echo htmlspecialchars($tema['titulo']); ?></p>
@@ -603,7 +619,6 @@ function obtenerIniciales($nombre_completo)
                                 <h3><span class="icon"><i class="bi bi-megaphone-fill"></i></span> Anuncios</h3>
                             </div>
                             <div class="card-content">
-                                <!-- Lista de anuncios (visible para todos) -->
                                 <div id="listaAnuncios">
                                     <?php if (count($anuncios) > 0): ?>
                                         <ul class="announcement-list">
@@ -695,12 +710,12 @@ function obtenerIniciales($nombre_completo)
                                         <ul class="task-list">
                                             <?php foreach ($actividadesPendientes as $actividad): ?>
                                                 <li class="task-item" onclick="window.location.href='detalle_actividad.php?id=<?php echo $actividad['id_actividad']; ?>'">
-                                                    <div class="task-icon status-pendiente" style="display: flex; align-items: center; justify-content: center; width: 38px; height: 38px; background: #f1f1f1; border-radius: 50%; margin-right: 14px;">
-                                                        <i class="bi bi-clock-history" style="color: #111; font-size: 1.5rem;"></i>
+                                                    <div class="task-icon status-pendiente">
+                                                        <i class="bi bi-clock-history"></i>
                                                     </div>
                                                     <div class="task-info">
-                                                        <div class="task-header" style="display: flex; align-items: center; justify-content: space-between;">
-                                                            <p class="task-title" style="margin-bottom: 0;"><?php echo htmlspecialchars($actividad['titulo']); ?></p>
+                                                        <div class="task-header">
+                                                            <p class="task-title"><?php echo htmlspecialchars($actividad['titulo']); ?></p>
                                                             <div class="task-actions">
                                                                 <span class="status-badge pendiente">Pendiente</span>
                                                             </div>
@@ -730,10 +745,10 @@ function obtenerIniciales($nombre_completo)
                                         <i class="bi bi-book-fill"></i>
                                         Actividades completadas
                                     </h4>
-                                    <?php if (count($actividadesCompletadas) > 0): ?>
+                                    <?php if (count($actividadesEntregadas) > 0): ?>
                                         <ul class="task-list">
-                                            <?php foreach ($actividadesCompletadas as $actividad): ?>
-                                                <li class="task-item" onclick="window.location.href='detalle_actividad.php?id=<?php echo $actividad['id_actividad']; ?>'">
+                                            <?php foreach ($actividadesEntregadas as $actividad): ?>
+                                                <li class="task-item actividad-entregada" onclick="window.location.href='detalle_actividad.php?id=<?php echo $actividad['id_actividad']; ?>'">
                                                     <div class="task-icon status-completed"><i class="bi bi-patch-check"></i></div>
                                                     <div class="task-info">
                                                         <div class="task-header">
@@ -744,10 +759,23 @@ function obtenerIniciales($nombre_completo)
                                                             <strong><?php echo htmlspecialchars($actividad['materia']); ?></strong> •
                                                             <?php echo htmlspecialchars($actividad['nombres'] . ' ' . $actividad['apellidos']); ?> •
                                                             Entregado: <?php echo formatearFecha($actividad['fecha_entregada']); ?>
-                                                            <?php if ($actividad['nota']): ?>
-                                                                • Nota: <?php echo htmlspecialchars($actividad['nota']); ?>
-                                                            <?php endif; ?>
                                                         </p>
+
+                                                        <!-- Mostrar nota y comentario del instructor -->
+                                                        <?php if ($actividad['nota'] || $actividad['comentario_inst']): ?>
+                                                            <div class="nota-comentario">
+                                                                <?php if ($actividad['nota']): ?>
+                                                                    <div class="nota-valor">
+                                                                        <i class="bi bi-star-fill"></i> Nota: <?php echo htmlspecialchars($actividad['nota']); ?>
+                                                                    </div>
+                                                                <?php endif; ?>
+                                                                <?php if ($actividad['comentario_inst']): ?>
+                                                                    <div class="comentario-instructor">
+                                                                        <i class="bi bi-chat-quote"></i> "<?php echo htmlspecialchars($actividad['comentario_inst']); ?>"
+                                                                    </div>
+                                                                <?php endif; ?>
+                                                            </div>
+                                                        <?php endif; ?>
                                                     </div>
                                                 </li>
                                             <?php endforeach; ?>
@@ -778,7 +806,7 @@ function obtenerIniciales($nombre_completo)
                                 <?php if (count($temasRecientes) > 0): ?>
                                     <ul class="task-list">
                                         <?php foreach ($temasRecientes as $tema): ?>
-                                            <li class="task-item" onclick="window.location.href='detalle_tema.php?id=<?php echo $tema['id_tema_foro']; ?>'">
+                                            <li class="task-item" onclick="window.location.href='../foros/detalle_tema.php?id=<?php echo $tema['id_tema_foro']; ?>'">
                                                 <div class="task-icon"><i class="bi bi-chat-dots"></i></div>
                                                 <div class="task-info">
                                                     <p class="task-title"><?php echo htmlspecialchars($tema['titulo']); ?></p>
@@ -811,7 +839,6 @@ function obtenerIniciales($nombre_completo)
         function cerrarAlertaVencidas() {
             const alerta = document.getElementById('alertaVencidas');
             if (alerta) {
-                // Ocultar la alerta con animación
                 alerta.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
                 alerta.style.opacity = '0';
                 alerta.style.transform = 'translateY(-10px)';
@@ -820,11 +847,15 @@ function obtenerIniciales($nombre_completo)
                     alerta.classList.add('hidden');
                 }, 300);
 
-                // Guardar en localStorage que la alerta fue cerrada
                 const fechaCierre = new Date().getTime();
                 const claveAlerta = 'alertaVencidas_' + <?php echo $id_usuario_actual; ?> + '_' + <?php echo $idMateriaFicha; ?>;
                 localStorage.setItem(claveAlerta, fechaCierre.toString());
             }
+        }
+
+        // Función corregida para volver a la clase
+        function volverAClase() {
+            window.location.href = '../index.php';
         }
 
         // Verificar si la alerta debe mostrarse al cargar la página
@@ -837,13 +868,11 @@ function obtenerIniciales($nombre_completo)
                 if (fechaCierre) {
                     const fechaCierreMs = parseInt(fechaCierre);
                     const fechaActual = new Date().getTime();
-                    const dosDiasEnMs = 2 * 24 * 60 * 60 * 1000; // 2 días en milisegundos
+                    const dosDiasEnMs = 2 * 24 * 60 * 60 * 1000;
 
-                    // Si han pasado menos de 2 días desde que se cerró, mantener oculta
                     if (fechaActual - fechaCierreMs < dosDiasEnMs) {
                         alerta.classList.add('hidden');
                     } else {
-                        // Si han pasado más de 2 días, eliminar el registro y mostrar la alerta
                         localStorage.removeItem(claveAlerta);
                     }
                 }

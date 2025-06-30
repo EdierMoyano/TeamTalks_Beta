@@ -15,19 +15,23 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Crear una instancia de PHPMailer
     $mail = new PHPMailer(true);
 
-    try {
-        // Configurar el servidor SMTP
+   try {
+        // 3) Configuración SMTP de Hostinger/Titan
         $mail->isSMTP();
-        $mail->Host = 'smtp.gmail.com'; 
-        $mail->SMTPAuth = true;
-        $mail->Username = 'teamtalks39@gmail.com'; // Cambia esto por tu correo
-        $mail->Password = 'vjpz udnq kacd gwyl'; // Cambia esto por tu contraseña o una contraseña de aplicación
-        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-        $mail->Port = 587;
+        $mail->Host       = 'smtp.hostinger.com';                // Host SMTP
+        $mail->SMTPAuth   = true;
+        $mail->Username   = 'soporte@teamtalks.com.co';          // Tu correo Titan
+        $mail->Password   = 'TeamTalks_2901879.';           // Contraseña de buzón o app password
+        $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;         // SSL
+        $mail->Port       = 465;                                 // Puerto SSL
 
-        // Remitente y destinatario
-        $mail->setFrom('teamtalks39@gmail.com', 'Soporte Tecnico');
-        $mail->addAddress('teamtalks39@gmail.com', 'Equipo de Soporte'); // Cambia esto por el correo de la empresa
+        // Alternativa STARTTLS (PORT 587)
+        // $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+        // $mail->Port       = 587;
+
+        // 4) Remitente y destinatarios
+        $mail->setFrom('soporte@teamtalks.com.co', 'Soporte TeamTalks');
+        $mail->addAddress('soporte@teamtalks.com.co', 'Equipo de Reportes');
 
         // Contenido del correo
         $mail->isHTML(true);

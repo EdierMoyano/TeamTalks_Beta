@@ -36,7 +36,7 @@ if (isset($_POST['submit'])) {
                 header("Location: " . BASE_URL . "/instructor/index.php");
                 break;
             case 4:
-                header("Location: " . BASE_URL . "/aprendiz/index.php");
+                header("Location: " . BASE_URL . "/aprendiz/tarjeta_formacion/index.php");
                 break;
             case 5:
                 header("Location: " . BASE_URL . "/transversal/index.php");
