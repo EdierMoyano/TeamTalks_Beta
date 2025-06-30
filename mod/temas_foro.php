@@ -3,6 +3,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/teamtalks/conexion/init.php';
 include 'session.php';
 
 $id_foro = isset($_GET['id_foro']) ? (int) $_GET['id_foro'] : 0;
+
 $id_user = $_SESSION['documento'];
 
 // Verificar foro
@@ -15,6 +16,7 @@ $stmt = $conex->prepare("
     JOIN formacion fo ON fi.id_formacion = fo.id_formacion
     WHERE f.id_foro = ?
 ");
+
 $stmt->execute([$id_foro]);
 $foro = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -31,11 +33,11 @@ $stmt = $conex->prepare("
     WHERE tf.id_foro = ?
     ORDER BY tf.fecha_creacion DESC
 ");
+
 $stmt->execute([$id_foro]);
 $temas = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
 ?>
-
-
 
 <!DOCTYPE html>
 <html lang="en">
@@ -45,6 +47,7 @@ $temas = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Foros</title>
     <link rel="stylesheet" href="<?= BASE_URL ?>/styles/style_side.css" />
+    <link rel="stylesheet" href="<?= BASE_URL ?>/styles/header.css">
     <link rel="icon" href="<?= BASE_URL ?>/assets/img/icon2.png" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
@@ -56,19 +59,39 @@ $temas = $stmt->fetchAll(PDO::FETCH_ASSOC);
         referrerpolicy="no-referrer" />
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css" />
-
     <style>
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--background-color);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+
+        /* Layout principal */
         .main-content {
             margin-left: 280px;
             transition: margin-left 0.4s ease;
+            padding-top: 20px;
         }
 
         body.sidebar-collapsed .main-content {
             margin-left: 200px;
         }
 
+        /* Estilos base */
         h3.section-title {
             color: #0E4A86;
+            font-size: 1.5rem;
         }
 
         .card-custom {
@@ -149,37 +172,274 @@ $temas = $stmt->fetchAll(PDO::FETCH_ASSOC);
             color: white;
             cursor: default;
         }
+
+        .info-text {
+            font-size: 0.9rem;
+        }
+
+        /* Responsive Design */
+
+        /* Tablets (768px - 1024px) */
+        @media (max-width: 1024px) and (min-width: 768px) {
+            .main-content {
+                margin-left: 200px;
+                padding: 15px;
+            }
+
+            body.sidebar-collapsed .main-content {
+                margin-left: 150px;
+            }
+
+            h3.section-title {
+                font-size: 1.3rem;
+            }
+
+            .icon-container {
+                width: 40px;
+                height: 40px;
+            }
+
+            .tema-card {
+                padding: 1rem !important;
+            }
+
+            .info-text {
+                font-size: 0.85rem;
+            }
+        }
+
+        /* Móviles (hasta 767px) */
+        @media (max-width: 767px) {
+            body {
+                padding-top: 120px !important;
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 10px;
+            }
+
+            body.sidebar-collapsed .main-content {
+                margin-left: 0;
+            }
+
+            /* Header responsive */
+            .header-section {
+                flex-direction: column;
+                gap: 15px;
+                align-items: stretch !important;
+            }
+
+            .header-info {
+                order: 2;
+            }
+
+            .header-actions {
+                order: 1;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            h3.section-title {
+                font-size: 1.2rem;
+                margin-bottom: 0;
+            }
+
+            .info-text {
+                font-size: 0.8rem;
+                line-height: 1.4;
+            }
+
+            .info-text strong {
+                display: block;
+                margin-top: 5px;
+            }
+
+            .info-text strong:first-child {
+                margin-top: 0;
+            }
+
+            /* Botón nuevo tema más pequeño en móvil */
+            .btn-nuevo-tema {
+                font-size: 0.85rem;
+                padding: 8px 16px;
+            }
+
+            /* Tarjetas de temas responsive */
+            .tema-card {
+                padding: 15px !important;
+                margin-bottom: 15px;
+            }
+
+            .tema-card-content {
+                flex-direction: column !important;
+                gap: 15px !important;
+            }
+
+            .icon-container {
+                width: 35px;
+                height: 35px;
+                align-self: flex-start;
+            }
+
+            .tema-info {
+                width: 100%;
+            }
+
+            .tema-header {
+                flex-direction: column !important;
+                align-items: flex-start !important;
+                gap: 5px;
+            }
+
+            .tema-title {
+                font-size: 1rem;
+                line-height: 1.3;
+            }
+
+            .tema-date {
+                font-size: 0.75rem;
+            }
+
+            .tema-description {
+                font-size: 0.85rem;
+                line-height: 1.4;
+                margin-bottom: 10px !important;
+            }
+
+            .tema-author {
+                font-size: 0.75rem;
+                text-align: left !important;
+            }
+
+            /* Modal responsive */
+            .modal-dialog {
+                margin: 10px;
+                max-width: calc(100% - 20px);
+            }
+
+            .modal-header {
+                padding: 15px 20px;
+            }
+
+            .modal-title {
+                font-size: 1.1rem;
+            }
+
+            .modal-body {
+                padding: 20px;
+            }
+
+            .modal-footer {
+                padding: 15px 20px;
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .modal-footer .btn {
+                width: 100%;
+                margin: 0;
+            }
+
+            /* Formulario responsive */
+            .form-control {
+                font-size: 16px;
+                /* Evita zoom en iOS */
+            }
+
+            textarea.form-control {
+                min-height: 120px;
+            }
+        }
+
+        /* Móviles pequeños (hasta 480px) */
+        @media (max-width: 480px) {
+            .main-content {
+                padding: 8px;
+            }
+
+            h3.section-title {
+                font-size: 1.1rem;
+            }
+
+            .btn-nuevo-tema {
+                font-size: 0.8rem;
+                padding: 6px 12px;
+            }
+
+            .tema-card {
+                padding: 12px !important;
+            }
+
+            .icon-container {
+                width: 30px;
+                height: 30px;
+            }
+
+            .tema-title {
+                font-size: 0.95rem;
+            }
+
+            .tema-description {
+                font-size: 0.8rem;
+            }
+
+            .info-text {
+                font-size: 0.75rem;
+            }
+        }
+
+        /* Mejoras adicionales para touch */
+        @media (hover: none) and (pointer: coarse) {
+            .tema-card:hover {
+                transform: none;
+            }
+
+            .tema-card:active {
+                transform: scale(0.98);
+                background-color: #f0f8ff;
+            }
+
+            .btn:active {
+                transform: scale(0.95);
+            }
+        }
     </style>
-
-
 </head>
 
 <body class="sidebar-collapsed" style="padding-top: 180px;">
     <?php include 'design/header.php'; ?>
     <?php include 'design/sidebar.php'; ?>
 
-    <!-- Sustituye el contenido del <main> y el modal con este nuevo diseño -->
+    <main class="main-content">
+        <div class="container-fluid">
+            <div class="d-flex justify-content-between align-items-center mb-4 header-section">
+                <div class="header-info">
+                    <div class="d-flex align-items-center mb-2 header-actions d-md-none">
+                        <a href="../instructor/foros.php" class="but btn me-2" style="cursor: pointer;">
+                            <i class="bi bi-arrow-90deg-left"></i>
+                        </a>
+                        <button class="btn btn-main btn-sm rounded-pill shadow-sm btn-nuevo-tema" data-bs-toggle="modal" data-bs-target="#modalCrearTema">
+                            <i class="bi bi-plus-circle me-1"></i>Nuevo tema
+                        </button>
+                    </div>
 
-    <main class="main-content px-4">
-        <div class="container">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <div>
                     <h3 class="section-title mb-1">
-                        <a href="../instructor/foros.php"><button class="but btn" type="button" style="margin-right: 10px; cursor: pointer;">
-                                <i class="bi bi-arrow-90deg-left"></i>
-                            </button>
+                        <a href="../instructor/foros.php" class="but btn d-none d-md-inline-block me-2" style="cursor: pointer;">
+                            <i class="bi bi-arrow-90deg-left"></i>
                         </a>
                         <i class="bi bi-chat-dots-fill me-2"></i>Temas del foro
-
                     </h3>
 
-                    <p class="text-muted mb-0">
-                        <strong>Materia:</strong> <?= htmlspecialchars($foro['materia']) ?> |
-                        <strong>Ficha:</strong> <?= $foro['id_ficha'] ?> |
+                    <div class="text-muted mb-0 info-text">
+                        <strong>Materia:</strong> <?= htmlspecialchars($foro['materia']) ?>
+                        <strong>Ficha:</strong> <?= $foro['id_ficha'] ?>
                         <strong>Formación:</strong> <?= $foro['nombre_formacion'] ?>
-                    </p>
+                    </div>
                 </div>
-                <button class="btn btn-main btn-sm rounded-pill shadow-sm" data-bs-toggle="modal" data-bs-target="#modalCrearTema">
+
+                <button class="btn btn-main btn-sm rounded-pill shadow-sm d-none d-md-block" data-bs-toggle="modal" data-bs-target="#modalCrearTema">
                     <i class="bi bi-plus-circle me-1"></i>Nuevo tema
                 </button>
             </div>
@@ -189,19 +449,22 @@ $temas = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     <?php foreach ($temas as $tema): ?>
                         <div class="col-12">
                             <a href="ver_respuestas.php?id_tema=<?= $tema['id_tema_foro'] ?>" class="tema-card-link">
-                                <div class="tema-card d-flex flex-column flex-md-row align-items-md-start gap-3 p-3 shadow-sm rounded-4">
+                                <div class="tema-card d-flex align-items-start gap-3 p-3 shadow-sm rounded-4 tema-card-content">
                                     <div class="icon-container d-flex align-items-center justify-content-center rounded-circle flex-shrink-0">
-                                        <i class="bi bi-chat-text fs-4 text-white"></i>
+                                        <i class="bi bi-chat-text text-white" style="font-size: 1.2rem;"></i>
                                     </div>
-                                    <div class="flex-grow-1">
-                                        <div class="d-flex justify-content-between align-items-start flex-wrap">
-                                            <h5 class="mb-1 text-dark fw-semibold"><?= htmlspecialchars($tema['titulo']) ?></h5>
-                                            <small class="text-muted"><?= date("d/m/Y H:i", strtotime($tema['fecha_creacion'])) ?></small>
+
+                                    <div class="flex-grow-1 tema-info">
+                                        <div class="d-flex justify-content-between align-items-start flex-wrap tema-header">
+                                            <h5 class="mb-1 text-dark fw-semibold tema-title"><?= htmlspecialchars($tema['titulo']) ?></h5>
+                                            <small class="text-muted tema-date"><?= date("d/m/Y H:i", strtotime($tema['fecha_creacion'])) ?></small>
                                         </div>
-                                        <p class="text-secondary small mb-1">
+
+                                        <p class="text-secondary small mb-1 tema-description">
                                             <?= nl2br(htmlspecialchars(mb_strimwidth($tema['descripcion'], 0, 140, "..."))) ?>
                                         </p>
-                                        <div class="text-end">
+
+                                        <div class="text-end tema-author">
                                             <small class="text-muted fst-italic">
                                                 <i class="bi bi-person-circle me-1"></i><?= htmlspecialchars($tema['nombres'] . ' ' . $tema['apellidos']) ?>
                                             </small>
@@ -212,9 +475,6 @@ $temas = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         </div>
                     <?php endforeach; ?>
                 </div>
-
-
-
             <?php else: ?>
                 <div class="alert alert-info text-center mt-4 shadow-sm">
                     <i class="bi bi-info-circle me-1"></i>Este foro aún no tiene temas creados.
@@ -223,12 +483,12 @@ $temas = $stmt->fetchAll(PDO::FETCH_ASSOC);
         </div>
     </main>
 
+    <!-- Modal Crear Tema -->
     <div class="modal fade" id="modalCrearTema" tabindex="-1" aria-labelledby="crearTemaLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <form action="crear_tema_foro.php?id_ficha=<?= $foro['id_ficha'] ?>" method="POST" class="modal-content border-0 shadow-lg rounded-4">
-
                 <!-- Encabezado del modal -->
-                <div class="modal-header px-4 py-3" style="background-color: #0E4A86; border-top-left-radius: 1rem; border-top-right-radius: 1rem;">
+                <div class="modal-header" style="background-color: #0E4A86; border-top-left-radius: 1rem; border-top-right-radius: 1rem;">
                     <h5 class="modal-title text-white fw-semibold" id="crearTemaLabel">
                         <i class="bi bi-plus-circle me-2"></i>Crear nuevo tema
                     </h5>
@@ -236,14 +496,14 @@ $temas = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 </div>
 
                 <!-- Cuerpo del modal -->
-                <div class="modal-body px-4 py-4 bg-white">
+                <div class="modal-body bg-white">
                     <input type="hidden" name="id_foro" value="<?= $foro['id_foro'] ?>">
 
                     <div class="mb-4">
                         <label for="titulo" class="form-label fw-semibold" style="color: #0E4A86;">Título del tema</label>
                         <input
                             type="text"
-                            class="form-control border rounded-3 px-3 py-2 shadow-sm"
+                            class="form-control border rounded-3 shadow-sm"
                             name="titulo"
                             id="titulo"
                             placeholder="Ej. Dudas sobre proyecto final"
@@ -253,34 +513,28 @@ $temas = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     <div class="mb-3">
                         <label for="descripcion" class="form-label fw-semibold" style="color: #0E4A86;">Descripción</label>
                         <textarea
-                            class="form-control border rounded-3 px-3 py-2 shadow-sm"
+                            class="form-control border rounded-3 shadow-sm"
                             name="descripcion"
                             id="descripcion"
                             rows="5"
                             placeholder="Escribe una descripción clara del tema..."
                             required
-                            style="max-height: 180px;"></textarea>
+                            style="max-height: 180px; resize: vertical;"></textarea>
                     </div>
                 </div>
 
                 <!-- Pie del modal -->
-                <div class="modal-footer px-4 py-3 bg-light rounded-bottom-4">
-                    <button type="button" class="btn cancelar rounded-pill px-4" data-bs-dismiss="modal">
+                <div class="modal-footer bg-light rounded-bottom-4">
+                    <button type="button" class="btn cancelar rounded-pill" data-bs-dismiss="modal">
                         Cancelar
                     </button>
-                    <button type="submit" class="btn crear px-4 rounded-pill">
+                    <button type="submit" class="btn crear rounded-pill">
                         Crear
                     </button>
                 </div>
-
             </form>
         </div>
     </div>
-
-
-
-
-
 </body>
 
 </html>

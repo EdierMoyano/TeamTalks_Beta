@@ -31,11 +31,9 @@ $matSql = "SELECT mf.id_materia_ficha, m.materia
            JOIN materias m ON mf.id_materia = m.id_materia
            WHERE mf.id_ficha = :id_ficha
            AND mf.id_instructor = :id_instructor";
-
 $matStmt = $conex->prepare($matSql);
 $matStmt->execute(['id_ficha' => $id_ficha, 'id_instructor' => $id_instructor]);
 $materias = $matStmt->fetchAll(PDO::FETCH_ASSOC);
-
 
 // Consultar actividades
 $sql = "
@@ -66,6 +64,7 @@ $actividades = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
 <style>
+  /* ESTILOS RESPONSIVE PARA ACTIVIDADES */
   .upload,
   .archivos,
   .select,
@@ -73,6 +72,7 @@ $actividades = $stmt->fetchAll(PDO::FETCH_ASSOC);
     color: #0E4A86;
     background-color: white;
     border-color: #0E4A86;
+    transition: all 0.3s ease;
   }
 
   .cancelar:hover {
@@ -95,7 +95,7 @@ $actividades = $stmt->fetchAll(PDO::FETCH_ASSOC);
     background-color: white;
     border-color: #0E4A86;
     border-radius: 20%;
-
+    transition: all 0.3s ease;
   }
 
   .input-group .form-control:hover {
@@ -115,6 +115,7 @@ $actividades = $stmt->fetchAll(PDO::FETCH_ASSOC);
   .crear {
     color: white;
     background-color: #0E4A86;
+    transition: all 0.3s ease;
   }
 
   .actividad:hover,
@@ -124,14 +125,320 @@ $actividades = $stmt->fetchAll(PDO::FETCH_ASSOC);
   }
 
   .img {
-    max-width: 300px;
+    max-width: 380px;
+  }
+
+  /* RESPONSIVE PARA ACTIVIDADES */
+
+  /* Header responsive */
+  .actividades-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .actividades-header h5 {
+    margin: 0;
+    flex: 1;
+    min-width: 200px;
+  }
+
+  /* Lista de actividades responsive */
+  .actividad-item {
+    margin-bottom: 1rem;
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+  }
+
+  .actividad-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  .actividad-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .actividad-info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .actividad-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-shrink: 0;
+  }
+
+  .actividad-title {
+    color: #0E4A86;
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    word-wrap: break-word;
+  }
+
+  .actividad-meta {
+    font-size: 0.875rem;
+    color: #6c757d;
+    margin-bottom: 0.25rem;
+  }
+
+  /* Estado vacío responsive */
+  .empty-actividades {
+    text-align: center;
+    color: #6c757d;
+    padding: 2rem 1rem;
+  }
+
+  .empty-actividades img {
+    max-width: 320px;
+    width: 100%;
+    height: auto;
+  }
+
+  /* RESPONSIVE BREAKPOINTS */
+
+  /* Tablets (768px - 991px) */
+  @media (max-width: 991px) {
+    .actividades-header {
+      gap: 0.75rem;
+    }
+
+    .actividad-item {
+      padding: 1.25rem;
+    }
+
+    .actividad-title {
+      font-size: 1.125rem;
+    }
+
+    .accion {
+      font-size: 18px;
+    }
+
+    .img {
+      max-width: 300px;
+    }
+  }
+
+  /* Mobile Large (576px - 767px) */
+  @media (max-width: 767px) {
+    .actividades-header {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 1rem;
+    }
+
+    .actividades-header h5 {
+      text-align: center;
+      font-size: 1.125rem;
+    }
+
+    .actividades-header .actividad {
+      width: 100%;
+      padding: 0.75rem 1rem;
+    }
+
+    .actividad-item {
+      padding: 1rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .actividad-content {
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .actividad-actions {
+      justify-content: center;
+      gap: 1rem;
+    }
+
+    .actividad-title {
+      font-size: 1rem;
+      text-align: center;
+    }
+
+    .actividad-meta {
+      text-align: center;
+      font-size: 0.8rem;
+    }
+
+    .accion {
+      font-size: 16px;
+      padding: 0.5rem;
+      min-width: 40px;
+      min-height: 40px;
+    }
+
+    .empty-actividades {
+      padding: 1.5rem 0.5rem;
+    }
+
+    .empty-actividades img {
+      max-width: 200px;
+    }
+
+    .img {
+      max-width: 200px;
+    }
+  }
+
+  /* Mobile Medium (480px - 575px) */
+  @media (max-width: 575px) {
+    .actividades-header h5 {
+      font-size: 1rem;
+    }
+
+    .actividades-header .actividad {
+      padding: 0.6rem 0.8rem;
+      font-size: 0.9rem;
+    }
+
+    .actividad-item {
+      padding: 0.75rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .actividad-title {
+      font-size: 0.95rem;
+    }
+
+    .actividad-meta {
+      font-size: 0.75rem;
+    }
+
+    .accion {
+      font-size: 14px;
+      padding: 0.4rem;
+      min-width: 36px;
+      min-height: 36px;
+    }
+
+    .empty-actividades {
+      padding: 1rem 0.25rem;
+    }
+
+    .empty-actividades img {
+      max-width: 150px;
+    }
+
+    .img {
+      max-width: 150px;
+    }
+  }
+
+  /* Mobile Small (320px - 479px) */
+  @media (max-width: 479px) {
+    .actividades-header h5 {
+      font-size: 0.9rem;
+    }
+
+    .actividades-header .actividad {
+      padding: 0.5rem 0.6rem;
+      font-size: 0.85rem;
+    }
+
+    .actividad-item {
+      padding: 0.5rem;
+      margin-bottom: 0.4rem;
+    }
+
+    .actividad-title {
+      font-size: 0.9rem;
+    }
+
+    .actividad-meta {
+      font-size: 0.7rem;
+    }
+
+    .actividad-actions {
+      gap: 0.5rem;
+    }
+
+    .accion {
+      font-size: 12px;
+      padding: 0.3rem;
+      min-width: 32px;
+      min-height: 32px;
+    }
+
+    .empty-actividades {
+      padding: 0.75rem 0.25rem;
+    }
+
+    .empty-actividades img {
+      max-width: 120px;
+    }
+
+    .img {
+      max-width: 120px;
+    }
+  }
+
+  /* Landscape orientation en móviles */
+  @media (max-height: 500px) and (orientation: landscape) {
+    .actividad-item {
+      padding: 0.75rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .empty-actividades {
+      padding: 1rem 0.5rem;
+    }
+
+    .empty-actividades img {
+      max-width: 100px;
+    }
+  }
+
+  /* Extra responsive para pantallas muy pequeñas */
+  @media (max-width: 320px) {
+    .actividades-header h5 {
+      font-size: 0.85rem;
+    }
+
+    .actividad-item {
+      padding: 0.4rem;
+    }
+
+    .actividad-title {
+      font-size: 0.85rem;
+    }
+
+    .accion {
+      font-size: 10px;
+      padding: 0.25rem;
+      min-width: 28px;
+      min-height: 28px;
+    }
+  }
+
+  /* Optimizaciones para touch */
+  @media (pointer: coarse) {
+    .accion {
+      min-width: 44px;
+      min-height: 44px;
+    }
+
+    .actividad-item {
+      min-height: 60px;
+    }
   }
 </style>
 
-
-<div class="d-flex justify-content-between align-items-center mb-4">
-  <h5 class="mb-0">Actividades de la Ficha <?= htmlspecialchars($id_ficha) ?></h5>
-  <button class="actividad btn btn" data-bs-toggle="modal" data-bs-target="#crearActividadModal">
+<div class="actividades-header">
+  <h5>Actividades de la Ficha <?= htmlspecialchars($id_ficha) ?></h5>
+  <button class="actividad btn" data-bs-toggle="modal" data-bs-target="#crearActividadModal">
     <i class="bi bi-plus-lg"></i> Crear Actividad
   </button>
 </div>
@@ -139,37 +446,36 @@ $actividades = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <?php if (count($actividades) > 0): ?>
   <div class="list-group">
     <?php foreach ($actividades as $index => $act): ?>
-      <div
-        class="list-group-item list-group-item-action mb-3 shadow-sm rounded-3 p-4 d-flex justify-content-between align-items-center"
-        style="cursor: pointer;"
-        data-bs-toggle="modal"
-        data-bs-target="#actividadModal<?= $index ?>">
-        <div>
-          <h5 class="mb-1" style="color: #0E4A86;">
-            <i class="bi bi-journal-text me-2"></i><?= htmlspecialchars($act['titulo']) ?>
-          </h5>
-          <h6 class="text-muted small mb-0"><?= htmlspecialchars($act['materia']) ?></h6>
-          <h6 class="text-muted small mb-o">Fecha de entrega: <?= htmlspecialchars($act['fecha_entrega']) ?></h6>
-        </div>
-        <div class="ms-3 d-flex gap-2">
-
-          <button type="button"
-            class="accion btn"
-            title="Ver entregas"
-            onclick="event.stopPropagation(); window.location.href='../mod/ver_entregas.php?id_actividad=<?= $act['id_actividad'] ?>';">
-            <i class="bi bi-eye"></i>
-          </button>
-
-
-          <button type="button"
-            class="accion btn"
-            title="Editar actividad"
-            data-bs-toggle="modal"
-            data-bs-target="#editarActividadModal<?= $act['id_actividad'] ?>">
-            <i class="bi bi-pencil"></i>
-          </button>
-
-
+      <div class="list-group-item list-group-item-action actividad-item"
+           style="cursor: pointer;"
+           data-bs-toggle="modal"
+           data-bs-target="#actividadModal<?= $index ?>">
+        
+        <div class="actividad-content">
+          <div class="actividad-info">
+            <h5 class="actividad-title">
+              <i class="bi bi-journal-text me-2"></i><?= htmlspecialchars($act['titulo']) ?>
+            </h5>
+            <h6 class="actividad-meta"><?= htmlspecialchars($act['materia']) ?></h6>
+            <h6 class="actividad-meta">Fecha de entrega: <?= htmlspecialchars($act['fecha_entrega']) ?></h6>
+          </div>
+          
+          <div class="actividad-actions">
+            <button type="button"
+                    class="accion btn"
+                    title="Ver entregas"
+                    onclick="event.stopPropagation(); window.location.href='../mod/ver_entregas.php?id_actividad=<?= $act['id_actividad'] ?>';">
+              <i class="bi bi-eye"></i>
+            </button>
+            <button type="button"
+                    class="accion btn"
+                    title="Editar actividad"
+                    onclick="event.stopPropagation();"
+                    data-bs-toggle="modal"
+                    data-bs-target="#editarActividadModal<?= $act['id_actividad'] ?>">
+              <i class="bi bi-pencil"></i>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -183,33 +489,23 @@ $actividades = $stmt->fetchAll(PDO::FETCH_ASSOC);
             </div>
             <div class="modal-body pt-2">
               <input type="hidden" name="id_actividad" value="<?= $act['id_actividad'] ?>">
-
+              
               <div class="mb-4">
                 <label class="form-label text-secondary fw-semibold">Título</label>
                 <input type="text" name="titulo_mostrar" value="<?= htmlspecialchars($act['titulo']) ?>" class="form-control border-0 border-bottom border-2 rounded-0 px-0 py-2" readonly>
                 <input type="hidden" name="titulo" value="<?= htmlspecialchars($act['titulo']) ?>">
               </div>
-
+              
               <div class="mb-4">
                 <label class="form-label text-secondary fw-semibold">Descripción</label>
                 <textarea name="descripcion" rows="4" class="form-control border-0 border-bottom border-2 rounded-0 px-0 py-2" required><?= htmlspecialchars($act['descripcion']) ?></textarea>
               </div>
-
+              
               <div class="row g-4 mb-4">
                 <div class="col-md-6">
                   <label for="fecha_entrega" class="form-label text-secondary fw-semibold">Fecha de Entrega</label>
-                  <?php
-                  $hoy = date('Y-m-d');
-                  ?>
-                  <input
-                    type="date"
-                    value="<?= $act['fecha_entrega'] ?>"
-                    name="fecha_entrega"
-                    id="fecha_entrega"
-                    class="form-control border-0 border-bottom border-2 rounded-0 px-0 py-2"
-                    required
-                    min="<?= $hoy ?>">
-
+                  <?php $hoy = date('Y-m-d'); ?>
+                  <input type="date" value="<?= $act['fecha_entrega'] ?>" name="fecha_entrega" id="fecha_entrega" class="form-control border-0 border-bottom border-2 rounded-0 px-0 py-2" required min="<?= $hoy ?>">
                 </div>
                 <div class="col-md-6">
                   <label class="form-label text-secondary fw-semibold">Materia</label>
@@ -246,7 +542,7 @@ $actividades = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         <?php else: ?>
                           <div class="text-muted small mb-2">Sin archivo actual</div>
                         <?php endif; ?>
-
+                        
                         <label for="archivo<?= $i ?>_<?= $act['id_actividad'] ?>" class="select custom-file-label btn btn-sm rounded-pill w-100 text-truncate text-start px-3 py-2">
                           Seleccionar archivo
                         </label>
@@ -258,7 +554,7 @@ $actividades = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 </div>
               </div>
             </div>
-
+            
             <div class="modal-footer justify-content-end border-0 pt-0">
               <button type="button" class="cancelar btn btn rounded-pill px-4 me-3" data-bs-dismiss="modal">Cancelar</button>
               <button type="submit" class="crear btn btn rounded-pill px-5 shadow-sm">Guardar Cambios</button>
@@ -266,7 +562,6 @@ $actividades = $stmt->fetchAll(PDO::FETCH_ASSOC);
           </form>
         </div>
       </div>
-
 
       <!-- Modal Detalles de Actividad -->
       <div class="modal fade" id="actividadModal<?= $index ?>" tabindex="-1" aria-hidden="true">
@@ -281,6 +576,7 @@ $actividades = $stmt->fetchAll(PDO::FETCH_ASSOC);
               </div>
               <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
             </div>
+            
             <div class="modal-body px-4 py-4">
               <div class="mb-4">
                 <label class="fw-semibold text-secondary small text-uppercase mb-1">Descripción</label>
@@ -288,6 +584,7 @@ $actividades = $stmt->fetchAll(PDO::FETCH_ASSOC);
                   <?= nl2br(htmlspecialchars($act['descripcion'])) ?>
                 </div>
               </div>
+              
               <div class="mb-3 d-flex align-items-center">
                 <i class="bi bi-calendar-event me-2 fs-5" style="color: #0E4A86"></i>
                 <div>
@@ -295,24 +592,23 @@ $actividades = $stmt->fetchAll(PDO::FETCH_ASSOC);
                   <div class="fw-bold"><?= htmlspecialchars($act['fecha_entrega']) ?></div>
                 </div>
               </div>
+              
               <div class="mt-4">
                 <label class="fw-semibold text-secondary small text-uppercase mb-2">Archivos</label><br>
                 <?php
                 $archivos = [];
                 for ($i = 1; $i <= 3; $i++) {
                   $archivo = $act["archivo$i"] ?? null;
-
                   if (!empty($archivo)) {
                     // Extraer solo el nombre original (después del primer guion bajo)
                     $partes = explode('_', $archivo, 2);
                     $nombreVisible = $partes[1] ?? $archivo;
-
                     $archivos[] = '<a href="../uploads/' . htmlspecialchars($archivo) . '" target="_blank" class="archivos btn btn-sm btn rounded-pill me-2 mb-2">
                          <i class="bi bi-file-earmark-arrow-down me-1"></i>' . htmlspecialchars($nombreVisible) . '
                        </a>';
                   }
                 }
-
+                
                 if (!empty($archivos)) {
                   echo implode('', $archivos);
                 } else {
@@ -320,8 +616,8 @@ $actividades = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 }
                 ?>
               </div>
-
             </div>
+            
             <div class="modal-footer border-0 px-4 py-3">
               <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Cerrar</button>
             </div>
@@ -332,11 +628,11 @@ $actividades = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <?php endforeach; ?>
   </div>
 <?php else: ?>
-  <div class="text-center text-muted">Esta ficha no tiene actividades asignadas.
-    <img src="../assets/img/n-result.webp" alt="" class="img-fluid img">
+  <div class="empty-actividades">
+    Esta ficha no tiene actividades asignadas.
+    <img src="../assets/img/n-result.webp" alt="" class="img-fluid">
   </div>
 <?php endif; ?>
-
 
 <!-- Modal Crear Actividad - Rediseño Minimalista -->
 <div class="modal fade" id="crearActividadModal" tabindex="-1" aria-labelledby="crearActividadLabel" aria-hidden="true">
@@ -346,34 +642,25 @@ $actividades = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <h5 class="modal-title fw-bold" id="crearActividadLabel">➕ Crear Nueva Actividad</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
       </div>
+      
       <div class="modal-body pt-2">
-
         <input type="hidden" name="id_ficha" value="<?= htmlspecialchars($id_ficha) ?>">
-
+        
         <div class="mb-4">
           <label for="titulo" class="form-label text-secondary fw-semibold">Título</label>
           <input type="text" name="titulo" id="titulo" class="form-control border-0 border-bottom border-2 rounded-0 px-0 py-2" placeholder="Nombre de la actividad" required autofocus>
         </div>
-
+        
         <div class="mb-4">
           <label for="descripcion" class="form-label text-secondary fw-semibold">Descripción</label>
           <textarea name="descripcion" id="descripcion" class="form-control border-0 border-bottom border-2 rounded-0 px-0 py-2" rows="4" style="max-height: 200px;" placeholder="Descripción detallada" required></textarea>
         </div>
-
+        
         <div class="row g-4 mb-4">
           <div class="col-md-6">
             <label for="fecha_entrega" class="form-label text-secondary fw-semibold">Fecha de Entrega</label>
-            <?php
-            $hoy = date('Y-m-d');
-            ?>
-            <input
-              type="date"
-              name="fecha_entrega"
-              id="fecha_entrega"
-              class="form-control border-0 border-bottom border-2 rounded-0 px-0 py-2"
-              required
-              min="<?= $hoy ?>">
-
+            <?php $hoy = date('Y-m-d'); ?>
+            <input type="date" name="fecha_entrega" id="fecha_entrega" class="form-control border-0 border-bottom border-2 rounded-0 px-0 py-2" required min="<?= $hoy ?>">
           </div>
           <div class="col-md-6">
             <label for="id_materia_ficha" class="form-label text-secondary fw-semibold">Materia</label>
@@ -387,6 +674,7 @@ $actividades = $stmt->fetchAll(PDO::FETCH_ASSOC);
               $matStmt = $conex->prepare($matSql);
               $matStmt->execute(['id_ficha' => $id_ficha, 'id_instructor' => $id_instructor]);
               $materias = $matStmt->fetchAll(PDO::FETCH_ASSOC);
+              
               foreach ($materias as $mat) {
                 echo '<option value="' . htmlspecialchars($mat['id_materia_ficha']) . '">' . htmlspecialchars($mat['materia']) . '</option>';
               }
@@ -394,11 +682,10 @@ $actividades = $stmt->fetchAll(PDO::FETCH_ASSOC);
             </select>
           </div>
         </div>
-
+        
         <div class="mb-4">
           <label class="form-label text-secondary fw-semibold">Archivos (opcional). 20MB C/U</label>
           <div class="row g-3">
-
             <!-- Archivo 1 -->
             <div class="col-md-4">
               <label for="archivo1"
@@ -411,7 +698,7 @@ $actividades = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png,.mp4,.mov,.avi,.txt"
                 onchange="document.getElementById('archivo1Label').textContent = this.files[0]?.name || 'Archivo 1';">
             </div>
-
+            
             <!-- Archivo 2 -->
             <div class="col-md-4">
               <label for="archivo2"
@@ -424,7 +711,7 @@ $actividades = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png,.mp4,.mov,.avi,.txt"
                 onchange="document.getElementById('archivo2Label').textContent = this.files[0]?.name || 'Archivo 2';">
             </div>
-
+            
             <!-- Archivo 3 -->
             <div class="col-md-4">
               <label for="archivo3"
@@ -437,14 +724,10 @@ $actividades = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png,.mp4,.mov,.avi,.txt"
                 onchange="document.getElementById('archivo3Label').textContent = this.files[0]?.name || 'Archivo 3';">
             </div>
-
           </div>
         </div>
-
-
-
-
       </div>
+      
       <div class="modal-footer justify-content-end border-0 pt-0">
         <button type="button" class="cancelar btn btn rounded-pill px-4 me-3" data-bs-dismiss="modal">Cancelar</button>
         <button type="submit" class="crear btn btn rounded-pill px-5 shadow-sm">Crear</button>
@@ -452,11 +735,6 @@ $actividades = $stmt->fetchAll(PDO::FETCH_ASSOC);
     </form>
   </div>
 </div>
-
-
-
-
-
 
 <script>
   document.addEventListener('DOMContentLoaded', function() {
@@ -477,7 +755,6 @@ $actividades = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         const archivoContainer = document.getElementById('archivoActualContainer');
         const archivoLink = document.getElementById('archivoActualLink');
-
         if (archivo && archivo.trim() !== '') {
           archivoLink.href = '../uploads/' + encodeURIComponent(archivo);
           archivoLink.textContent = '📄 ' + archivo;
@@ -488,10 +765,7 @@ $actividades = $stmt->fetchAll(PDO::FETCH_ASSOC);
       });
     });
   });
-</script>
 
-
-<script>
   document.getElementById('formCrearActividad').addEventListener('submit', function(e) {
     const maxSize = 20 * 1024 * 1024; // 20MB
     const archivos = [
@@ -511,12 +785,7 @@ $actividades = $stmt->fetchAll(PDO::FETCH_ASSOC);
       }
     }
   });
-</script>
 
-
-
-
-<script>
   document.addEventListener('DOMContentLoaded', function() {
     const fechaInput = document.getElementById('fecha_entrega');
     if (fechaInput) {

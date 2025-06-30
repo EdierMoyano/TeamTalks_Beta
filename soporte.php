@@ -41,72 +41,106 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <head>
             <style>
                 body {
-                    font-family: 'Segoe UI', sans-serif;
-                    background-color: #f4f4f4;
-                    color: #333;
+                    font-family: 'Inter', sans-serif;
+                    background-color: #f8fafc;
+                    color: #1e293b;
+                    margin: 0;
+                    padding: 0;
                 }
                 .container {
-                    width: 100%;
-                    padding: 20px;
-                    box-sizing: border-box;
-                    background-color: #fff;
-                    border-radius: 8px;
-                    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+                    max-width: 600px;
+                    margin: 0 auto;
+                    background-color: #ffffff;
+                    border-radius: 16px;
+                    overflow: hidden;
+                    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
                 }
                 .header {
-                    background-color: #0E4A86;
+                    background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
                     color: white;
-                    padding: 15px;
+                    padding: 2rem;
                     text-align: center;
-                    font-size: 18px;
-                    border-radius: 8px 8px 0 0;
+                }
+                .header h2 {
+                    margin: 0;
+                    font-size: 1.5rem;
+                    font-weight: 600;
                 }
                 .content {
-                    padding: 20px;
-                    font-size: 16px;
+                    padding: 2rem;
                 }
-                .content p {
-                    margin: 10px 0;
+                .info-item {
+                    background: #f8fafc;
+                    border-radius: 12px;
+                    padding: 1.5rem;
+                    margin-bottom: 1rem;
+                    border-left: 4px solid #2563eb;
+                }
+                .info-label {
+                    font-weight: 600;
+                    color: #2563eb;
+                    margin-bottom: 0.5rem;
+                }
+                .info-value {
+                    color: #64748b;
+                    line-height: 1.6;
+                }
+                .problem-box {
+                    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+                    border-radius: 12px;
+                    padding: 1.5rem;
+                    margin-top: 1rem;
+                    border-left: 4px solid #f59e0b;
+                }
+                .problem-box h3 {
+                    color: #92400e;
+                    margin: 0 0 0.5rem 0;
+                    font-size: 1.1rem;
+                }
+                .problem-box p {
+                    color: #78350f;
+                    margin: 0;
+                    line-height: 1.6;
                 }
                 .footer {
+                    background: #f8fafc;
+                    padding: 1.5rem;
                     text-align: center;
-                    font-size: 14px;
-                    color: #999;
-                    margin-top: 20px;
-                } 
-                .info-box {
-                    background-color: #e9f0fb;
-                    border: 1px solid #d0e1f9;
-                    padding: 15px;
-                    margin-top: 20px;
-                    border-radius: 8px;
-                }
-                .info-box h3 {
-                    color: #0E4A86;
-                    margin-bottom: 10px;
-                }
-                .info-box p {
-                    color: #555;
+                    font-size: 0.9rem;
+                    color: #64748b;
+                    border-top: 1px solid #e2e8f0;
                 }
             </style>
         </head>
         <body>
             <div class='container'>
                 <div class='header'>
-                    <h2>Solicitud de Soporte Tecnico</h2>
+                    <h2>🛠️ Solicitud de Soporte Técnico</h2>
                 </div>
                 <div class='content'>
-                    <p><strong>Nombre:</strong> $nombre</p>
-                    <p><strong>Correo:</strong> $correo</p>
-                    <p><strong>Numero:</strong> $numero</p>
-                    <p><strong>Fecha:</strong> " . date('Y-m-d H:i:s') . "</p>
-                    <div class='info-box'>
+                    <div class='info-item'>
+                        <div class='info-label'>Nombre Completo:</div>
+                        <div class='info-value'>$nombre</div>
+                    </div>
+                    <div class='info-item'>
+                        <div class='info-label'>Correo Electrónico:</div>
+                        <div class='info-value'>$correo</div>
+                    </div>
+                    <div class='info-item'>
+                        <div class='info-label'>Número de Teléfono:</div>
+                        <div class='info-value'>$numero</div>
+                    </div>
+                    <div class='info-item'>
+                        <div class='info-label'>Fecha de Solicitud:</div>
+                        <div class='info-value'>" . date('d/m/Y H:i:s') . "</div>
+                    </div>
+                    <div class='problem-box'>
                         <h3>Descripción del Problema:</h3>
                         <p>$problema</p>
                     </div>
                 </div>
                 <div class='footer'>
-                    <p>Este mensaje fue generado automáticamente. Si no has solicitado soporte, por favor ignora este correo.</p>
+                    <p>Este mensaje fue generado automáticamente desde TeamTalks. Nuestro equipo se pondrá en contacto contigo pronto.</p>
                 </div>
             </div>
         </body>
@@ -116,14 +150,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         // Enviar el correo
         if ($mail->send()) {
             // Establecer una variable para mostrar el modal en el frontend
-            $successMessage = "Tu correo ha sido enviado exitosamente.";
+            $successMessage = "Tu solicitud de soporte ha sido enviada exitosamente.";
             echo '<script>var showModal = true;</script>';
         } else {
-            $successMessage = "No se pudo enviar el mensaje.";
+            $successMessage = "No se pudo enviar la solicitud.";
             echo '<script>var showModal = false;</script>';
         }
+
     } catch (Exception $e) {
-        $successMessage = "Error al enviar el mensaje: {$mail->ErrorInfo}";
+        $successMessage = "Error al enviar la solicitud: {$mail->ErrorInfo}";
         echo '<script>var showModal = false;</script>';
     }
 }
@@ -131,146 +166,397 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Soporte Tecnico</title>
-  <link rel="icon" href="assets/img/icon2.png">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
-  <style>
-    :root {
-      --azul-oscuro: #061D35;
-      --azul-intermedio: #0E4A86;
-      --azul-claro: #348FEA;
-      --blanco: #FFFFFF;
-    }
-
-    body {
-      background-color: var(--blanco);
-      font-family: 'Segoe UI', sans-serif;
-    }
-
-    .card-custom {
-      background-color: var(--blanco);
-      border-radius: 15px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-    }
-
-    .btn-azul {
-      background-color: var(--azul-claro);
-      color: var(--blanco);
-      border-radius: 10px;
-    }
-
-    .btn-azul:hover {
-      background-color: var(--azul-intermedio);
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Soporte Técnico - TeamTalks</title>
+    <link rel="icon" href="assets/img/icon2.png">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles/index.css">
 </head>
-
 <body>
-  <header>
     <?php include 'includes/design/header.php'; ?>
-  </header>
 
-  <section class="py-5">
-    <div class="container">
-      <div class="row justify-content-center">
-        <div class="col-lg-8 text-center">
-          <h1><i class="bi bi-tools me-2"></i>Soporte Tecnico</h1>
-          <p class="lead">Estamos aquí para ayudarte<br>Completa el formulario y nuestro equipo de soporte técnico se pondrá en contacto contigo</p>
-        </div>
-        <div class="col-lg-8">
-          <div class="card card-custom p-4">
-            <form action="soporte.php" method="POST" onsubmit="return validateForm()">
-              <div class="mb-3">
-                <label for="nombreSoporte" class="form-label">Nombre completo</label>
-                <input type="text" class="form-control" id="nombreSoporte" name="nombreSoporte" placeholder="Tu nombre" required>
-              </div>
-              <div class="mb-3">
-                <label for="correoSoporte" class="form-label">Correo electrónico</label>
-                <input type="email" class="form-control" id="correoSoporte" name="correoSoporte" placeholder="ejemplo@email.com" required>
-              </div>
-              <div class="mb-3">
-                <label for="numeroSoporte" class="form-label">Número de teléfono</label>
-                <input type="text" class="form-control" id="numeroSoporte" name="numeroSoporte" placeholder="+573333333333" required>
-              </div>
-              <div class="mb-3">
-                <label for="problema" class="form-label">Describe tu problema</label>
-                <textarea class="form-control" id="problema" name="problema" rows="4" placeholder="¿Qué está ocurriendo?" required></textarea>
-              </div>
-              <button type="submit" class="btn btn-azul w-100">Enviar solicitud</button>
-            </form>
+    <!-- Hero Section -->
+    <section class="support-hero-section">
+        <div class="container">
+            <div class="row justify-content-center text-center">
+                <div class="col-lg-8">
+                    <div class="support-hero-content">
+                        <div class="support-hero-badge mb-4">
+                            <i class='bx bx-support me-2'></i>
+                            <span>Estamos aquí para ayudarte</span>
+                        </div>
+                        
+                        <h1 class="support-hero-title mb-4">
+                            <span class="text-gradient">Soporte Técnico</span> Especializado
+                        </h1>
+                        
+                        <p class="support-hero-description">
+                            Nuestro equipo de expertos está listo para resolver cualquier problema técnico. 
+                            Completa el formulario y nos pondremos en contacto contigo lo antes posible.
+                        </p>
 
-            <!-- Modal de Éxito -->
-            <div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
-              <div class="modal-dialog">
-                <div class="modal-content">
-                  <div class="modal-header">
-                    <h5 class="modal-title" id="successModalLabel">¡Correo Enviado Exitosamente!</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                  </div>
-                  <div class="modal-body">
-                    <p><?php echo isset($successMessage) ? $successMessage : ''; ?></p>
-                  </div>
-                  <div class="modal-footer">
-                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Cerrar</button>
-                  </div>
+                        <!-- Support Stats -->
+                        <div class="support-stats-container">
+                            <div class="support-stat-item">
+                                <div class="support-stat-number">24/7</div>
+                                <div class="support-stat-label">Disponibilidad</div>
+                            </div>
+                            <div class="support-stat-item">
+                                <div class="support-stat-number">&lt;2h</div>
+                                <div class="support-stat-label">Tiempo de respuesta</div>
+                            </div>
+                            <div class="support-stat-item">
+                                <div class="support-stat-number">98%</div>
+                                <div class="support-stat-label">Satisfacción</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-              </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Support Form Section -->
+    <section class="support-form-section">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <div class="support-form-container">
+                        <div class="support-form-header mb-4">
+                            <h2 class="support-form-title">Solicitar Soporte Técnico</h2>
+                            <p class="support-form-subtitle">
+                                Proporciona la información necesaria para que podamos ayudarte de la mejor manera
+                            </p>
+                        </div>
+
+                        <form action="soporte.php" method="POST" class="support-form" onsubmit="return validateForm()">
+                            <div class="row g-4">
+                                <!-- Nombre -->
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="nombreSoporte" class="form-label">
+                                            <i class='bx bx-user me-2'></i>
+                                            Nombre Completo
+                                        </label>
+                                        <input 
+                                            type="text" 
+                                            class="form-control support-input" 
+                                            id="nombreSoporte" 
+                                            name="nombreSoporte" 
+                                            placeholder="Tu nombre completo" 
+                                            required
+                                        >
+                                    </div>
+                                </div>
+
+                                <!-- Correo -->
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="correoSoporte" class="form-label">
+                                            <i class='bx bx-envelope me-2'></i>
+                                            Correo Electrónico
+                                        </label>
+                                        <input 
+                                            type="email" 
+                                            class="form-control support-input" 
+                                            id="correoSoporte" 
+                                            name="correoSoporte" 
+                                            placeholder="tu@email.com" 
+                                            required
+                                        >
+                                    </div>
+                                </div>
+
+                                <!-- Teléfono -->
+                                <div class="col-12">
+                                    <div class="form-group">
+                                        <label for="numeroSoporte" class="form-label">
+                                            <i class='bx bx-phone me-2'></i>
+                                            Número de Teléfono
+                                        </label>
+                                        <input 
+                                            type="tel" 
+                                            class="form-control support-input" 
+                                            id="numeroSoporte" 
+                                            name="numeroSoporte" 
+                                            placeholder="+57 300 123 4567" 
+                                            required
+                                        >
+                                    </div>
+                                </div>
+
+                                <!-- Problema -->
+                                <div class="col-12">
+                                    <div class="form-group">
+                                        <label for="problema" class="form-label">
+                                            <i class='bx bx-message-detail me-2'></i>
+                                            Describe tu Problema
+                                        </label>
+                                        <textarea 
+                                            class="form-control support-textarea" 
+                                            id="problema" 
+                                            name="problema" 
+                                            rows="6" 
+                                            placeholder="Describe detalladamente el problema que estás experimentando. Incluye pasos para reproducir el error, mensajes de error específicos, y cualquier información adicional que consideres relevante..."
+                                            required
+                                        ></textarea>
+                                        <div class="form-text">
+                                            <i class='bx bx-info-circle me-1'></i>
+                                            Mientras más detalles proporciones, mejor podremos ayudarte
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="support-form-actions mt-4">
+                                <button type="submit" class="btn btn-primary support-submit-btn">
+                                    <i class='bx bx-send me-2'></i>
+                                    Enviar Solicitud de Soporte
+                                </button>
+                                <p class="support-form-note">
+                                    <i class='bx bx-shield-check me-1'></i>
+                                    Tu información está protegida y será utilizada únicamente para brindarte soporte
+                                </p>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Support Info Section -->
+    <section class="support-info-section">
+        <div class="container">
+            <div class="row justify-content-center text-center mb-5">
+                <div class="col-lg-8">
+                    <h2 class="section-title mb-3">¿Qué puedes esperar?</h2>
+                    <p class="section-subtitle">
+                        Nuestro proceso de soporte está diseñado para resolver tu problema de manera rápida y eficiente
+                    </p>
+                </div>
             </div>
 
-          </div>
+            <div class="row g-4">
+                <!-- Paso 1 -->
+                <div class="col-lg-4 col-md-6">
+                    <div class="support-info-card">
+                        <div class="support-info-step">1</div>
+                        <div class="support-info-icon">
+                            <i class='bx bx-receipt'></i>
+                        </div>
+                        <h3 class="support-info-title">Recibimos tu Solicitud</h3>
+                        <p class="support-info-text">
+                            Tu solicitud es registrada inmediatamente en nuestro sistema y 
+                            asignada a un especialista según el tipo de problema.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Paso 2 -->
+                <div class="col-lg-4 col-md-6">
+                    <div class="support-info-card">
+                        <div class="support-info-step">2</div>
+                        <div class="support-info-icon">
+                            <i class='bx bx-search-alt'></i>
+                        </div>
+                        <h3 class="support-info-title">Análisis del Problema</h3>
+                        <p class="support-info-text">
+                            Nuestro equipo técnico analiza tu problema y prepara una 
+                            solución personalizada basada en tu descripción.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Paso 3 -->
+                <div class="col-lg-4 col-md-6">
+                    <div class="support-info-card">
+                        <div class="support-info-step">3</div>
+                        <div class="support-info-icon">
+                            <i class='bx bx-check-circle'></i>
+                        </div>
+                        <h3 class="support-info-title">Solución y Seguimiento</h3>
+                        <p class="support-info-text">
+                            Te contactamos con la solución y hacemos seguimiento para 
+                            asegurar que tu problema haya sido resuelto completamente.
+                        </p>
+                    </div>
+                </div>
+            </div>
         </div>
-      </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section class="support-faq-section">
+        <div class="container">
+            <div class="row justify-content-center text-center mb-5">
+                <div class="col-lg-8">
+                    <h2 class="section-title mb-3">Preguntas Frecuentes</h2>
+                    <p class="section-subtitle">
+                        Encuentra respuestas rápidas a las consultas más comunes
+                    </p>
+                </div>
+            </div>
+
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <div class="accordion support-accordion" id="supportAccordion">
+                        <!-- FAQ 1 -->
+                        <div class="accordion-item support-accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button support-accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                                    <i class='bx bx-time-five me-2'></i>
+                                    ¿Cuánto tiempo tarda la respuesta?
+                                </button>
+                            </h2>
+                            <div id="faq1" class="accordion-collapse collapse show" data-bs-parent="#supportAccordion">
+                                <div class="accordion-body support-accordion-body">
+                                    Nuestro tiempo promedio de respuesta es de menos de 2 horas durante horario laboral. 
+                                    Para problemas críticos, respondemos inmediatamente.
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- FAQ 2 -->
+                        <div class="accordion-item support-accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button support-accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                                    <i class='bx bx-calendar me-2'></i>
+                                    ¿Qué horarios de atención tienen?
+                                </button>
+                            </h2>
+                            <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#supportAccordion">
+                                <div class="accordion-body support-accordion-body">
+                                    Ofrecemos soporte 24/7 para problemas críticos. Para consultas generales, 
+                                    nuestro horario es de lunes a viernes de 8:00 AM a 6:00 PM.
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- FAQ 3 -->
+                        <div class="accordion-item support-accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button support-accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
+                                    <i class='bx bx-info-circle me-2'></i>
+                                    ¿Qué información debo incluir?
+                                </button>
+                            </h2>
+                            <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#supportAccordion">
+                                <div class="accordion-body support-accordion-body">
+                                    Incluye una descripción detallada del problema, pasos para reproducirlo, 
+                                    mensajes de error específicos, y el navegador/dispositivo que estás usando.
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- FAQ 4 -->
+                        <div class="accordion-item support-accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button support-accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq4">
+                                    <i class='bx bx-shield-check me-2'></i>
+                                    ¿Es seguro compartir mi información?
+                                </button>
+                            </h2>
+                            <div id="faq4" class="accordion-collapse collapse" data-bs-parent="#supportAccordion">
+                                <div class="accordion-body support-accordion-body">
+                                    Absolutamente. Toda la información compartida está protegida y se utiliza 
+                                    únicamente para brindarte el mejor soporte técnico posible.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <?php include 'includes/design/footer.php'; ?>
+
+    <!-- Success Modal -->
+    <div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content support-modal">
+                <div class="modal-header support-modal-header">
+                    <div class="support-modal-icon">
+                        <i class='bx bx-check-circle'></i>
+                    </div>
+                    <h5 class="modal-title support-modal-title" id="successModalLabel">
+                        ¡Solicitud Enviada Exitosamente!
+                    </h5>
+                </div>
+                <div class="modal-body support-modal-body">
+                    <p><?php echo isset($successMessage) ? $successMessage : ''; ?></p>
+                    <p class="support-modal-subtitle">
+                        Nuestro equipo técnico revisará tu solicitud y se pondrá en contacto contigo pronto.
+                    </p>
+                    <div class="support-modal-info">
+                        <i class='bx bx-info-circle me-2'></i>
+                        <span>Recibirás una confirmación por correo electrónico</span>
+                    </div>
+                </div>
+                <div class="modal-footer support-modal-footer">
+                    <button type="button" class="btn btn-primary support-modal-btn" data-bs-dismiss="modal">
+                        Entendido
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
-  </section>
 
-  <?php include 'includes/design/footer.php'; ?>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/support-animations.js"></script>
 
-  <script>
-    // Mostrar el modal si el correo fue enviado exitosamente
-    if (typeof showModal !== 'undefined' && showModal) {
-      var myModal = new bootstrap.Modal(document.getElementById('successModal'), {
-        keyboard: false
-      });
-      myModal.show();
-    }
+    <script>
+        // Mostrar el modal si el correo fue enviado exitosamente
+        if (typeof showModal !== 'undefined' && showModal) {
+            var myModal = new bootstrap.Modal(document.getElementById('successModal'), {
+                keyboard: false
+            });
+            myModal.show();
+        }
 
-    // Validaciones del formulario
-    function validateForm() {
-      var correo = document.getElementById("correoSoporte").value;
-      var numero = document.getElementById("numeroSoporte").value;
-      var problema = document.getElementById("problema").value;
+        // Validaciones del formulario mejoradas
+        function validateForm() {
+            var nombre = document.getElementById("nombreSoporte").value;
+            var correo = document.getElementById("correoSoporte").value;
+            var numero = document.getElementById("numeroSoporte").value;
+            var problema = document.getElementById("problema").value;
 
-      // Validar correo
-      var emailPattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
-      if (!emailPattern.test(correo)) {
-        alert("Por favor ingresa un correo válido.");
-        return false;
-      }
+            // Validar nombre
+            if (nombre.trim().length < 2) {
+                alert("Por favor ingresa tu nombre completo.");
+                return false;
+            }
 
-      // Validar número de teléfono
-      if (isNaN(numero) || numero.length < 10) {
-        alert("Por favor ingresa un número de teléfono válido.");
-        return false;
-      }
+            // Validar correo
+            var emailPattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
+            if (!emailPattern.test(correo)) {
+                alert("Por favor ingresa un correo válido.");
+                return false;
+            }
 
-      // Validar descripción
-      if (problema.trim() === "") {
-        alert("Por favor describe el problema.");
-        return false;
-      }
+            // Validar número de teléfono (más flexible)
+            var phonePattern = /^[\+]?[0-9\s\-$$$$]{10,}$/;
+            if (!phonePattern.test(numero)) {
+                alert("Por favor ingresa un número de teléfono válido.");
+                return false;
+            }
 
-      return true;
-    }
-  </script>
+            // Validar descripción del problema
+            if (problema.trim().length < 10) {
+                alert("Por favor describe el problema con más detalle (mínimo 10 caracteres).");
+                return false;
+            }
 
+            return true;
+        }
+    </script>
 </body>
-
 </html>

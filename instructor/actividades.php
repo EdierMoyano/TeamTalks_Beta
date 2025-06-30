@@ -2,7 +2,6 @@
 require_once $_SERVER['DOCUMENT_ROOT'] . '/teamtalks/conexion/init.php';
 include 'session.php';
 
-
 $id_instructor = $_SESSION['documento'];
 
 $actividad_actualizada = '';
@@ -16,41 +15,67 @@ if (isset($_SESSION['actividad_creada'])) {
   $actividad_creada = $_SESSION['actividad_creada'];
   unset($_SESSION['actividad_creada']);
 }
-
-
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Teamtalks</title>
   <link rel="stylesheet" href="<?= BASE_URL ?>/styles/style_side.css" />
+  <link rel="stylesheet" href="<?= BASE_URL ?>/styles/header.css">
   <link rel="icon" href="<?= BASE_URL ?>/assets/img/icon2.png" />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
   <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <link
-    rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-    integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw=="
-    crossorigin="anonymous"
-    referrerpolicy="no-referrer" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css" />
+
   <style>
+    :root {
+      --sidebar-width: 280px;
+      --sidebar-collapsed-width: 70px;
+      --header-height: 80px;
+      --primary-color: #0E4A86;
+      --primary-hover: #0a3d6b;
+      --background-color: #f8f9fa;
+      --border-color: #dee2e6;
+      --text-muted: #6c757d;
+    }
+
+    /* SCROLLBAR */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: var(--background-color);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: var(--border-color);
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--text-muted);
+    }
+
+    /* MAIN CONTENT */
     .main-content {
-      margin-left: 280px;
-      transition: margin-left 0.4s ease;
+      margin-left: var(--sidebar-width);
+      margin-top: -50px;
+      transition: margin-left 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+      min-height: calc(100vh - var(--header-height));
+      padding: 2rem;
     }
 
+    /* Cuando el sidebar está colapsado */
+    .sidebar.collapsed~.main-content,
     body.sidebar-collapsed .main-content {
-      margin-left: 180px;
+      margin-left: var(--sidebar-collapsed-width);
     }
 
-    /* Scroll estilizado solo para la columna de fichas */
+    /* SCROLL PERSONALIZADO PARA COLUMNAS */
     .fichas-scroll {
       max-height: calc(100vh - 200px);
       overflow-y: auto;
@@ -58,36 +83,23 @@ if (isset($_SESSION['actividad_creada'])) {
       scrollbar-color: #888 transparent;
     }
 
-    /* Estilo para navegadores WebKit (Chrome, Edge, Safari) */
     .fichas-scroll::-webkit-scrollbar {
       width: 6px;
     }
-
     .fichas-scroll::-webkit-scrollbar-track {
       background: transparent;
     }
-
     .fichas-scroll::-webkit-scrollbar-thumb {
       background-color: #888;
       border-radius: 10px;
       border: 2px solid transparent;
       background-clip: content-box;
     }
-
     .fichas-scroll::-webkit-scrollbar-thumb:hover {
       background-color: #555;
     }
 
-    @keyframes progressAnim {
-      from {
-        width: 0%;
-      }
-
-      to {
-        width: 100%;
-      }
-    }
-
+    /* TOAST RESPONSIVE */
     #toast-alert {
       position: fixed;
       top: 150px;
@@ -114,6 +126,12 @@ if (isset($_SESSION['actividad_creada'])) {
       animation: progressAnim 3s linear forwards;
     }
 
+    @keyframes progressAnim {
+      from { width: 0%; }
+      to { width: 100%; }
+    }
+
+    /* ALERT RESPONSIVE */
     .size {
       max-width: 800px;
       position: relative;
@@ -124,6 +142,261 @@ if (isset($_SESSION['actividad_creada'])) {
       max-width: 200px;
       top: 20px;
     }
+
+    /* COLUMNAS RESPONSIVE */
+    .content-columns {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-right: 0;
+    }
+
+    .column-fichas {
+      border-right: 1px solid var(--border-color);
+      padding: 1rem;
+      max-height: 50vh;
+      overflow-y: auto;
+    }
+
+    .column-actividades {
+      padding: 1rem;
+      max-height: 65vh;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ESTADO INICIAL ACTIVIDADES */
+    .actividades-placeholder {
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 1.1rem;
+      margin-top: 3rem;
+    }
+
+    .actividades-placeholder img {
+      max-width: 200px;
+      margin-top: 1rem;
+    }
+
+    /* RESPONSIVE BREAKPOINTS */
+
+    /* Tablets (768px - 991px) */
+    @media (max-width: 991px) {
+      .main-content {
+        margin-left: var(--sidebar-collapsed-width);
+        padding: 1.5rem;
+      }
+
+      .content-columns {
+        gap: 0.75rem;
+      }
+
+      .column-fichas,
+      .column-actividades {
+        padding: 0.75rem;
+      }
+
+      .size {
+        left: 400px;
+        max-width: 600px;
+      }
+    }
+
+    /* Mobile Large (576px - 767px) */
+    @media (max-width: 767px) {
+      .main-content {
+        margin-left: 0 !important;
+        padding: 1rem;
+      }
+
+      /* Layout de una columna en móviles */
+      .content-columns {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+      }
+
+      .column-fichas {
+        border-right: none;
+        border-bottom: 1px solid var(--border-color);
+        max-height: 40vh;
+        padding: 1rem 0.5rem;
+      }
+
+      .column-actividades {
+        max-height: 50vh;
+        padding: 1rem 0.5rem;
+      }
+
+      /* Toast responsive */
+      #toast-alert {
+        top: 100px;
+        right: 10px;
+        left: 10px;
+        width: auto;
+        font-size: 0.85rem;
+        padding: 0.6rem 0.8rem 0.8rem;
+      }
+
+      /* Alert responsive */
+      .size {
+        position: static;
+        left: auto;
+        max-width: 100%;
+        margin: 0 1rem;
+      }
+
+      /* Imagen placeholder más pequeña */
+      .actividades-placeholder {
+        font-size: 1rem;
+        margin-top: 2rem;
+      }
+
+      .actividades-placeholder img {
+        max-width: 150px;
+      }
+
+      .img {
+        max-width: 150px;
+      }
+    }
+
+    /* Mobile Medium (480px - 575px) */
+    @media (max-width: 575px) {
+      .main-content {
+        padding: 0.75rem;
+      }
+
+      .content-columns {
+        gap: 0.75rem;
+      }
+
+      .column-fichas {
+        max-height: 35vh;
+        padding: 0.75rem 0.25rem;
+      }
+
+      .column-actividades {
+        max-height: 45vh;
+        padding: 0.75rem 0.25rem;
+      }
+
+      #toast-alert {
+        top: 90px;
+        right: 5px;
+        left: 5px;
+        font-size: 0.8rem;
+        padding: 0.5rem 0.6rem 0.6rem;
+      }
+
+      .actividades-placeholder {
+        font-size: 0.9rem;
+        margin-top: 1.5rem;
+      }
+
+      .actividades-placeholder img {
+        max-width: 120px;
+      }
+
+      .img {
+        max-width: 120px;
+      }
+    }
+
+    /* Mobile Small (320px - 479px) */
+    @media (max-width: 479px) {
+      .main-content {
+        padding: 0.5rem;
+      }
+
+      .content-columns {
+        gap: 0.5rem;
+      }
+
+      .column-fichas {
+        max-height: 30vh;
+        padding: 0.5rem 0.25rem;
+      }
+
+      .column-actividades {
+        max-height: 40vh;
+        padding: 0.5rem 0.25rem;
+      }
+
+      #toast-alert {
+        top: 80px;
+        right: 5px;
+        left: 5px;
+        font-size: 0.75rem;
+        padding: 0.4rem 0.5rem 0.5rem;
+      }
+
+      .actividades-placeholder {
+        font-size: 0.85rem;
+        margin-top: 1rem;
+      }
+
+      .actividades-placeholder img {
+        max-width: 100px;
+      }
+
+      .img {
+        max-width: 100px;
+      }
+    }
+
+    /* Landscape orientation en móviles */
+    @media (max-height: 500px) and (orientation: landscape) {
+      .main-content {
+        margin-top: 60px;
+        padding: 0.5rem;
+      }
+
+      .column-fichas {
+        max-height: 35vh;
+      }
+
+      .column-actividades {
+        max-height: 40vh;
+      }
+
+      #toast-alert {
+        top: 70px;
+      }
+    }
+
+    /* Extra responsive para pantallas muy pequeñas */
+    @media (max-width: 320px) {
+      .main-content {
+        padding: 0.25rem;
+      }
+
+      .content-columns {
+        gap: 0.25rem;
+      }
+
+      .column-fichas,
+      .column-actividades {
+        padding: 0.25rem;
+      }
+
+      #toast-alert {
+        font-size: 0.7rem;
+        padding: 0.3rem 0.4rem 0.4rem;
+      }
+    }
+
+    /* Mejoras de accesibilidad */
+    @media (prefers-reduced-motion: reduce) {
+      * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+
+    /* Soporte para modo oscuro */
+    
   </style>
 </head>
 
@@ -138,10 +411,6 @@ if (isset($_SESSION['actividad_creada'])) {
     </div>
     <?php unset($_SESSION['error_actividad']); ?>
   <?php endif; ?>
-
-
-
-
 
   <div class="main-content">
     <?php if ($actividad_actualizada): ?>
@@ -166,10 +435,8 @@ if (isset($_SESSION['actividad_creada'])) {
       </div>
     <?php endif; ?>
 
-
-
-    <div class="row gx-3" style="margin-right: 0px;">
-      <div class="col-12 col-md-6 border-md-end p-3 fichas-scroll" style="max-height: 50vh; overflow-y: auto;">
+    <div class="content-columns">
+      <div class="column-fichas fichas-scroll">
         <h5 class="mb-3">Mis Fichas</h5>
         <div id="contenedor-fichas">
           <!-- Aquí se cargan las fichas vía AJAX -->
@@ -177,11 +444,11 @@ if (isset($_SESSION['actividad_creada'])) {
         </div>
       </div>
 
-      <div class="col-12 col-md-6 d-flex flex-column p-3 fichas-scroll" style="max-height: 65vh; overflow-y: auto; " id="contenedor-actividades">
-        <div class="text-center text-muted fs-5 mt-5">Aquí se mostrarán las actividades de la ficha. <br>
-          <img src="../assets/img/monstruo.webp" alt="" class="img-fluid img">
+      <div class="column-actividades fichas-scroll" id="contenedor-actividades">
+        <div class="actividades-placeholder">
+          Aquí se mostrarán las actividades de la ficha. <br>
+          <img src="../assets/img/monstruo.webp" alt="" class="img-fluid">
         </div>
-
       </div>
     </div>
   </div>
@@ -196,7 +463,6 @@ if (isset($_SESSION['actividad_creada'])) {
         .then(response => response.text())
         .then(html => {
           document.getElementById("contenedor-fichas").innerHTML = html;
-
           // Activar los clics en las fichas
           document.querySelectorAll(".ficha-item").forEach(item => {
             item.addEventListener("click", function() {
@@ -225,9 +491,8 @@ if (isset($_SESSION['actividad_creada'])) {
           contenedor.innerHTML = '<div class="text-danger">Error al cargar actividades.</div>';
         });
     }
-  </script>
 
-  <script>
+    // Toast auto-hide
     document.addEventListener("DOMContentLoaded", function() {
       const toast = document.getElementById('toast-alert');
       if (toast) {
@@ -238,12 +503,13 @@ if (isset($_SESSION['actividad_creada'])) {
         }, 3000);
       }
     });
+
+    // Manejar cambios de orientación
+    window.addEventListener('orientationchange', () => {
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+      }, 100);
+    });
   </script>
-
-
-
-
-
 </body>
-
 </html>
