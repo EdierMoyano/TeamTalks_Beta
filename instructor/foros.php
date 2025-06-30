@@ -40,6 +40,7 @@ $foros = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Foros</title>
     <link rel="stylesheet" href="<?= BASE_URL ?>/styles/style_side.css" />
+    <link rel="stylesheet" href="<?= BASE_URL ?>/styles/header.css">
     <link rel="icon" href="<?= BASE_URL ?>/assets/img/icon2.png" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
@@ -56,6 +57,23 @@ $foros = $stmt->fetchAll(PDO::FETCH_ASSOC);
         .main-content {
             margin-left: 280px;
             transition: margin-left 0.4s ease;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--background-color);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
         }
 
         body.sidebar-collapsed .main-content {
@@ -80,9 +98,8 @@ $foros = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         .foro:hover {
             color: white;
-            background-color:rgb(12, 51, 90);
+            background-color: rgb(12, 51, 90);
         }
-
     </style>
 </head>
 

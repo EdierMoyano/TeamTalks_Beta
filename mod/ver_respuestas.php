@@ -12,7 +12,6 @@ if (isset($_GET['id_notificacion'])) {
     }
 }
 
-
 $id_tema = isset($_GET['id_tema']) ? (int) $_GET['id_tema'] : 0;
 $id_user = $_SESSION['documento'];
 
@@ -66,12 +65,12 @@ foreach ($todas_respuestas as $respuesta) {
 
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= htmlspecialchars($tema['titulo']) ?> - Foro</title>
     <link rel="stylesheet" href="<?= BASE_URL ?>/styles/style_side.css" />
+    <link rel="stylesheet" href="<?= BASE_URL ?>/styles/header.css">
     <link rel="icon" href="<?= BASE_URL ?>/assets/img/icon2.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -87,8 +86,9 @@ foreach ($todas_respuestas as $respuesta) {
         referrerpolicy="no-referrer" />
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css" />
-
+    
     <style>
+        /* ===== CSS VARIABLES ===== */
         :root {
             --primary-color: #0E4A86;
             --primary-hover: #0d4077;
@@ -113,6 +113,7 @@ foreach ($todas_respuestas as $respuesta) {
             --radius-xl: 1rem;
         }
 
+        /* ===== RESET & BASE STYLES ===== */
         * {
             box-sizing: border-box;
         }
@@ -124,13 +125,16 @@ foreach ($todas_respuestas as $respuesta) {
             line-height: 1.6;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
+            padding-top: 180px;
         }
 
+        /* ===== LAYOUT ===== */
         .main-content {
             margin-left: 280px;
             transition: margin-left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             padding: 2rem;
             min-height: 100vh;
+            margin-top: -40px;
         }
 
         body.sidebar-collapsed .main-content {
@@ -142,7 +146,7 @@ foreach ($todas_respuestas as $respuesta) {
             margin: 0 auto;
         }
 
-        /* Navigation */
+        /* ===== NAVIGATION ===== */
         .breadcrumb-nav {
             background: var(--surface-color);
             border: 1px solid var(--border-color);
@@ -167,7 +171,7 @@ foreach ($todas_respuestas as $respuesta) {
             transform: translateX(-2px);
         }
 
-        /* Topic Header */
+        /* ===== TOPIC HEADER ===== */
         .topic-header {
             background: var(--surface-color);
             border: 1px solid var(--border-color);
@@ -241,7 +245,7 @@ foreach ($todas_respuestas as $respuesta) {
             color: var(--text-primary);
         }
 
-        /* Comment Form */
+        /* ===== COMMENT FORM ===== */
         .comment-form {
             background: var(--surface-color);
             border: 1px solid var(--border-color);
@@ -320,6 +324,7 @@ foreach ($todas_respuestas as $respuesta) {
             gap: 1rem;
         }
 
+        /* ===== BUTTONS ===== */
         .btn {
             display: inline-flex;
             align-items: center;
@@ -375,7 +380,12 @@ foreach ($todas_respuestas as $respuesta) {
             color: var(--text-primary);
         }
 
-        /* Comments Section */
+        .btn-sm {
+            padding: 0.5rem 1rem;
+            font-size: 0.8rem;
+        }
+
+        /* ===== COMMENTS SECTION ===== */
         .comments-section {
             background: var(--surface-color);
             border: 1px solid var(--border-color);
@@ -409,6 +419,7 @@ foreach ($todas_respuestas as $respuesta) {
             font-weight: 600;
         }
 
+        /* ===== COMMENT ITEMS ===== */
         .comment-item {
             padding: 1.5rem 2rem;
             border-bottom: 1px solid var(--border-color);
@@ -432,41 +443,48 @@ foreach ($todas_respuestas as $respuesta) {
 
         .comment-header {
             display: flex;
-            align-items: center;
+            align-items: flex-start;
             gap: 1rem;
             margin-bottom: 1rem;
         }
 
         .comment-author {
             display: flex;
-            align-items: center;
+            align-items: flex-start;
             gap: 0.75rem;
+            flex: 1;
         }
 
         .comment-avatar {
-            width: 2.5rem;
-            height: 2.5rem;
-            background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
-            color: white;
+            width: 48px;
+            height: 48px;
             border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 600;
-            font-size: 0.875rem;
-            box-shadow: var(--shadow-sm);
+            object-fit: cover;
+            flex-shrink: 0;
+        }
+
+        .comment-author-info {
+            flex: 1;
+            min-width: 0;
         }
 
         .comment-author-info h6 {
-            margin: 0;
+            margin: 0 0 0.25rem 0;
             font-weight: 600;
             color: var(--text-primary);
             font-size: 0.875rem;
         }
 
+        .comment-role {
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            margin: 0 0 0.5rem 0;
+        }
+
         .comment-date {
             color: var(--text-muted);
             font-size: 0.75rem;
+            white-space: nowrap;
         }
 
         .comment-content {
@@ -476,6 +494,140 @@ foreach ($todas_respuestas as $respuesta) {
             margin-left: 3.5rem;
         }
 
+        /* ===== COMMENT ACTIONS ===== */
+        .comment-actions {
+            margin-top: 0.75rem;
+            padding-top: 0.75rem;
+            border-top: 1px solid var(--border-color);
+            margin-left: 3.5rem;
+        }
+
+        .btn-reply {
+            background: none !important;
+            border: none !important;
+            color: var(--primary-color) !important;
+            font-size: 0.875rem !important;
+            padding: 0.25rem 0.5rem !important;
+            border-radius: 4px !important;
+            transition: all 0.2s ease !important;
+            cursor: pointer !important;
+        }
+
+        .btn-reply:hover {
+            background: rgba(14, 74, 134, 0.1) !important;
+            color: var(--primary-hover) !important;
+        }
+
+        /* ===== REPLY FORMS ===== */
+        .reply-form {
+            display: none !important;
+            margin-top: 1rem;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+            margin-left: 3.5rem;
+        }
+
+        .reply-form.active {
+            display: block !important;
+            animation: slideDown 0.3s ease;
+        }
+
+        .reply-to-info {
+            background: #e3f2fd;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+            font-size: 0.875rem;
+            color: #1976d2;
+            border-left: 3px solid #2196f3;
+        }
+
+        /* ===== NESTED REPLIES ===== */
+        .replies-toggle-container {
+            margin-top: 1rem;
+            margin-left: 3.5rem;
+        }
+
+        .btn-toggle-replies {
+            background: var(--surface-color) !important;
+            border: 1px solid var(--border-color) !important;
+            color: var(--primary-color) !important;
+            font-size: 0.875rem !important;
+            padding: 0.5rem 1rem !important;
+            border-radius: 20px !important;
+            transition: all 0.3s ease !important;
+            cursor: pointer !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 0.5rem !important;
+        }
+
+        .btn-toggle-replies:hover {
+            background: var(--primary-light) !important;
+            border-color: var(--primary-color) !important;
+            transform: translateY(-1px) !important;
+            box-shadow: 0 2px 8px rgba(14, 74, 134, 0.15) !important;
+        }
+
+        .btn-toggle-replies.expanded {
+            background: var(--primary-color) !important;
+            color: white !important;
+            border-color: var(--primary-color) !important;
+        }
+
+        .btn-toggle-replies.expanded:hover {
+            background: var(--primary-hover) !important;
+        }
+
+        .btn-toggle-replies.expanded .toggle-icon {
+            transform: rotate(180deg) !important;
+        }
+
+        .comment-replies {
+            margin-left: 3rem;
+            margin-top: 1rem;
+            border-left: 3px solid var(--primary-color);
+            padding-left: 1rem;
+            background: rgba(14, 74, 134, 0.02);
+            border-radius: 0 8px 8px 0;
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: all 0.4s ease;
+        }
+
+        .comment-replies.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .nested-comment {
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border: 1px solid rgba(14, 74, 134, 0.1);
+            transition: all 0.2s ease;
+        }
+
+        .nested-comment:hover {
+            background: rgba(255, 255, 255, 0.95);
+            border-color: rgba(14, 74, 134, 0.2);
+            transform: translateX(5px);
+        }
+
+        .nested-comment .comment-avatar {
+            width: 36px;
+            height: 36px;
+        }
+
+        .nested-comment .comment-content {
+            margin-left: 0;
+            margin-top: 0.5rem;
+        }
+
+        /* ===== EMPTY STATES ===== */
         .empty-state {
             padding: 4rem 2rem;
             text-align: center;
@@ -500,7 +652,7 @@ foreach ($todas_respuestas as $respuesta) {
             margin: 0;
         }
 
-        /* Load More Button */
+        /* ===== LOAD MORE ===== */
         .load-more-container {
             padding: 2rem;
             text-align: center;
@@ -543,19 +695,23 @@ foreach ($todas_respuestas as $respuesta) {
             color: var(--text-muted);
         }
 
-        /* Loading States */
-        .loading {
-            opacity: 0.6;
-            pointer-events: none;
-        }
-
-        /* Animations */
+        /* ===== ANIMATIONS ===== */
         @keyframes fadeInUp {
             from {
                 opacity: 0;
                 transform: translateY(30px);
             }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
 
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -563,12 +719,9 @@ foreach ($todas_respuestas as $respuesta) {
         }
 
         @keyframes pulse {
-
-            0%,
-            100% {
+            0%, 100% {
                 opacity: 1;
             }
-
             50% {
                 opacity: 0.5;
             }
@@ -582,139 +735,7 @@ foreach ($todas_respuestas as $respuesta) {
             animation: pulse 1.5s ease-in-out infinite;
         }
 
-        /* Estilos para respuestas anidadas */
-        .comment-replies {
-            margin-left: 3rem;
-            margin-top: 1rem;
-            border-left: 3px solid var(--primary-color, #007bff);
-            padding-left: 1rem;
-            background: rgba(0, 123, 255, 0.02);
-            border-radius: 0 8px 8px 0;
-        }
-
-        .reply-form {
-            margin-top: 1rem;
-            padding: 1rem;
-            background: #f8f9fa;
-            border-radius: 8px;
-            border: 1px solid #e9ecef;
-            display: none;
-        }
-
-        .reply-form.active {
-            display: block;
-            animation: slideDown 0.3s ease;
-        }
-
-        .reply-to-info {
-            background: #e3f2fd;
-            padding: 0.5rem 1rem;
-            border-radius: 6px;
-            margin-bottom: 1rem;
-            font-size: 0.875rem;
-            color: #1976d2;
-            border-left: 3px solid #2196f3;
-        }
-
-        .btn-reply {
-            background: none;
-            border: none;
-            color: var(--primary-color, #007bff);
-            font-size: 0.875rem;
-            padding: 0.25rem 0.5rem;
-            border-radius: 4px;
-            transition: all 0.2s ease;
-        }
-
-        .btn-reply:hover {
-            background: rgba(0, 123, 255, 0.1);
-            color: #0056b3;
-        }
-
-        .comment-actions {
-            margin-top: 0.75rem;
-            padding-top: 0.75rem;
-            border-top: 1px solid #e9ecef;
-        }
-
-        .nested-comment {
-            background: rgba(255, 255, 255, 0.7);
-            border-radius: 8px;
-            padding: 1rem;
-            margin-bottom: 1rem;
-        }
-
-        @keyframes slideDown {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        @media (max-width: 768px) {
-            .comment-replies {
-                margin-left: 1rem;
-            }
-        }
-
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            .main-content {
-                margin-left: 0;
-                padding: 1rem;
-            }
-
-            .topic-header,
-            .comment-form,
-            .comments-section {
-                border-radius: var(--radius-md);
-                padding: 1.5rem;
-            }
-
-            .topic-title {
-                font-size: 1.5rem;
-            }
-
-            .topic-meta {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 0.5rem;
-            }
-
-            .comment-item {
-                padding: 1rem 1.5rem;
-            }
-
-            .comment-content {
-                margin-left: 0;
-                margin-top: 1rem;
-            }
-
-            .form-actions {
-                flex-direction: column;
-            }
-
-            .btn {
-                justify-content: center;
-            }
-
-            .load-more-container {
-                padding: 1.5rem;
-            }
-        }
-
-        /* Focus Management */
-        .focus-visible {
-            outline: 2px solid var(--primary-color);
-            outline-offset: 2px;
-        }
-
-        /* Custom Scrollbar */
+        /* ===== SCROLLBAR ===== */
         ::-webkit-scrollbar {
             width: 8px;
         }
@@ -731,10 +752,404 @@ foreach ($todas_respuestas as $respuesta) {
         ::-webkit-scrollbar-thumb:hover {
             background: var(--text-muted);
         }
+
+        /* ===== RESPONSIVE DESIGN ===== */
+
+        /* Large tablets and small desktops (1024px - 1200px) */
+        @media (max-width: 1200px) {
+            .main-content {
+                margin-left: 200px;
+                padding: 1.5rem;
+            }
+
+            .forum-container {
+                max-width: 100%;
+            }
+        }
+
+        /* Tablets (768px - 1024px) */
+        @media (max-width: 1024px) {
+            .main-content {
+                margin-left: 0;
+                padding: 1rem;
+            }
+
+            .topic-header,
+            .comment-form,
+            .comments-section {
+                border-radius: var(--radius-md);
+            }
+
+            .topic-title {
+                font-size: 1.75rem;
+            }
+
+            .comment-item {
+                padding: 1.25rem 1.5rem;
+            }
+
+            .comments-header {
+                padding: 1.25rem 1.5rem;
+            }
+        }
+
+        /* Mobile landscape and small tablets (481px - 768px) */
+        @media (max-width: 768px) {
+            body {
+                padding-top: 120px;
+            }
+
+            .main-content {
+                padding: 0.75rem;
+                margin-top: -20px;
+            }
+
+            .breadcrumb-nav {
+                padding: 0.75rem 1rem;
+                margin-bottom: 1rem;
+            }
+
+            .topic-header {
+                padding: 1.5rem;
+                margin-bottom: 1.5rem;
+            }
+
+            .topic-title {
+                font-size: 1.5rem;
+                line-height: 1.3;
+            }
+
+            .topic-meta {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.75rem;
+            }
+
+            .topic-content {
+                font-size: 1rem;
+            }
+
+            .comment-form {
+                padding: 1.5rem;
+                margin-bottom: 1.5rem;
+            }
+
+            .form-title {
+                font-size: 1.125rem;
+            }
+
+            .form-control {
+                padding: 0.875rem;
+                min-height: 100px;
+            }
+
+            .form-actions {
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+
+            .btn {
+                justify-content: center;
+                width: 100%;
+            }
+
+            .comment-item {
+                padding: 1rem 1.25rem;
+            }
+
+            .comments-header {
+                padding: 1rem 1.25rem;
+            }
+
+            .comment-header {
+                flex-direction: column;
+                gap: 0.75rem;
+                align-items: flex-start;
+            }
+
+            .comment-author {
+                width: 100%;
+            }
+
+            .comment-author-info {
+                display: flex;
+                flex-direction: column;
+                gap: 0.25rem;
+            }
+
+            .comment-date {
+                align-self: flex-start;
+                margin-top: 0.25rem;
+            }
+
+            .comment-content {
+                margin-left: 0;
+                margin-top: 1rem;
+            }
+
+            .comment-actions {
+                margin-left: 0;
+            }
+
+            .reply-form {
+                margin-left: 0;
+            }
+
+            .replies-toggle-container {
+                margin-left: 0;
+            }
+
+            .comment-replies {
+                margin-left: 1rem;
+                padding-left: 0.75rem;
+            }
+
+            .load-more-container {
+                padding: 1.5rem 1rem;
+            }
+
+            .btn-load-more {
+                padding: 0.875rem 1.5rem;
+                width: 100%;
+            }
+        }
+
+        /* Mobile portrait (320px - 480px) */
+        @media (max-width: 480px) {
+            .main-content {
+                padding: 0.5rem;
+            }
+
+            .breadcrumb-nav {
+                padding: 0.75rem;
+                margin-bottom: 0.75rem;
+            }
+
+            .back-link {
+                font-size: 0.875rem;
+            }
+
+            .topic-header {
+                padding: 1rem;
+                margin-bottom: 1rem;
+            }
+
+            .topic-title {
+                font-size: 1.25rem;
+            }
+
+            .author-badge {
+                padding: 0.375rem 0.75rem;
+                font-size: 0.8rem;
+            }
+
+            .author-avatar,
+            .comment-avatar {
+                width: 40px;
+                height: 40px;
+            }
+
+            .nested-comment .comment-avatar {
+                width: 32px;
+                height: 32px;
+            }
+
+            .topic-date {
+                font-size: 0.8rem;
+            }
+
+            .comment-form {
+                padding: 1rem;
+                margin-bottom: 1rem;
+            }
+
+            .form-header {
+                gap: 0.5rem;
+                margin-bottom: 1rem;
+            }
+
+            .form-title {
+                font-size: 1rem;
+            }
+
+            .form-control {
+                padding: 0.75rem;
+                font-size: 0.9rem;
+                min-height: 80px;
+            }
+
+            .comment-item {
+                padding: 0.875rem 1rem;
+            }
+
+            .comments-header {
+                padding: 0.875rem 1rem;
+            }
+
+            .comments-title {
+                font-size: 1rem;
+            }
+
+            .comment-author-info h6 {
+                font-size: 0.8rem;
+            }
+
+            .comment-role {
+                font-size: 0.7rem;
+            }
+
+            .comment-date {
+                font-size: 0.7rem;
+            }
+
+            .comment-content {
+                font-size: 0.9rem;
+                line-height: 1.5;
+            }
+
+            .btn-reply {
+                font-size: 0.8rem !important;
+                padding: 0.25rem 0.375rem !important;
+            }
+
+            .btn-toggle-replies {
+                font-size: 0.8rem !important;
+                padding: 0.375rem 0.75rem !important;
+            }
+
+            .reply-form {
+                padding: 0.75rem;
+            }
+
+            .reply-to-info {
+                padding: 0.375rem 0.75rem;
+                font-size: 0.8rem;
+            }
+
+            .nested-comment {
+                padding: 0.75rem;
+            }
+
+            .comment-replies {
+                margin-left: 0.5rem;
+                padding-left: 0.5rem;
+            }
+
+            .empty-state {
+                padding: 2rem 1rem;
+            }
+
+            .empty-state-icon {
+                font-size: 2rem;
+            }
+
+            .empty-state h4 {
+                font-size: 1rem;
+            }
+
+            .empty-state p {
+                font-size: 0.8rem;
+            }
+
+            .load-more-container {
+                padding: 1rem 0.75rem;
+            }
+
+            .btn-load-more {
+                padding: 0.75rem 1rem;
+                font-size: 0.8rem;
+            }
+
+            .load-more-info {
+                font-size: 0.8rem;
+            }
+        }
+
+        /* Very small screens (max 360px) */
+        @media (max-width: 360px) {
+            .topic-title {
+                font-size: 1.125rem;
+            }
+
+            .author-avatar,
+            .comment-avatar {
+                width: 36px;
+                height: 36px;
+            }
+
+            .nested-comment .comment-avatar {
+                width: 28px;
+                height: 28px;
+            }
+
+            .comment-content {
+                font-size: 0.85rem;
+            }
+
+            .form-control {
+                font-size: 0.85rem;
+            }
+        }
+
+        /* Landscape orientation adjustments */
+        @media (max-height: 600px) and (orientation: landscape) {
+            body {
+                padding-top: 80px;
+            }
+
+            .main-content {
+                margin-top: -10px;
+            }
+
+            .topic-header {
+                padding: 1rem;
+            }
+
+            .comment-form {
+                padding: 1rem;
+            }
+
+            .form-control {
+                min-height: 60px;
+            }
+        }
+
+        /* Focus and accessibility improvements */
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+
+        /* High contrast mode support */
+        @media (prefers-contrast: high) {
+            .comment-item {
+                border: 2px solid var(--border-color);
+            }
+
+            .btn {
+                border: 2px solid currentColor;
+            }
+        }
+
+        /* Touch device optimizations */
+        @media (pointer: coarse) {
+            .btn-reply,
+            .btn-toggle-replies {
+                min-height: 44px !important;
+                min-width: 44px !important;
+            }
+
+            .form-control {
+                min-height: 44px;
+            }
+        }
     </style>
 </head>
 
-<body class="sidebar-collapsed" style="padding-top: 180px;">
+<body class="sidebar-collapsed">
     <?php include 'design/header.php'; ?>
     <?php include 'design/sidebar.php'; ?>
 
@@ -830,21 +1245,18 @@ foreach ($todas_respuestas as $respuesta) {
                             <article class="comment-item" data-index="<?= $index ?>" data-comment-id="<?= $respuesta['id_respuesta_foro'] ?>" style="display: none;">
                                 <div class="comment-header">
                                     <div class="comment-author">
-                                        <div class="">
-                                            <img src="<?= BASE_URL ?>/<?= empty($respuesta['avatar']) ? 'uploads/avatar/user.webp' : htmlspecialchars($respuesta['avatar']) ?>" alt="avatar"
-                                                class="rounded-circle me-3" style="width: 48px; height: 48px; object-fit: cover;">
-                                        </div>
-                                        <div class="comment-author-info d-flex flex-column flex-md-row align-items-start w-100">
-                                            <div>
-                                                <h6><?= htmlspecialchars($respuesta['nombres'] . ' ' . $respuesta['apellidos']) ?></h6>
-                                                <h6 class="text-muted mt-1 mb-2"><?= htmlspecialchars($respuesta['rol']) ?></h6>
-                                            </div>
-                                            <time class="comment-date mt-1 mt-md-0" datetime="<?= $respuesta['fecha_respuesta'] ?>" style="margin-left: 25rem;">
-                                                <?= date('d/m/Y \a \l\a\s H:i', strtotime($respuesta['fecha_respuesta'])) ?>
-                                            </time>
+                                        <img src="<?= BASE_URL ?>/<?= empty($respuesta['avatar']) ? 'uploads/avatar/user.webp' : htmlspecialchars($respuesta['avatar']) ?>" 
+                                             alt="avatar" class="comment-avatar">
+                                        <div class="comment-author-info">
+                                            <h6><?= htmlspecialchars($respuesta['nombres'] . ' ' . $respuesta['apellidos']) ?></h6>
+                                            <p class="comment-role"><?= htmlspecialchars($respuesta['rol']) ?></p>
                                         </div>
                                     </div>
+                                    <time class="comment-date" datetime="<?= $respuesta['fecha_respuesta'] ?>">
+                                        <?= date('d/m/Y \a \l\a\s H:i', strtotime($respuesta['fecha_respuesta'])) ?>
+                                    </time>
                                 </div>
+
                                 <div class="comment-content">
                                     <?= nl2br(htmlspecialchars($respuesta['descripcion'])) ?>
                                 </div>
@@ -905,20 +1317,18 @@ foreach ($todas_respuestas as $respuesta) {
                                             <div class="nested-comment">
                                                 <div class="comment-header">
                                                     <div class="comment-author">
-                                                        <div class="">
-                                                            <img src="<?= BASE_URL ?>/<?= empty($respuesta_hija['avatar']) ? 'uploads/avatar/user.webp' : htmlspecialchars($respuesta_hija['avatar']) ?>" alt="avatar"
-                                                                class="rounded-circle me-3" style="width: 36px; height: 36px; object-fit: cover;">
-                                                        </div>
+                                                        <img src="<?= BASE_URL ?>/<?= empty($respuesta_hija['avatar']) ? 'uploads/avatar/user.webp' : htmlspecialchars($respuesta_hija['avatar']) ?>" 
+                                                             alt="avatar" class="comment-avatar">
                                                         <div class="comment-author-info">
-                                                            <h6 class="mb-1"><?= htmlspecialchars($respuesta_hija['nombres'] . ' ' . $respuesta_hija['apellidos']) ?></h6>
-                                                            <small class="text-muted"><?= htmlspecialchars($respuesta_hija['rol']) ?></small>
-                                                            <time class="comment-date ms-auto" datetime="<?= $respuesta_hija['fecha_respuesta'] ?>">
-                                                                <?= date('d/m/Y H:i', strtotime($respuesta_hija['fecha_respuesta'])) ?>
-                                                            </time>
+                                                            <h6><?= htmlspecialchars($respuesta_hija['nombres'] . ' ' . $respuesta_hija['apellidos']) ?></h6>
+                                                            <small class="comment-role"><?= htmlspecialchars($respuesta_hija['rol']) ?></small>
                                                         </div>
                                                     </div>
+                                                    <time class="comment-date" datetime="<?= $respuesta_hija['fecha_respuesta'] ?>">
+                                                        <?= date('d/m/Y H:i', strtotime($respuesta_hija['fecha_respuesta'])) ?>
+                                                    </time>
                                                 </div>
-                                                <div class="comment-content mt-2">
+                                                <div class="comment-content">
                                                     <?= nl2br(htmlspecialchars($respuesta_hija['descripcion'])) ?>
                                                 </div>
                                             </div>
@@ -947,11 +1357,9 @@ foreach ($todas_respuestas as $respuesta) {
 
     <script>
         // ===== SISTEMA DE COMENTARIOS CON TOGGLE DE RESPUESTAS =====
-
         // 1. FUNCIONES GLOBALES
         window.toggleReplyForm = function(commentId, authorName) {
             console.log('🔄 Función llamada:', commentId, authorName);
-
             // Cerrar otros formularios
             document.querySelectorAll('.reply-form').forEach(form => {
                 if (form.id !== `replyForm-${commentId}`) {
@@ -970,7 +1378,6 @@ foreach ($todas_respuestas as $respuesta) {
             if (replyForm.style.display === 'none' || !replyForm.style.display) {
                 replyForm.style.display = 'block';
                 replyForm.classList.add('active');
-
                 // Focus en textarea
                 const textarea = replyForm.querySelector('textarea');
                 if (textarea) {
@@ -997,7 +1404,6 @@ foreach ($todas_respuestas as $respuesta) {
         // 2. FUNCIÓN PARA TOGGLE DE RESPUESTAS
         window.toggleReplies = function(commentId, repliesCount) {
             console.log('🔄 Toggle respuestas para comentario:', commentId);
-
             const repliesContainer = document.getElementById(`replies-${commentId}`);
             const toggleBtn = document.querySelector(`[data-comment-id="${commentId}"].btn-toggle-replies`);
 
@@ -1034,7 +1440,6 @@ foreach ($todas_respuestas as $respuesta) {
         // 3. EVENT LISTENERS PARA BOTONES
         function bindAllButtons() {
             console.log('🔗 Vinculando todos los event listeners...');
-
             // Botones de responder
             document.querySelectorAll('.btn-reply').forEach(btn => {
                 btn.replaceWith(btn.cloneNode(true));
@@ -1044,10 +1449,8 @@ foreach ($todas_respuestas as $respuesta) {
                 btn.addEventListener('click', function(e) {
                     e.preventDefault();
                     e.stopPropagation();
-
                     const commentId = this.getAttribute('data-comment-id');
                     const authorName = this.getAttribute('data-author-name');
-
                     console.log('🖱️ Click en botón responder:', commentId);
                     toggleReplyForm(commentId, authorName);
                 });
@@ -1071,10 +1474,8 @@ foreach ($todas_respuestas as $respuesta) {
                 btn.addEventListener('click', function(e) {
                     e.preventDefault();
                     e.stopPropagation();
-
                     const commentId = this.getAttribute('data-comment-id');
                     const repliesCount = parseInt(this.getAttribute('data-replies-count'));
-
                     console.log('🖱️ Click en toggle respuestas:', commentId);
                     toggleReplies(commentId, repliesCount);
                 });
@@ -1092,7 +1493,6 @@ foreach ($todas_respuestas as $respuesta) {
                 this.comments = document.querySelectorAll('.comment-item');
                 this.loadMoreBtn = document.getElementById('loadMoreBtn');
                 this.currentCountSpan = document.getElementById('currentCount');
-
                 this.init();
             }
 
@@ -1110,7 +1510,6 @@ foreach ($todas_respuestas as $respuesta) {
                 for (let i = start; i < end && i < this.comments.length; i++) {
                     const comment = this.comments[i];
                     comment.style.display = 'block';
-
                     setTimeout(() => {
                         comment.classList.add('visible');
                     }, (i - start) * 100);
@@ -1246,148 +1645,7 @@ foreach ($todas_respuestas as $respuesta) {
             }
         });
 
-        // 8. ESTILOS MEJORADOS
-        const enhancedStyles = document.createElement('style');
-        enhancedStyles.textContent = `
-    /* Estilos para formularios de respuesta */
-    .reply-form {
-        display: none !important;
-        margin-top: 1rem;
-        padding: 1rem;
-        background: #f8f9fa;
-        border-radius: 8px;
-        border: 1px solid #e9ecef;
-    }
-    
-    .reply-form.active {
-        display: block !important;
-        animation: slideDown 0.3s ease;
-    }
-    
-    /* Estilos para toggle de respuestas */
-    .replies-toggle-container {
-        margin-top: 1rem;
-        margin-left: 3.5rem;
-    }
-    
-    .btn-toggle-replies {
-        background: none !important;
-        border: none !important;
-        color: var(--primary-color, #007bff) !important;
-        font-size: 0.875rem !important;
-        padding: 0.5rem 1rem !important;
-        border-radius: 20px !important;
-        transition: all 0.3s ease !important;
-        cursor: pointer !important;
-        display: inline-flex !important;
-        align-items: center !important;
-        gap: 0.5rem !important;
-        border: 1px solid var(--border-color, #e9ecef) !important;
-        background: var(--surface-color, #fff) !important;
-    }
-    
-    .btn-toggle-replies:hover {
-        background: var(--primary-light, #e3f2fd) !important;
-        border-color: var(--primary-color, #007bff) !important;
-        transform: translateY(-1px) !important;
-        box-shadow: 0 2px 8px rgba(0, 123, 255, 0.15) !important;
-    }
-    
-    .btn-toggle-replies.expanded {
-        background: var(--primary-color, #007bff) !important;
-        color: white !important;
-        border-color: var(--primary-color, #007bff) !important;
-    }
-    
-    .btn-toggle-replies.expanded:hover {
-        background: var(--primary-hover, #0056b3) !important;
-    }
-    
-    .toggle-icon {
-        transition: transform 0.3s ease !important;
-        font-size: 0.75rem !important;
-    }
-    
-    .btn-toggle-replies.expanded .toggle-icon {
-        transform: rotate(180deg) !important;
-    }
-    
-    /* Estilos para respuestas anidadas */
-    .comment-replies {
-        margin-left: 3rem;
-        margin-top: 1rem;
-        border-left: 3px solid var(--primary-color, #007bff);
-        padding-left: 1rem;
-        background: rgba(0, 123, 255, 0.02);
-        border-radius: 0 8px 8px 0;
-        opacity: 0;
-        transform: translateY(-10px);
-        transition: all 0.4s ease;
-    }
-    
-    .comment-replies.visible {
-        opacity: 1;
-        transform: translateY(0);
-    }
-    
-    .nested-comment {
-        background: rgba(255, 255, 255, 0.8);
-        border-radius: 8px;
-        padding: 1rem;
-        margin-bottom: 1rem;
-        border: 1px solid rgba(0, 123, 255, 0.1);
-        transition: all 0.2s ease;
-    }
-    
-    .nested-comment:hover {
-        background: rgba(255, 255, 255, 0.95);
-        border-color: rgba(0, 123, 255, 0.2);
-        transform: translateX(5px);
-    }
-    
-    /* Botones de respuesta */
-    .btn-reply {
-        cursor: pointer !important;
-        background: none !important;
-        border: none !important;
-        color: var(--primary-color, #007bff) !important;
-        font-size: 0.875rem !important;
-        padding: 0.25rem 0.5rem !important;
-        border-radius: 4px !important;
-        transition: all 0.2s ease !important;
-    }
-    
-    .btn-reply:hover {
-        background: rgba(0, 123, 255, 0.1) !important;
-        color: #0056b3 !important;
-    }
-    
-    /* Animaciones */
-    @keyframes slideDown {
-        from { opacity: 0; transform: translateY(-10px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-    
-    @keyframes fadeInUp {
-        from { opacity: 0; transform: translateY(20px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-    
-    /* Responsive */
-    @media (max-width: 768px) {
-        .comment-replies {
-            margin-left: 1rem;
-        }
-        
-        .replies-toggle-container {
-            margin-left: 1rem;
-        }
-    }
-`;
-        document.head.appendChild(enhancedStyles);
-
-        console.log('🎉 Sistema de comentarios mejorado cargado');
+        console.log('🎉 Sistema de comentarios responsive cargado');
     </script>
 </body>
-
 </html>

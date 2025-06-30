@@ -25,6 +25,25 @@ $stmt->execute(['id' => $id]);
 $data = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if ($data): ?>
+
+
+<style>
+    img.user-default {
+        position: absolute;
+        right: 60px;
+        bottom: 280px;
+    }
+
+    @media (max-width: 991px) {
+        img.user-default {
+            max-width: 70px;
+            max-height: 70px;
+            top: 120px;
+            right: 40px;
+        }
+    }
+
+</style>
     <div class="card shadow-sm border-0">
         <div class="card-header text-white d-flex justify-content-between align-items-center" style="background-color: #0E4A86">
             <h5 class="mb-0">📋 Detalles del Aprendiz</h5>
@@ -44,7 +63,7 @@ if ($data): ?>
                 <div class="col-md-6 mb-3">
                     <h6 class="text-muted mb-1">Teléfono</h6>
                     <p class="mb-0"><?= htmlspecialchars($data['telefono']) ?></p>
-                    <img src="<?= BASE_URL ?>/<?= empty($data['avatar']) ? 'uploads/avatar/user.webp' : htmlspecialchars($user['avatar']) ?>" alt="Avatar" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 3px solid #ffffff; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); position: absolute; top: 100px; right: 100px">
+                    <img class="user-default" src="<?= BASE_URL ?>/<?= empty($data['avatar']) ? 'uploads/avatar/user.webp' : htmlspecialchars($user['avatar']) ?>" alt="Avatar" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 3px solid #ffffff; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);">
 
                 </div>
 

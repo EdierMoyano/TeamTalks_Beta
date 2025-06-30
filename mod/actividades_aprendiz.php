@@ -1,6 +1,7 @@
 <?php
 require_once $_SERVER['DOCUMENT_ROOT'] . '/teamtalks/conexion/init.php';
 include 'session.php';
+
 $id_instructor = $_SESSION['documento'];
 $id_aprendiz = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 
@@ -17,6 +18,7 @@ $sql_aprendiz = "
   JOIN formacion fo ON f.id_formacion = fo.id_formacion
   WHERE u.id = :id_aprendiz
 ";
+
 $stmt_aprendiz = $conex->prepare($sql_aprendiz);
 $stmt_aprendiz->execute(['id_aprendiz' => $id_aprendiz]);
 $aprendiz = $stmt_aprendiz->fetch(PDO::FETCH_ASSOC);
@@ -25,6 +27,7 @@ if (!$aprendiz) {
     echo "<div class='alert alert-danger text-center mt-4'>Aprendiz no encontrado.</div>";
     exit;
 }
+
 // Obtener actividades del aprendiz
 $sql = "
   SELECT
@@ -48,10 +51,10 @@ $sql = "
   WHERE au.id_user = :id_aprendiz
   ORDER BY a.fecha_entrega DESC
 ";
+
 $stmt = $conex->prepare($sql);
 $stmt->execute(['id_aprendiz' => $id_aprendiz]);
 $actividades = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
 
 function mapEstadoToClass($estado)
 {
@@ -68,12 +71,12 @@ function mapEstadoToClass($estado)
 
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Actividades de <?= htmlspecialchars($aprendiz['nombres'] . ' ' . $aprendiz['apellidos']) ?> - Teamtalks</title>
     <link rel="stylesheet" href="<?= BASE_URL ?>/styles/style_side.css" />
+    <link rel="stylesheet" href="<?= BASE_URL ?>/styles/header.css">
     <link rel="icon" href="<?= BASE_URL ?>/assets/img/icon2.png" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
@@ -88,9 +91,9 @@ function mapEstadoToClass($estado)
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
-
+    
     <style>
+        /* ===== CSS VARIABLES ===== */
         :root {
             --primary-color: #0E4A86;
             --primary-hover: #0d4077;
@@ -115,6 +118,7 @@ function mapEstadoToClass($estado)
             --radius-xl: 1rem;
         }
 
+        /* ===== RESET & BASE STYLES ===== */
         * {
             box-sizing: border-box;
         }
@@ -126,20 +130,23 @@ function mapEstadoToClass($estado)
             line-height: 1.6;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
+            padding-top: 180px;
         }
 
+        /* ===== LAYOUT ===== */
         .main-content {
             margin-left: 280px;
             transition: margin-left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             padding: 2rem;
             min-height: 100vh;
+            margin-top: -50px;
         }
 
         body.sidebar-collapsed .main-content {
             margin-left: 200px;
         }
 
-        /* Navigation Bar */
+        /* ===== NAVIGATION BAR ===== */
         .navigation-bar {
             background: var(--surface-color);
             border: 1px solid var(--border-color);
@@ -181,7 +188,7 @@ function mapEstadoToClass($estado)
             font-size: 0.875rem;
         }
 
-        /* Student Info Header */
+        /* ===== STUDENT HEADER ===== */
         .student-header {
             background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
             color: white;
@@ -248,7 +255,7 @@ function mapEstadoToClass($estado)
             gap: 0.5rem;
         }
 
-        /* Filters Section */
+        /* ===== FILTERS SECTION ===== */
         .filters-section {
             background: var(--surface-color);
             border: 1px solid var(--border-color);
@@ -304,6 +311,7 @@ function mapEstadoToClass($estado)
             color: var(--text-secondary);
         }
 
+        /* ===== FORM INPUTS ===== */
         .filter-input {
             padding: 0.75rem;
             border: 2px solid var(--border-color);
@@ -311,12 +319,37 @@ function mapEstadoToClass($estado)
             font-size: 0.875rem;
             transition: all 0.2s ease;
             background: var(--surface-color);
+            font-family: inherit;
         }
 
         .filter-input:focus {
             outline: none;
             border-color: var(--primary-color);
             box-shadow: 0 0 0 3px rgba(14, 74, 134, 0.1);
+        }
+
+        /* SELECT PERSONALIZADO */
+        .filter-input[type="text"],
+        .filter-input[type="date"] {
+            /* Estilos ya definidos arriba */
+        }
+
+        .filter-input select,
+        select.filter-input {
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23374151' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 0.75rem center;
+            background-size: 1rem;
+            padding-right: 2.5rem;
+            cursor: pointer;
+        }
+
+        .filter-input select:focus,
+        select.filter-input:focus {
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230E4A86' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
         }
 
         .clear-filters {
@@ -337,7 +370,7 @@ function mapEstadoToClass($estado)
             transform: translateY(-1px);
         }
 
-        /* Activity Cards */
+        /* ===== ACTIVITY CARDS ===== */
         .activities-container {
             display: grid;
             gap: 1.5rem;
@@ -401,6 +434,7 @@ function mapEstadoToClass($estado)
             margin-bottom: 1.5rem;
         }
 
+        /* ===== ACTIVITY META ===== */
         .activity-meta {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -482,7 +516,7 @@ function mapEstadoToClass($estado)
             margin: 0;
         }
 
-        /* Status Badge */
+        /* ===== STATUS BADGES ===== */
         .status-badge {
             display: inline-flex;
             align-items: center;
@@ -505,12 +539,27 @@ function mapEstadoToClass($estado)
             color: var(--warning-color);
         }
 
+        .status-badge.aprobado {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success-color);
+        }
+
+        .status-badge.desaprobado {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger-color);
+        }
+
+        .status-badge.noentregado {
+            background: rgba(107, 114, 128, 0.1);
+            color: var(--secondary-color);
+        }
+
         .status-badge.revision {
             background: rgba(59, 130, 246, 0.1);
             color: var(--info-color);
         }
 
-        /* Grade Display */
+        /* ===== GRADE DISPLAY ===== */
         .grade-display {
             display: inline-flex;
             align-items: center;
@@ -524,7 +573,7 @@ function mapEstadoToClass($estado)
             font-weight: 700;
         }
 
-        /* Comments Section */
+        /* ===== COMMENTS SECTION ===== */
         .instructor-comment {
             background: linear-gradient(135deg, #fef3c7, #fde68a);
             border: 1px solid #f59e0b;
@@ -559,7 +608,7 @@ function mapEstadoToClass($estado)
             margin: 0;
         }
 
-        /* Files Section */
+        /* ===== FILES SECTION ===== */
         .files-section {
             background: var(--background-color);
             border-radius: var(--radius-md);
@@ -613,7 +662,7 @@ function mapEstadoToClass($estado)
             color: var(--primary-color);
         }
 
-        /* Action Button */
+        /* ===== ACTION BUTTONS ===== */
         .activity-footer {
             padding: 1.5rem 2rem;
             border-top: 1px solid var(--border-color);
@@ -642,7 +691,7 @@ function mapEstadoToClass($estado)
             color: white;
         }
 
-        /* Empty State */
+        /* ===== EMPTY STATES ===== */
         .empty-state {
             text-align: center;
             padding: 4rem 2rem;
@@ -671,7 +720,6 @@ function mapEstadoToClass($estado)
             margin: 0;
         }
 
-        /* No Results State */
         .no-results {
             text-align: center;
             padding: 3rem 2rem;
@@ -688,8 +736,51 @@ function mapEstadoToClass($estado)
             opacity: 0.5;
         }
 
-        /* Responsive Design */
+        /* ===== ANIMATIONS ===== */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .activity-card {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .activity-card:nth-child(even) {
+            animation-delay: 0.1s;
+        }
+
+        .activity-card:nth-child(odd) {
+            animation-delay: 0.2s;
+        }
+
+        /* ===== SCROLLBAR ===== */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--background-color);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+
+        /* ===== RESPONSIVE DESIGN ===== */
         @media (max-width: 768px) {
+
             .main-content {
                 margin-left: 0;
                 padding: 1rem;
@@ -738,52 +829,29 @@ function mapEstadoToClass($estado)
             }
         }
 
-        /* Animations */
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
+        @media (max-width: 480px) {
+            .filters-section {
+                padding: 1rem;
             }
 
-            to {
-                opacity: 1;
-                transform: translateY(0);
+            .activity-header,
+            .activity-body,
+            .activity-footer {
+                padding: 1rem;
             }
-        }
 
-        .activity-card {
-            animation: fadeInUp 0.6s ease-out;
-        }
+            .activity-title {
+                font-size: 1.25rem;
+            }
 
-        .activity-card:nth-child(even) {
-            animation-delay: 0.1s;
-        }
-
-        .activity-card:nth-child(odd) {
-            animation-delay: 0.2s;
-        }
-
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: var(--background-color);
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: var(--border-color);
-            border-radius: 4px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: var(--text-muted);
+            .student-details h1 {
+                font-size: 1.25rem;
+            }
         }
     </style>
 </head>
 
-<body style="padding-top:180px;" class="sidebar-collapsed">
+<body class="sidebar-collapsed">
     <?php include 'design/header.php'; ?>
     <?php include 'design/sidebar.php'; ?>
 
@@ -1034,7 +1102,6 @@ function mapEstadoToClass($estado)
                 this.clearFilters = document.getElementById('clearFilters');
                 this.activitiesCount = document.getElementById('activitiesCount');
                 this.noResults = document.getElementById('noResults');
-
                 this.init();
             }
 
@@ -1048,7 +1115,6 @@ function mapEstadoToClass($estado)
                 this.filterStatus.addEventListener('change', () => this.applyFilters());
                 this.filterDateFrom.addEventListener('change', () => this.applyFilters());
                 this.filterDateTo.addEventListener('change', () => this.applyFilters());
-
                 // Clear filters
                 this.clearFilters.addEventListener('click', () => this.clearAllFilters());
             }
@@ -1058,31 +1124,26 @@ function mapEstadoToClass($estado)
                 const statusFilter = this.filterStatus.value.toLowerCase();
                 const dateFrom = this.filterDateFrom.value;
                 const dateTo = this.filterDateTo.value;
-
                 let visibleCount = 0;
 
                 this.activities.forEach(activity => {
                     const title = activity.dataset.title;
                     const status = activity.dataset.status;
                     const date = activity.dataset.date;
-
                     let showActivity = true;
 
                     // Title filter
                     if (searchTerm && !title.includes(searchTerm)) {
                         showActivity = false;
                     }
-
                     // Status filter
                     if (statusFilter && status !== statusFilter) {
                         showActivity = false;
                     }
-
                     // Date range filter
                     if (dateFrom && date < dateFrom) {
                         showActivity = false;
                     }
-
                     if (dateTo && date > dateTo) {
                         showActivity = false;
                     }
@@ -1106,11 +1167,9 @@ function mapEstadoToClass($estado)
                 this.filterStatus.value = '';
                 this.filterDateFrom.value = '';
                 this.filterDateTo.value = '';
-
                 this.activities.forEach(activity => {
                     activity.classList.remove('hidden');
                 });
-
                 this.updateCount(this.activities.length);
                 this.toggleNoResults(false);
             }
@@ -1130,5 +1189,4 @@ function mapEstadoToClass($estado)
         });
     </script>
 </body>
-
 </html>

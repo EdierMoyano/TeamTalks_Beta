@@ -3,9 +3,8 @@ session_start();
 require_once('../conexion/conexion.php');
 $conexion = new database();
 $conex = $conexion->connect();
-
-
 ?>
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -15,7 +14,13 @@ $conex = $conexion->connect();
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="icon" href="../assets/img/icon2.png">
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="stylesheet" href="../styles/login.css">
     <style>
+        body {
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
         .logo {
             width: 80px;
             height: auto;
@@ -38,45 +43,36 @@ $conex = $conexion->connect();
         select {
             height: 45px;
         }
-
         input::-webkit-outer-spin-button,
         input::-webkit-inner-spin-button {
-        -webkit-appearance: none;
-        margin: 0;
+            -webkit-appearance: none;
+            margin: 0;
         }
-
         input[type=number] {
-        -moz-appearance: textfield;
+            -moz-appearance: textfield;
         }
-
-
         .login {
             color: white;
             background-color: #0E4A86;
         }
         .login:hover {
             color: white;
-            background-color:rgb(8, 45, 82);
+            background-color: rgb(8, 45, 82);
         }
-
         .back {
             color: #0E4A86;
             background-color: white;
             border-color: #0E4A86;
         }
-
         .back:hover {
             color: white;
-            background-color:rgb(8, 45, 82);
-
+            background-color: rgb(8, 45, 82);
         }
-
     </style>
-    
 </head>
 <body style="background-image: url(../assets/img/background.jpg);">
     <br><br><br><br><br>
-    <div class="container ">
+    <div class="container">
         <div class="row justify-content-center align-items-center">
             <div class="col-lg-9">
                 <div class="card shadow-lg border-0 rounded-4">
@@ -92,6 +88,7 @@ $conex = $conexion->connect();
                                 de estudio especial para nuestros usuarios.
                             </p>
                         </div>
+
                         <!-- Lado Login -->
                         <div class="col-md-6 p-5">
                             <h3 class="mb-4">Iniciar sesión</h3>
@@ -106,32 +103,28 @@ $conex = $conexion->connect();
                                         while ($fila = $sql->fetch(PDO::FETCH_ASSOC)) {
                                             echo "<option value='" . $fila['id_tipo'] . "'>" . $fila['tipo_doc'] . "</option>";
                                         }
-                                    ?>
-                                </select>
-                            </div>
-
-                            <div class="mb-3">
-                                <label for="documentId" class="form-label">Documento de identidad</label>
-                                <input type="number" id="documentId" name="documento" class="form-control" placeholder="Ingresa tu documento" required>
-                                <p class="docu_error" id="docu_error">¡Documento inválido!</p>
-                            </div>
-
-                            <div class="mb-3 position-relative">
-                                <label for="password" class="form-label">Contraseña</label>
-                                <input type="password" id="password" name="contraseña" class="form-control" placeholder="Ingresa tu contraseña" required>
-                                <i class='bx bx-show' id="showpass" onclick="showpass()"></i>
-                            </div>
-
-                            <div class="mb-3 text-end">
-                                <a href="../Recover_Password/recovery_form.php" class="link-secondary">¿Olvidaste la contraseña?</a>
-                            </div>
-
-                            <div class="d-flex justify-content-between">
-                                <a href="../index.php" class="back btn">Regresar</a>
-                                <button type="submit" class="login btn" name="submit">Iniciar sesión</button>
-                            </div>
-
-                        </form>
+                                        ?>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="documentId" class="form-label">Documento de identidad</label>
+                                    <input type="number" id="documentId" name="documento" class="form-control" placeholder="Ingresa tu documento" required>
+                                    <p class="docu_error" id="docu_error">¡Documento inválido!</p>
+                                </div>
+                                <div class="mb-3 position-relative">
+                                    <label for="password" class="form-label">Contraseña</label>
+                                    <input type="password" id="password" name="contraseña" class="form-control" placeholder="Ingresa tu contraseña" required>
+                                    <i class='bx bx-show' id="showpass" onclick="showpass()"></i>
+                                </div>
+                                <div class="mb-3 text-end">
+                                    <a href="../Recover_Password/recovery_form.php" class="link-secondary">¿Olvidaste la contraseña?</a>
+                                </div>
+                                <div class="d-flex justify-content-between">
+                                    <a href="../index.php" class="back btn">Regresar</a>
+                                    <button type="submit" class="login btn" name="submit">Iniciar sesión</button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -139,7 +132,6 @@ $conex = $conexion->connect();
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-        <script src="jslogin.js"></script>
-
+    <script src="jslogin.js"></script>
 </body>
 </html>

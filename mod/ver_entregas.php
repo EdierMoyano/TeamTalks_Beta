@@ -50,6 +50,7 @@ $numero_ficha = !empty($aprendices) ? $aprendices[0]['id_ficha'] : null;
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Actividad</title>
     <link rel="stylesheet" href="<?= BASE_URL ?>/styles/style_side.css" />
+    <link rel="stylesheet" href="<?= BASE_URL ?>/styles/header.css">
     <link rel="icon" href="<?= BASE_URL ?>/assets/img/icon2.png" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
     <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
@@ -63,9 +64,27 @@ $numero_ficha = !empty($aprendices) ? $aprendices[0]['id_ficha'] : null;
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css" />
     <style>
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--background-color);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+
         .main-content {
             margin-left: 300px;
             transition: margin-left 0.4s ease;
+            margin-top: -40px;
         }
 
         body.sidebar-collapsed .main-content {

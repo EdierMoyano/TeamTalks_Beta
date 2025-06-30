@@ -1,0 +1,317 @@
+/* ===== RESPONSIVE CSS PARA LOGIN ===== */
+
+/* TABLET - 768px y abajo */
+@media (max-width: 768px) {
+
+    /* Ajustar padding del body */
+    body {
+        padding-top: 2rem !important;
+        padding-bottom: 2rem;
+    }
+
+    /* Reducir márgenes superiores */
+    body br {
+        display: none;
+    }
+
+    /* Ajustar container */
+    .container {
+        padding: 1rem;
+    }
+
+    /* Ajustar columna principal */
+    .col-lg-9 {
+        max-width: 100%;
+    }
+
+    /* Ajustar padding de las secciones */
+    .col-md-6.p-5 {
+        padding: 2rem !important;
+    }
+
+    /* Ajustar logo en tablet */
+    .logo {
+        width: 120px !important;
+    }
+
+    /* Ajustar títulos */
+    .col-md-6 h1 {
+        font-size: 2rem;
+    }
+
+    .col-md-6 h2 {
+        font-size: 1.5rem;
+    }
+
+    .col-md-6 h3 {
+        font-size: 1.25rem;
+        margin-bottom: 1.5rem !important;
+    }
+
+    /* Ajustar texto de bienvenida */
+    .col-md-6 p {
+        font-size: 0.9rem;
+        line-height: 1.4;
+    }
+
+    /* Ajustar botones en tablet */
+    .d-flex.justify-content-between {
+        gap: 1rem;
+    }
+
+    .btn {
+        padding: 0.75rem 1.5rem;
+        font-size: 0.9rem;
+    }
+}
+
+/* MÓVIL GRANDE - 576px y abajo */
+@media (max-width: 576px) {
+
+    /* Padding más pequeño */
+    .col-md-6.p-5 {
+        padding: 1.5rem !important;
+    }
+
+    /* Logo más pequeño */
+    .logo {
+        width: 100px !important;
+    }
+
+    /* Títulos más pequeños */
+    .col-md-6 h1 {
+        font-size: 1.75rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .col-md-6 h2 {
+        font-size: 1.25rem;
+        margin-bottom: 1rem;
+    }
+
+    .col-md-6 h3 {
+        font-size: 1.125rem;
+        margin-bottom: 1.25rem !important;
+    }
+
+    /* Texto más pequeño */
+    .col-md-6 p {
+        font-size: 0.85rem;
+    }
+
+    /* Formulario más compacto */
+    .mb-3 {
+        margin-bottom: 1rem !important;
+    }
+
+    /* Inputs y selects más pequeños */
+    input,
+    select {
+        height: 42px !important;
+        font-size: 0.9rem;
+    }
+
+    /* Labels más pequeños */
+    .form-label {
+        font-size: 0.85rem;
+        margin-bottom: 0.25rem;
+    }
+
+    /* Botones apilados en móvil */
+    .d-flex.justify-content-between {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .btn {
+        width: 100%;
+        padding: 0.75rem;
+        font-size: 0.9rem;
+    }
+
+    /* Ajustar enlace de contraseña */
+    .mb-3.text-end {
+        text-align: center !important;
+        margin-bottom: 1.5rem !important;
+    }
+
+    .link-secondary {
+        font-size: 0.85rem;
+    }
+
+    /* Ajustar ícono de mostrar contraseña */
+    .bx {
+        font-size: 1.5rem !important;
+    }
+}
+
+/* MÓVIL PEQUEÑO - 480px y abajo */
+@media (max-width: 480px) {
+
+    /* Container más ajustado */
+    .container {
+        padding: 0.5rem;
+    }
+
+    /* Padding aún más pequeño */
+    .col-md-6.p-5 {
+        padding: 1rem !important;
+    }
+
+    /* Logo pequeño */
+    .logo {
+        width: 80px !important;
+    }
+
+    /* Títulos compactos */
+    .col-md-6 h1 {
+        font-size: 1.5rem;
+    }
+
+    .col-md-6 h2 {
+        font-size: 1.125rem;
+    }
+
+    .col-md-6 h3 {
+        font-size: 1rem;
+        margin-bottom: 1rem !important;
+    }
+
+    /* Texto compacto */
+    .col-md-6 p {
+        font-size: 0.8rem;
+        line-height: 1.3;
+    }
+
+    /* Formulario muy compacto */
+    .mb-3 {
+        margin-bottom: 0.75rem !important;
+    }
+
+    /* Inputs pequeños */
+    input,
+    select {
+        height: 40px !important;
+        font-size: 0.85rem;
+        padding: 0.5rem 0.75rem;
+    }
+
+    /* Labels pequeños */
+    .form-label {
+        font-size: 0.8rem;
+    }
+
+    /* Botones compactos */
+    .btn {
+        padding: 0.625rem;
+        font-size: 0.85rem;
+    }
+
+    /* Card con menos border radius en móvil muy pequeño */
+    .card.rounded-4 {
+        border-radius: 1rem !important;
+    }
+
+    /* Ajustar ícono */
+    .bx {
+        font-size: 1.25rem !important;
+        right: 0.75rem !important;
+    }
+}
+
+/* MÓVIL MUY PEQUEÑO - 360px y abajo */
+@media (max-width: 360px) {
+
+    /* Máximo ajuste de padding */
+    .col-md-6.p-5 {
+        padding: 0.75rem !important;
+    }
+
+    /* Logo mínimo */
+    .logo {
+        width: 70px !important;
+    }
+
+    /* Títulos mínimos */
+    .col-md-6 h1 {
+        font-size: 1.25rem;
+    }
+
+    .col-md-6 h2 {
+        font-size: 1rem;
+    }
+
+    .col-md-6 h3 {
+        font-size: 0.9rem;
+    }
+
+    /* Texto mínimo */
+    .col-md-6 p {
+        font-size: 0.75rem;
+    }
+
+    /* Inputs mínimos */
+    input,
+    select {
+        height: 38px !important;
+        font-size: 0.8rem;
+    }
+
+    /* Labels mínimos */
+    .form-label {
+        font-size: 0.75rem;
+    }
+
+    /* Botones mínimos */
+    .btn {
+        padding: 0.5rem;
+        font-size: 0.8rem;
+    }
+}
+
+/* AJUSTES ESPECÍFICOS PARA ORIENTACIÓN */
+@media (max-width: 768px) and (orientation: landscape) {
+
+    /* En landscape, reducir padding vertical */
+    body {
+        padding-top: 1rem !important;
+        padding-bottom: 1rem;
+    }
+
+    .col-md-6.p-5 {
+        padding: 1.5rem 2rem !important;
+    }
+
+    /* Títulos más compactos en landscape */
+    .col-md-6 h1,
+    .col-md-6 h2 {
+        margin-bottom: 0.5rem;
+    }
+
+    .col-md-6 h3 {
+        margin-bottom: 1rem !important;
+    }
+}
+
+/* AJUSTES PARA PANTALLAS MUY ALTAS */
+@media (min-height: 800px) and (max-width: 768px) {
+
+    /* Más espacio en pantallas altas */
+    body {
+        padding-top: 3rem !important;
+        padding-bottom: 3rem;
+    }
+}
+
+/* AJUSTES PARA PANTALLAS MUY ANCHAS EN TABLET */
+@media (min-width: 769px) and (max-width: 1024px) {
+
+    /* Ajustar en tablets grandes */
+    .col-lg-9 {
+        max-width: 85%;
+    }
+
+    .col-md-6.p-5 {
+        padding: 2.5rem !important;
+    }
+}
