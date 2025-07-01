@@ -102,7 +102,7 @@ $filtro_ficha = isset($_GET['filtro_ficha']) ? $_GET['filtro_ficha'] : '';
 $filtro_estado = isset($_GET['filtro_estado']) ? $_GET['filtro_estado'] : '';
 $busqueda = isset($_GET['busqueda']) ? $_GET['busqueda'] : '';
 $pagina_actual = isset($_GET['pagina']) ? (int)$_GET['pagina'] : 1;
-$aprendices_por_pagina = 8;
+$aprendices_por_pagina = 6;
 $offset = ($pagina_actual - 1) * $aprendices_por_pagina;
 
 // Construir consulta con filtros
@@ -265,6 +265,7 @@ try {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestión de Aprendices - TeamTalks</title>
+        <link rel="icon" href="assets/img/icon2.png">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">

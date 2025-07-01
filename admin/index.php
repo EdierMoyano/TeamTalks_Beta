@@ -3,7 +3,7 @@ session_start();
 
 
 if ($_SESSION['rol'] !== 2) {
-    header('Location: includes/exit.php?motivo=acceso-denegado');
+    header('Location: ../includes/exit.php?motivo=acceso-denegado');
     exit;
 }
 
