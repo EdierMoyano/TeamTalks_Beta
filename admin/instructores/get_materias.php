@@ -54,15 +54,15 @@ try {
     $stmt->execute($params);
     $materias_disponibles = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // Obtener materias ya asignadas al instructor
-    $stmt = $conexion->prepare("SELECT id_materia FROM materia_instructor WHERE id_instructor = ?");
+    // Obtener materia ya asignada al instructor (solo una)
+    $stmt = $conexion->prepare("SELECT id_materia FROM materia_instructor WHERE id_instructor = ? LIMIT 1");
     $stmt->execute([$id_instructor]);
-    $materias_asignadas = $stmt->fetchAll(PDO::FETCH_COLUMN);
+    $materia_asignada = $stmt->fetchColumn();
 
     // Generar HTML
     ob_start();
 ?>
-    <form id="formAsignarMaterias">
+    <form id="formAsignarMaterias" data-instructor-id="<?php echo htmlspecialchars($id_instructor); ?>">
         <input type="hidden" name="id_instructor" value="<?php echo htmlspecialchars($id_instructor); ?>">
 
         <!-- Buscador -->
@@ -71,12 +71,12 @@ try {
                 <span class="input-group-text bg-primary text-white">
                     <i class="bi bi-search"></i>
                 </span>
-                <input type="text" 
-                       class="form-control" 
-                       id="buscarMaterias" 
-                       placeholder="Buscar materias por nombre o descripción..."
-                       value="<?php echo htmlspecialchars($busqueda); ?>">
-                <button type="button" class="btn btn-outline-primary" onclick="limpiarBusquedaMaterias()">
+                <input type="text"
+                    class="form-control"
+                    id="buscarMaterias"
+                    placeholder="Buscar materias por nombre o descripción..."
+                    value="<?php echo htmlspecialchars($busqueda); ?>">
+                <button type="button" class="btn btn-outline-primary" id="limpiarBusqueda">
                     <i class="bi bi-x-circle"></i>
                 </button>
             </div>
@@ -84,11 +84,14 @@ try {
 
         <div class="mb-3">
             <label class="form-label fw-bold text-primary">
-                <i class="bi bi-book"></i> Seleccionar Materias:
+                <i class="bi bi-book"></i> Seleccionar Materia Especializada:
             </label>
             <div class="form-text mb-3">
-                <i class="bi bi-info-circle"></i> 
-                Selecciona las materias en las que este instructor se especializa.
+                <i class="bi bi-info-circle"></i>
+                Selecciona UNA materia en la que este instructor se especializa.
+                <?php if ($materia_asignada): ?>
+                    <br><strong class="text-warning">Nota:</strong> Este instructor ya tiene una materia asignada. Seleccionar una nueva reemplazará la anterior.
+                <?php endif; ?>
             </div>
 
             <?php if (!empty($materias_disponibles)): ?>
@@ -96,21 +99,26 @@ try {
                     <div class="row">
                         <?php foreach ($materias_disponibles as $materia): ?>
                             <div class="col-md-6 mb-3">
-                                <div class="card h-100 materia-card <?php echo in_array($materia['id_materia'], $materias_asignadas) ? 'border-primary bg-light' : 'border-secondary'; ?>">
+                                <div class="card h-100 materia-card <?php echo ($materia['id_materia'] == $materia_asignada) ? 'border-primary bg-light' : 'border-secondary'; ?>">
                                     <div class="card-body p-3">
                                         <div class="form-check">
-                                            <input class="form-check-input" 
-                                                   type="checkbox"
-                                                   name="materias[]"
-                                                   value="<?php echo $materia['id_materia']; ?>"
-                                                   id="materia_<?php echo $materia['id_materia']; ?>"
-                                                   <?php echo in_array($materia['id_materia'], $materias_asignadas) ? 'checked' : ''; ?>>
+                                            <input class="form-check-input materia-radio"
+                                                type="radio"
+                                                name="materia_seleccionada"
+                                                value="<?php echo $materia['id_materia']; ?>"
+                                                id="materia_<?php echo $materia['id_materia']; ?>"
+                                                <?php echo ($materia['id_materia'] == $materia_asignada) ? 'checked' : ''; ?>>
                                             <label class="form-check-label w-100" for="materia_<?php echo $materia['id_materia']; ?>">
                                                 <div class="d-flex flex-column">
                                                     <strong class="text-primary"><?php echo htmlspecialchars($materia['materia']); ?></strong>
                                                     <?php if (!empty($materia['descripcion'])): ?>
                                                         <small class="text-muted mt-1">
                                                             <?php echo htmlspecialchars($materia['descripcion']); ?>
+                                                        </small>
+                                                    <?php endif; ?>
+                                                    <?php if ($materia['id_materia'] == $materia_asignada): ?>
+                                                        <small class="text-success mt-1">
+                                                            <i class="bi bi-check-circle"></i> Actualmente asignada
                                                         </small>
                                                     <?php endif; ?>
                                                 </div>
@@ -126,10 +134,10 @@ try {
                 <!-- Paginación -->
                 <?php if ($total_paginas > 1): ?>
                     <nav aria-label="Paginación de materias" class="mt-3">
-                        <ul class="pagination pagination-sm justify-content-center">
+                        <ul class="pagination pagination-sm justify-content-center" id="paginacionMaterias">
                             <?php if ($pagina > 1): ?>
                                 <li class="page-item">
-                                    <button type="button" class="page-link" onclick="cambiarPaginaMaterias(<?php echo ($pagina - 1); ?>)">
+                                    <button type="button" class="page-link" data-pagina="<?php echo ($pagina - 1); ?>">
                                         <i class="bi bi-chevron-left"></i>
                                     </button>
                                 </li>
@@ -145,7 +153,7 @@ try {
 
                             for ($i = $inicio_pag; $i <= $fin_pag; $i++): ?>
                                 <li class="page-item <?php echo ($i == $pagina) ? 'active' : ''; ?>">
-                                    <button type="button" class="page-link" onclick="cambiarPaginaMaterias(<?php echo $i; ?>)">
+                                    <button type="button" class="page-link" data-pagina="<?php echo $i; ?>">
                                         <?php echo $i; ?>
                                     </button>
                                 </li>
@@ -153,7 +161,7 @@ try {
 
                             <?php if ($pagina < $total_paginas): ?>
                                 <li class="page-item">
-                                    <button type="button" class="page-link" onclick="cambiarPaginaMaterias(<?php echo ($pagina + 1); ?>)">
+                                    <button type="button" class="page-link" data-pagina="<?php echo ($pagina + 1); ?>">
                                         <i class="bi bi-chevron-right"></i>
                                     </button>
                                 </li>
@@ -179,7 +187,7 @@ try {
                     <h6 class="text-muted mt-2">No se encontraron materias</h6>
                     <?php if (!empty($busqueda)): ?>
                         <p class="text-muted">Intenta con otros términos de búsqueda</p>
-                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="limpiarBusquedaMaterias()">
+                        <button type="button" class="btn btn-outline-primary btn-sm" id="limpiarBusquedaVacio">
                             <i class="bi bi-arrow-clockwise"></i> Limpiar búsqueda
                         </button>
                     <?php endif; ?>
@@ -188,161 +196,20 @@ try {
         </div>
 
         <div class="d-grid">
-            <button type="submit" class="btn btn-primary btn-lg">
-                <i class="bi bi-check-circle"></i> Guardar Asignación de Materias
+            <button type="submit" class="btn btn-primary btn-lg" id="btnGuardarMaterias">
+                <i class="bi bi-check-circle"></i> Guardar Asignación de Materia
             </button>
         </div>
     </form>
 
-    <script>
-        // Variables globales para el modal
-        let currentInstructorId = '<?php echo htmlspecialchars($id_instructor); ?>';
-        let currentPage = <?php echo $pagina; ?>;
-        let currentSearch = '<?php echo htmlspecialchars($busqueda); ?>';
-        let searchTimeout;
-
-        // Función para cambiar página
-        function cambiarPaginaMaterias(nuevaPagina) {
-            currentPage = nuevaPagina;
-            recargarMaterias();
+    <!-- Datos para JavaScript -->
+    <script type="application/json" id="materiasData">
+        {
+            "instructorId": "<?php echo htmlspecialchars($id_instructor); ?>",
+            "pagina": <?php echo $pagina; ?>,
+            "busqueda": "<?php echo htmlspecialchars($busqueda); ?>",
+            "totalPaginas": <?php echo $total_paginas; ?>
         }
-
-        // Función para limpiar búsqueda
-        function limpiarBusquedaMaterias() {
-            const searchInput = document.getElementById('buscarMaterias');
-            if (searchInput) {
-                searchInput.value = '';
-                currentSearch = '';
-                currentPage = 1;
-                recargarMaterias();
-            }
-        }
-
-        // Función para recargar materias - CORREGIDA
-        async function recargarMaterias() {
-            try {
-                const searchInput = document.getElementById('buscarMaterias');
-                const busqueda = searchInput ? searchInput.value : '';
-                
-                // Usar el nombre correcto del archivo
-                const url = `get_materias_fixed.php?id_instructor=${encodeURIComponent(currentInstructorId)}&pagina=${currentPage}&busqueda=${encodeURIComponent(busqueda)}`;
-                
-                const response = await fetch(url);
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                
-                const data = await response.json();
-
-                if (data.success) {
-                    const container = document.getElementById('asignarMateriasContent');
-                    if (container) {
-                        container.innerHTML = data.html;
-                    }
-                } else {
-                    console.error('Error al recargar materias:', data.message);
-                    alert('Error al recargar materias: ' + data.message);
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                alert('Error de conexión al recargar materias');
-            }
-        }
-
-        // Event listener para búsqueda en tiempo real - MEJORADO
-        document.addEventListener('DOMContentLoaded', function() {
-            const searchInput = document.getElementById('buscarMaterias');
-            if (searchInput) {
-                searchInput.addEventListener('input', function() {
-                    clearTimeout(searchTimeout);
-                    searchTimeout = setTimeout(() => {
-                        currentPage = 1;
-                        recargarMaterias();
-                    }, 500);
-                });
-            }
-
-            // Event listener para el formulario - CORREGIDO
-            const form = document.getElementById('formAsignarMaterias');
-            if (form) {
-                form.addEventListener('submit', async function(e) {
-                    e.preventDefault();
-
-                    const formData = new FormData(this);
-                    const submitBtn = this.querySelector('button[type="submit"]');
-                    const originalText = submitBtn.innerHTML;
-
-                    // Debug: Verificar datos del formulario
-                    console.log('Datos del formulario:');
-                    for (let [key, value] of formData.entries()) {
-                        console.log(key, value);
-                    }
-
-                    // Mostrar loading
-                    submitBtn.disabled = true;
-                    submitBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Guardando...';
-
-                    try {
-                        const response = await fetch('save_materias_instructor.php', {
-                            method: 'POST',
-                            body: formData
-                        });
-
-                        if (!response.ok) {
-                            throw new Error(`HTTP error! status: ${response.status}`);
-                        }
-
-                        const data = await response.json();
-                        console.log('Response data:', data);
-
-                        if (data.success) {
-                            // Mostrar éxito temporalmente
-                            submitBtn.innerHTML = '<i class="bi bi-check-circle"></i> ¡Guardado!';
-                            submitBtn.classList.remove('btn-primary');
-                            submitBtn.classList.add('btn-success');
-
-                            // Mostrar mensaje de éxito
-                            alert(`Materias asignadas correctamente. Total: ${data.total_materias || 0} materias.`);
-
-                            setTimeout(() => {
-                                const modal = bootstrap.Modal.getInstance(document.getElementById('asignarMateriasModal'));
-                                if (modal) {
-                                    modal.hide();
-                                }
-                                // Recargar la página para actualizar las estadísticas
-                                window.location.reload();
-                            }, 1000);
-                        } else {
-                            throw new Error(data.message || 'Error desconocido');
-                        }
-                    } catch (error) {
-                        console.error('Error completo:', error);
-                        alert('Error: ' + error.message);
-                        
-                        // Restaurar botón
-                        submitBtn.disabled = false;
-                        submitBtn.innerHTML = originalText;
-                        submitBtn.classList.remove('btn-success');
-                        submitBtn.classList.add('btn-primary');
-                    }
-                });
-            }
-
-            // Efecto visual para las tarjetas de materias
-            document.querySelectorAll('.materia-card .form-check-input').forEach(checkbox => {
-                checkbox.addEventListener('change', function() {
-                    const card = this.closest('.materia-card');
-                    if (this.checked) {
-                        card.classList.remove('border-secondary');
-                        card.classList.add('border-primary', 'bg-light');
-                    } else {
-                        card.classList.remove('border-primary', 'bg-light');
-                        card.classList.add('border-secondary');
-                    }
-                });
-            });
-        });
     </script>
 
     <style>
@@ -394,6 +261,15 @@ try {
         .border-primary {
             border-color: #0e4a86 !important;
         }
+
+        /* Estilo especial para radio buttons */
+        .materia-radio:checked + .form-check-label {
+            font-weight: bold;
+        }
+
+        .materia-card.border-primary {
+            box-shadow: 0 0 0 0.2rem rgba(14, 74, 134, 0.25);
+        } 
     </style>
 <?php
     $html = ob_get_clean();

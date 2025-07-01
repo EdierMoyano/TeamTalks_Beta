@@ -185,6 +185,8 @@ try {
     <title>Gestión de Instructores - TeamTalks</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="../styles/sidebard.css">
     <link rel="stylesheet" href="../styles/main.css">
 </head>
@@ -497,15 +499,18 @@ try {
         </div>
     </div>
 
-    <!-- Scripts -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="../js/sidebard.js"></script>
-
-   <!-- Scripts -->
+  <!-- Scripts -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="../js/sidebard.js"></script>
+
+<!-- Scripts -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../js/sidebard.js"></script>
+
+<!-- Agregar el manejador de materias -->
+<script src="materias-handler.js"></script>
 
 <script>
     let instructoresData = [];
@@ -551,6 +556,7 @@ try {
             btn.classList.add('btn-outline-primary');
             btn.classList.remove('btn-primary');
         });
+
         if (seccion === 'todos') {
             document.getElementById('seccion-todos').style.display = 'block';
             document.getElementById('btnTodosInstructores').classList.add('active', 'btn-primary');
@@ -589,6 +595,7 @@ try {
             button.removeEventListener('click', handleVerDetalles);
             button.addEventListener('click', handleVerDetalles);
         });
+
         document.querySelectorAll('.asignar-materias').forEach(button => {
             button.removeEventListener('click', handleAsignarMaterias);
             button.addEventListener('click', handleAsignarMaterias);
@@ -615,6 +622,7 @@ try {
             const documento = card.querySelector('.card-text').textContent.match(/Documento:\s*(\d+)/)?.[1] || '';
             const correo = card.querySelector('.card-text').textContent.match(/Correo:\s*([^\n]+)/)?.[1] || '';
             const rol = card.querySelector('.badge').textContent.trim();
+
             return {
                 element: card,
                 nombre: nombre.toLowerCase(),
@@ -629,15 +637,18 @@ try {
     function filtrarInstructores() {
         const busqueda = document.getElementById('buscarInstructor').value.toLowerCase();
         const filtroRol = document.getElementById('filtroRol').value;
+
         instructoresData.forEach(instructor => {
             const coincideBusqueda = !busqueda ||
                 instructor.nombre.includes(busqueda) ||
                 instructor.documento.includes(busqueda) ||
                 instructor.correo.includes(busqueda);
             const coincideRol = !filtroRol || instructor.rol === filtroRol;
+
             instructor.visible = coincideBusqueda && coincideRol;
             instructor.element.style.display = instructor.visible ? 'block' : 'none';
         });
+
         paginaActual = 1;
         actualizarPaginacion();
         mostrarPagina(paginaActual);
@@ -682,6 +693,7 @@ try {
             document.querySelector('#instructoresContainer').parentNode.appendChild(nav);
             paginacion = nav.querySelector('.pagination');
         }
+
         paginacion.innerHTML = '';
 
         if (totalPaginas <= 1) return;
@@ -695,6 +707,7 @@ try {
                 </li>
             `;
         }
+
         const inicioPag = Math.max(1, paginaActual - 2);
         const finPag = Math.min(totalPaginas, inicioPag + 4);
 
@@ -705,6 +718,7 @@ try {
                 </li>
             `;
         }
+
         if (paginaActual < totalPaginas) {
             paginacion.innerHTML += `
                 <li class="page-item">
@@ -768,14 +782,22 @@ try {
         }
     });
 
-    // Cargar formulario de asignación de materias
+    // Cargar formulario de asignación de materias - CORREGIDO  
     async function cargarFormularioMaterias(idInstructor, nombre) {
         try {
-            const response = await fetch(`get_materias.php?id_instructor=${idInstructor}`);
+            // CAMBIAR ESTA LÍNEA - usar get_materias_fixed.php:
+            const response = await fetch(`get_materias.php?id_instructor=${encodeURIComponent(idInstructor)}`);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
             const data = await response.json();
+
             if (data.success) {
                 document.getElementById('asignarMateriasContent').innerHTML = data.html;
                 document.getElementById('asignarMateriasModalLabel').textContent = `Asignar Materias - ${nombre}`;
+
                 const modalEl = document.getElementById('asignarMateriasModal');
                 const modal = new bootstrap.Modal(modalEl);
                 modal.show();
@@ -795,5 +817,4 @@ try {
 </script>
 
 </body>
-
 </html>
