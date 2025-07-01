@@ -276,7 +276,7 @@ class InstructorManager {
   // Cargar formulario de materias
   async cargarFormularioMaterias(idInstructor, nombre) {
     try {
-      const response = await fetch(`get_materias_fixed.php?id_instructor=${encodeURIComponent(idInstructor)}`)
+      const response = await fetch(`get_materias.php?id_instructor=${encodeURIComponent(idInstructor)}`)
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
