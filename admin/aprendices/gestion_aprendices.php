@@ -102,7 +102,7 @@ $filtro_ficha = isset($_GET['filtro_ficha']) ? $_GET['filtro_ficha'] : '';
 $filtro_estado = isset($_GET['filtro_estado']) ? $_GET['filtro_estado'] : '';
 $busqueda = isset($_GET['busqueda']) ? $_GET['busqueda'] : '';
 $pagina_actual = isset($_GET['pagina']) ? (int)$_GET['pagina'] : 1;
-$aprendices_por_pagina = 8;
+$aprendices_por_pagina = 6;
 $offset = ($pagina_actual - 1) * $aprendices_por_pagina;
 
 // Construir consulta con filtros
