@@ -161,6 +161,7 @@ function obtenerIniciales($nombre_completo)
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <!-- Bootstrap y fuentes -->
+    <link rel="stylesheet" href="../../styles/header.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
@@ -268,7 +269,6 @@ function obtenerIniciales($nombre_completo)
         .task-icon i {
             color: #111;
             font-size: 1.5rem;
-            transform: translateX(10px);
         }
 
         .task-info {
@@ -407,11 +407,14 @@ function obtenerIniciales($nombre_completo)
         .actividad-entregada {
             border-left: 4px solid #28a745;
             background-color: #f8fff8;
-            margin-bottom: 18px;           /* Separación entre tarjetas */
+            margin-bottom: 18px;
+            /* Separación entre tarjetas */
             border-radius: 10px;
-            padding: 18px 18px 12px 18px;  /* Espaciado interno */
+            padding: 18px 18px 12px 18px;
+            /* Espaciado interno */
             box-shadow: 0 2px 8px rgba(40, 167, 69, 0.04);
-            border: 1px solid #e6f4ea;     /* Borde sutil */
+            border: 1px solid #e6f4ea;
+            /* Borde sutil */
         }
 
         .task-list .actividad-entregada:last-child {

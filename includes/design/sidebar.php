@@ -45,9 +45,8 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/teamtalks/conexion/init.php';
       <!-- Solo para Aprendiz (rol 4) -->
       <?php if ($_SESSION['rol'] == 4): ?>
         <li class="nav-item">
-
-          <a href="<?= BASE_URL ?>/aprendiz/tarjeta_formacion/index.php" class="nav-link">
-            <i class="side bi bi-backpack-fill"></i>
+          <a href="<?= BASE_URL ?>/aprendiz/tarjeta_formacion/index.php" class="sidebar-nav-link" data-tooltip="Formaciones">
+            <i class="side bi bi-backpack-fill nav-icon"></i>
             <span class="nav-label">Formaciones</span>
           </a>
         </li>
@@ -73,9 +72,8 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/teamtalks/conexion/init.php';
           </ul>
         </li>
         <li class="nav-item">
-
-          <a href="<?= BASE_URL ?>/aprendiz/foros/foros.php" class="nav-link">
-            <i class="side bi bi-pencil-square"></i>
+          <a href="<?= BASE_URL ?>/aprendiz/foros/foros.php" class="sidebar-nav-link" data-tooltip="Foros">
+            <i class="side bi bi-pencil-square nav-icon"></i>
             <span class="nav-label">Foros</span>
           </a>
         </li>

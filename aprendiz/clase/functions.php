@@ -144,20 +144,6 @@ function obtenerTodasActividadesConEstado($id_materia_ficha, $id_usuario)
         }
         
         $actividad['estado_entrega'] = $estado;
-        
-        // Debug: agregar información adicional
-        $actividad['debug_info'] = [
-            'tiene_entrega' => !is_null($actividad['entrega_id']),
-            'estado_actividad' => $actividad['id_estado_actividad'],
-            'fecha_entrega_original' => $actividad['fecha_entrega'],
-            'fecha_actual_bd' => $actividad['fecha_actual'],
-            'fecha_entrega_ajustada' => $fechaEntrega->format('Y-m-d H:i:s'),
-            'fecha_actual_obj' => $fechaActual->format('Y-m-d H:i:s'),
-            'esta_vencida' => $estaVencida,
-            'estado_calculado' => $estado,
-            'comparacion' => $fechaEntrega->format('Y-m-d H:i:s') . ' vs ' . $fechaActual->format('Y-m-d H:i:s'),
-            'hora_original' => DateTime::createFromFormat('Y-m-d H:i:s', $actividad['fecha_entrega'])->format('H:i:s')
-        ];
     }
     
     return $actividades;
