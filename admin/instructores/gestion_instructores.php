@@ -129,9 +129,10 @@ try {
 } catch (PDOException $e) {
     $alertMessage = "Error al cargar instructores: " . $e->getMessage();
     $alertType = "danger";
+    $instructores = []; // Asegura que siempre sea un array
 }
 
-// Obtener estadísticas
+// Estadísticas
 $stats = [
     'total_instructores' => 0,
     'instructores_normales' => 0,
@@ -419,6 +420,7 @@ try {
                                 <i class="bi bi-info-circle"></i>
                                 <strong>Información:</strong> Estos instructores no tienen materias especializadas asignadas en el sistema.
                             </div>
+                            
                             <div id="instructoresSinMateriasContainer">
                                 <!-- Se cargará dinámicamente -->
                             </div>
@@ -439,7 +441,6 @@ try {
                 </div>
                 <div class="modal-body" id="detallesInstructorContent">
                 </div>
-                
             </div>
         </div>
     </div>
@@ -481,6 +482,70 @@ try {
         </div>
     </div>
 
+    <!-- Modal para cambiar estado -->
+    <div class="modal fade" id="cambiarEstadoModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-info text-white">
+                    <h5 class="modal-title">Cambiar Estado del Instructor</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="formCambiarEstado">
+                    <div class="modal-body">
+                        <input type="hidden" id="estado_id_instructor" name="id_instructor">
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Instructor:</label>
+                            <p class="fw-bold" id="estado_instructor_nombre"></p>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="nuevo_estado" class="form-label">Nuevo Estado:</label>
+                            <select class="form-select" id="nuevo_estado" name="nuevo_estado" required>
+                                <option value="">Seleccionar estado...</option>
+                                <option value="1">Activo</option>
+                                <option value="2">Inactivo</option>
+                            </select>
+                        </div>
+
+                        <div class="alert alert-warning">
+                            <i class="bi bi-exclamation-triangle"></i>
+                            <strong>Atención:</strong> Cambiar el estado del instructor puede afectar sus asignaciones actuales.
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-info">Cambiar Estado</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para gestionar fichas -->
+    <div class="modal fade" id="gestionarFichasModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-secondary text-white">
+                    <h5 class="modal-title" id="gestionarFichasModalLabel">Gestionar Fichas del Instructor</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="gestionarFichasContent">
+                    <!-- Se cargará dinámicamente -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para reportes -->
+    <div class="modal fade" id="reportesModal" tabindex="-1" aria-labelledby="reportesModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content" id="reportesModalContent">
+            <!-- Se cargará dinámicamente -->
+        </div>
+    </div>
+</div>
+
     <!-- Modal para asignar materias -->
     <div class="modal fade" id="asignarMateriasModal" tabindex="-1" aria-labelledby="asignarMateriasModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
@@ -499,322 +564,405 @@ try {
         </div>
     </div>
 
-  <!-- Scripts -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script src="../js/sidebard.js"></script>
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../js/sidebard.js"></script>
 
-<!-- Scripts -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script src="../js/sidebard.js"></script>
+    <!-- Agregar el manejador de materias -->
+    <script src="materias-handler.js"></script>
+    <!-- Agregar el nuevo manejador de gestión de instructores -->
+    <script src="instructor-management-handler.js"></script>
 
-<!-- Agregar el manejador de materias -->
-<script src="materias-handler.js"></script>
+    <script>
+        let instructoresData = [];
+        let paginaActual = 1;
+        const instructoresPorPagina = 6;
 
-<script>
-    let instructoresData = [];
-    let paginaActual = 1;
-    const instructoresPorPagina = 6;
-
-    // Utilidad: limpiar backdrop huérfano si queda (por modales dinámicos)
-    function limpiarBackdrop() {
-        setTimeout(() => {
-            document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
-            document.body.classList.remove('modal-open');
-            document.body.style = '';
-        }, 350); // Espera a que el modal termine de ocultarse
-    }
-
-    // Cargar datos iniciales
-    document.addEventListener("DOMContentLoaded", function() {
-        cargarInstructoresData();
-
-        // Event listeners para filtros en tiempo real
-        document.getElementById('buscarInstructor').addEventListener('input', filtrarInstructores);
-        document.getElementById('filtroRol').addEventListener('change', filtrarInstructores);
-
-        // Inicializar tooltips
-        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-        tooltipTriggerList.map(function(tooltipTriggerEl) {
-            return new bootstrap.Tooltip(tooltipTriggerEl);
-        });
-
-        // Fix: Asociar limpieza de backdrop al cerrar cualquier modal
-        document.querySelectorAll('.modal').forEach(modalEl => {
-            modalEl.addEventListener('hidden.bs.modal', limpiarBackdrop);
-        });
-    });
-
-    // Mostrar sección específica
-    function mostrarSeccion(seccion) {
-        document.querySelectorAll('.seccion-instructores').forEach(el => {
-            el.style.display = 'none';
-        });
-        document.querySelectorAll('#btnTodosInstructores, #btnSinMaterias').forEach(btn => {
-            btn.classList.remove('active');
-            btn.classList.add('btn-outline-primary');
-            btn.classList.remove('btn-primary');
-        });
-
-        if (seccion === 'todos') {
-            document.getElementById('seccion-todos').style.display = 'block';
-            document.getElementById('btnTodosInstructores').classList.add('active', 'btn-primary');
-            document.getElementById('btnTodosInstructores').classList.remove('btn-outline-primary');
-        } else if (seccion === 'sin-materias') {
-            document.getElementById('seccion-sin-materias').style.display = 'block';
-            document.getElementById('btnSinMaterias').classList.add('active', 'btn-primary');
-            document.getElementById('btnSinMaterias').classList.remove('btn-outline-primary');
-            cargarInstructoresSinMaterias();
+        // Utilidad: limpiar backdrop huérfano si queda (por modales dinámicos)
+        function limpiarBackdrop() {
+            setTimeout(() => {
+                document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+                document.body.classList.remove('modal-open');
+                document.body.style = '';
+            }, 350);
         }
-    }
 
-    // Cargar instructores sin materias
-    async function cargarInstructoresSinMaterias() {
-        try {
-            const response = await fetch('get_instructores_sin_materias.php');
-            const data = await response.json();
+        // Cargar datos iniciales
+        document.addEventListener("DOMContentLoaded", function() {
+            cargarInstructoresData();
 
-            if (data.success) {
-                document.getElementById('instructoresSinMateriasContainer').innerHTML = data.html;
-                asignarEventListenersDinamicos();
-            } else {
-                document.getElementById('instructoresSinMateriasContainer').innerHTML =
-                    '<div class="alert alert-info">No hay instructores sin materias asignadas</div>';
+            // Event listeners para filtros en tiempo real
+            const buscarInput = document.getElementById('buscarInstructor');
+            if (buscarInput) {
+                buscarInput.addEventListener('input', filtrarInstructoresDebounce);
             }
-        } catch (error) {
-            console.error('Error:', error);
-            document.getElementById('instructoresSinMateriasContainer').innerHTML =
-                '<div class="alert alert-danger">Error al cargar instructores sin materias</div>';
-        }
-    }
+            const filtroRol = document.getElementById('filtroRol');
+            if (filtroRol) {
+                filtroRol.addEventListener('change', filtrarInstructoresDebounce);
+            }
 
-    // NUEVA FUNCIÓN: Asignar event listeners a elementos dinámicos
-    function asignarEventListenersDinamicos() {
-        document.querySelectorAll('.ver-detalles').forEach(button => {
-            button.removeEventListener('click', handleVerDetalles);
-            button.addEventListener('click', handleVerDetalles);
+            // Inicializar tooltips
+            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            tooltipTriggerList.map(function(tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+
+            // Fix: Asociar limpieza de backdrop al cerrar cualquier modal
+            document.querySelectorAll('.modal').forEach(modalEl => {
+                modalEl.addEventListener('hidden.bs.modal', limpiarBackdrop);
+            });
         });
 
-        document.querySelectorAll('.asignar-materias').forEach(button => {
-            button.removeEventListener('click', handleAsignarMaterias);
-            button.addEventListener('click', handleAsignarMaterias);
-        });
-    }
+        // Mostrar sección específica
+        function mostrarSeccion(seccion) {
+            document.querySelectorAll('.seccion-instructores').forEach(el => {
+                el.style.display = 'none';
+            });
+            document.querySelectorAll('#btnTodosInstructores, #btnSinMaterias').forEach(btn => {
+                btn.classList.remove('active');
+                btn.classList.add('btn-outline-primary');
+                btn.classList.remove('btn-primary');
+            });
 
-    function handleVerDetalles(event) {
-        const button = event.currentTarget;
-        const idInstructor = button.getAttribute('data-instructor');
-        cargarDetallesInstructor(idInstructor);
-    }
-
-    function handleAsignarMaterias(event) {
-        const button = event.currentTarget;
-        const idInstructor = button.getAttribute('data-instructor');
-        const nombre = button.getAttribute('data-nombre');
-        cargarFormularioMaterias(idInstructor, nombre);
-    }
-
-    function cargarInstructoresData() {
-        const instructorCards = document.querySelectorAll('#instructoresContainer .col-md-6');
-        instructoresData = Array.from(instructorCards).map(card => {
-            const nombre = card.querySelector('.card-header h6').textContent.trim();
-            const documento = card.querySelector('.card-text').textContent.match(/Documento:\s*(\d+)/)?.[1] || '';
-            const correo = card.querySelector('.card-text').textContent.match(/Correo:\s*([^\n]+)/)?.[1] || '';
-            const rol = card.querySelector('.badge').textContent.trim();
-
-            return {
-                element: card,
-                nombre: nombre.toLowerCase(),
-                documento: documento,
-                correo: correo.toLowerCase(),
-                rol: rol === 'Normal' ? '3' : '5',
-                visible: true
-            };
-        });
-    }
-
-    function filtrarInstructores() {
-        const busqueda = document.getElementById('buscarInstructor').value.toLowerCase();
-        const filtroRol = document.getElementById('filtroRol').value;
-
-        instructoresData.forEach(instructor => {
-            const coincideBusqueda = !busqueda ||
-                instructor.nombre.includes(busqueda) ||
-                instructor.documento.includes(busqueda) ||
-                instructor.correo.includes(busqueda);
-            const coincideRol = !filtroRol || instructor.rol === filtroRol;
-
-            instructor.visible = coincideBusqueda && coincideRol;
-            instructor.element.style.display = instructor.visible ? 'block' : 'none';
-        });
-
-        paginaActual = 1;
-        actualizarPaginacion();
-        mostrarPagina(paginaActual);
-    }
-
-    function limpiarFiltros() {
-        document.getElementById('buscarInstructor').value = '';
-        document.getElementById('filtroRol').value = '';
-        filtrarInstructores();
-    }
-
-    function mostrarPagina(pagina) {
-        const instructoresVisibles = instructoresData.filter(instructor => instructor.visible);
-        const totalPaginas = Math.ceil(instructoresVisibles.length / instructoresPorPagina);
-
-        if (pagina < 1) pagina = 1;
-        if (pagina > totalPaginas) pagina = totalPaginas;
-
-        instructoresData.forEach(instructor => {
-            instructor.element.style.display = 'none';
-        });
-
-        const inicio = (pagina - 1) * instructoresPorPagina;
-        const fin = inicio + instructoresPorPagina;
-        for (let i = inicio; i < fin && i < instructoresVisibles.length; i++) {
-            instructoresVisibles[i].element.style.display = 'block';
+            if (seccion === 'todos') {
+                document.getElementById('seccion-todos').style.display = 'block';
+                document.getElementById('btnTodosInstructores').classList.add('active', 'btn-primary');
+                document.getElementById('btnTodosInstructores').classList.remove('btn-outline-primary');
+            } else if (seccion === 'sin-materias') {
+                document.getElementById('seccion-sin-materias').style.display = 'block';
+                document.getElementById('btnSinMaterias').classList.add('active', 'btn-primary');
+                document.getElementById('btnSinMaterias').classList.remove('btn-outline-primary');
+                cargarInstructoresSinMaterias();
+            }
         }
 
-        paginaActual = pagina;
-        actualizarPaginacion();
-    }
+        // Cargar instructores sin materias
+        async function cargarInstructoresSinMaterias() {
+            try {
+                const response = await fetch('get_instructores_sin_materias.php');
+                const data = await response.json();
 
-    function actualizarPaginacion() {
-        const instructoresVisibles = instructoresData.filter(instructor => instructor.visible);
-        const totalPaginas = Math.ceil(instructoresVisibles.length / instructoresPorPagina);
-
-        let paginacion = document.querySelector('.pagination');
-        if (!paginacion) {
-            const nav = document.createElement('nav');
-            nav.setAttribute('aria-label', 'Paginación de instructores');
-            nav.innerHTML = '<ul class="pagination justify-content-center"></ul>';
-            document.querySelector('#instructoresContainer').parentNode.appendChild(nav);
-            paginacion = nav.querySelector('.pagination');
+                if (data.success) {
+                    document.getElementById('instructoresSinMateriasContainer').innerHTML = data.html;
+                    asignarEventListenersDinamicos();
+                } else {
+                    document.getElementById('instructoresSinMateriasContainer').innerHTML =
+                        '<div class="alert alert-info">No hay instructores sin materias asignadas</div>';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('instructoresSinMateriasContainer').innerHTML =
+                    '<div class="alert alert-danger">Error al cargar instructores sin materias</div>';
+            }
         }
 
-        paginacion.innerHTML = '';
+        // NUEVA FUNCIÓN: Asignar event listeners a elementos dinámicos
+        function asignarEventListenersDinamicos() {
+            
 
-        if (totalPaginas <= 1) return;
+            document.querySelectorAll('.asignar-materias').forEach(button => {
+                button.removeEventListener('click', handleAsignarMaterias);
+                button.addEventListener('click', handleAsignarMaterias);
+            });
 
-        if (paginaActual > 1) {
-            paginacion.innerHTML += `
-                <li class="page-item">
-                    <button class="page-link" onclick="mostrarPagina(${paginaActual - 1})">
-                        <i class="bi bi-chevron-left"></i> Anterior
-                    </button>
-                </li>
-            `;
+            document.querySelectorAll('.cambiar-estado-instructor').forEach(button => {
+                button.removeEventListener('click', handleCambiarEstado);
+                button.addEventListener('click', handleCambiarEstado);
+            });
+
+            document.querySelectorAll('.gestionar-fichas').forEach(button => {
+                button.removeEventListener('click', handleGestionarFichas);
+                button.addEventListener('click', handleGestionarFichas);
+            });
+
+            document.querySelectorAll('.generar-reportes').forEach(button => {
+                button.removeEventListener('click', handleGenerarReportes);
+                button.addEventListener('click', handleGenerarReportes);
+            });
         }
 
-        const inicioPag = Math.max(1, paginaActual - 2);
-        const finPag = Math.min(totalPaginas, inicioPag + 4);
-
-        for (let i = inicioPag; i <= finPag; i++) {
-            paginacion.innerHTML += `
-                <li class="page-item ${paginaActual === i ? 'active' : ''}">
-                    <button class="page-link" onclick="mostrarPagina(${i})">${i}</button>
-                </li>
-            `;
-        }
-
-        if (paginaActual < totalPaginas) {
-            paginacion.innerHTML += `
-                <li class="page-item">
-                    <button class="page-link" onclick="mostrarPagina(${paginaActual + 1})">
-                        Siguiente <i class="bi bi-chevron-right"></i>
-                    </button>
-                </li>
-            `;
-        }
-    }
-
-    // Event listeners para elementos estáticos (sección "todos")
-    document.addEventListener('click', function(event) {
-        if (event.target.closest('.ver-detalles')) {
-            const button = event.target.closest('.ver-detalles');
+        function handleVerDetalles(event) {
+            const button = event.currentTarget;
             const idInstructor = button.getAttribute('data-instructor');
             cargarDetallesInstructor(idInstructor);
         }
-    });
 
-    // Función para cargar detalles del instructor
-    async function cargarDetallesInstructor(idInstructor, paginaFichas = 1) {
-        try {
-            const response = await fetch(`get_instructor_details.php?id_instructor=${idInstructor}&pagina_fichas=${paginaFichas}`);
-            const data = await response.json();
-
-            if (data.success) {
-                document.getElementById('detallesInstructorContent').innerHTML = data.html;
-                const modalEl = document.getElementById('detallesInstructorModal');
-                const modal = new bootstrap.Modal(modalEl);
-                modal.show();
-                // Asociar limpieza de backdrop al cerrar el modal
-                modalEl.addEventListener('hidden.bs.modal', limpiarBackdrop, { once: true });
-            } else {
-                alert('Error al cargar los detalles del instructor');
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            alert('Error al cargar los detalles del instructor');
+        function handleAsignarMaterias(event) {
+            const button = event.currentTarget;
+            const idInstructor = button.getAttribute('data-instructor');
+            const nombre = button.getAttribute('data-nombre');
+            cargarFormularioMaterias(idInstructor, nombre);
         }
-    }
 
-    // Manejar edición de instructor
-    document.addEventListener('click', function(event) {
-        if (event.target.closest('.editar-instructor')) {
-            const button = event.target.closest('.editar-instructor');
+        function handleCambiarEstado(event) {
+            const button = event.currentTarget;
             const idInstructor = button.getAttribute('data-id');
             const nombre = button.getAttribute('data-nombre');
-            const correo = button.getAttribute('data-correo');
-            const telefono = button.getAttribute('data-telefono');
-
-            document.getElementById('edit_id_instructor').value = idInstructor;
-            document.getElementById('edit_instructor_nombre').textContent = nombre;
-            document.getElementById('edit_correo').value = correo;
-            document.getElementById('edit_telefono').value = telefono || '';
-
-            const modalEl = document.getElementById('editarInstructorModal');
-            const modal = new bootstrap.Modal(modalEl);
-            modal.show();
-            modalEl.addEventListener('hidden.bs.modal', limpiarBackdrop, { once: true });
-        }
-    });
-
-    // Cargar formulario de asignación de materias - CORREGIDO  
-    async function cargarFormularioMaterias(idInstructor, nombre) {
-        try {
-            // CAMBIAR ESTA LÍNEA - usar get_materias_fixed.php:
-            const response = await fetch(`get_materias.php?id_instructor=${encodeURIComponent(idInstructor)}`);
+            const estadoActual = button.getAttribute('data-estado');
             
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+            document.getElementById('estado_id_instructor').value = idInstructor;
+            document.getElementById('estado_instructor_nombre').textContent = nombre;
+            document.getElementById('nuevo_estado').value = estadoActual == 1 ? '2' : '1';
+            
+            const modal = new bootstrap.Modal(document.getElementById('cambiarEstadoModal'));
+            modal.show();
+        }
+
+        function handleGestionarFichas(event) {
+            const button = event.currentTarget;
+            const idInstructor = button.getAttribute('data-id');
+            const nombre = button.getAttribute('data-nombre');
+            cargarGestionFichas(idInstructor, nombre);
+        }
+
+        function handleGenerarReportes(event) {
+            const button = event.currentTarget; // <-- Cambia aquí
+            const idInstructor = button.getAttribute('data-id');
+            const nombre = button.getAttribute('data-nombre');
+            cargarOpcionesReporte(idInstructor, nombre);
+        }
+
+        function cargarInstructoresData() {
+            const instructorCards = document.querySelectorAll('#instructoresContainer .col-md-6');
+            instructoresData = Array.from(instructorCards).map(card => {
+                const nombre = card.querySelector('.card-header h6').textContent.trim();
+                const documento = card.querySelector('.card-text').textContent.match(/Documento:\s*(\d+)/)?.[1] || '';
+                const correo = card.querySelector('.card-text').textContent.match(/Correo:\s*([^\n]+)/)?.[1] || '';
+                const rol = card.querySelector('.badge').textContent.trim();
+
+                return {
+                    element: card,
+                    nombre: nombre.toLowerCase(),
+                    documento: documento,
+                    correo: correo.toLowerCase(),
+                    rol: rol === 'Normal' ? '3' : '5',
+                    visible: true
+                };
+            });
+        }
+
+        let debounceTimer = null;
+
+        function filtrarInstructoresDebounce() {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+                const busqueda = document.getElementById('buscarInstructor').value.trim();
+                const filtroRol = document.getElementById('filtroRol').value;
+                const params = new URLSearchParams();
+                if (busqueda) params.append('busqueda', busqueda);
+                if (filtroRol) params.append('filtro_rol', filtroRol);
+                params.append('pagina', '1');
+                window.location.search = params.toString();
+            }, 400);
+        }
+
+        function limpiarFiltros() {
+            document.getElementById('buscarInstructor').value = '';
+            document.getElementById('filtroRol').value = '';
+            window.location.search = '';
+        }
+
+        // Event listeners para elementos estáticos (sección "todos")
+        document.addEventListener('click', function(event) {
+            if (event.target.closest('.ver-detalles')) {
+                const button = event.target.closest('.ver-detalles');
+                const idInstructor = button.getAttribute('data-instructor');
+                cargarDetallesInstructor(idInstructor);
             }
 
-            const data = await response.json();
+            if (event.target.closest('.editar-instructor')) {
+                const button = event.target.closest('.editar-instructor');
+                const idInstructor = button.getAttribute('data-id');
+                const nombre = button.getAttribute('data-nombre');
+                const correo = button.getAttribute('data-correo');
+                const telefono = button.getAttribute('data-telefono');
 
-            if (data.success) {
-                document.getElementById('asignarMateriasContent').innerHTML = data.html;
-                document.getElementById('asignarMateriasModalLabel').textContent = `Asignar Materias - ${nombre}`;
+                document.getElementById('edit_id_instructor').value = idInstructor;
+                document.getElementById('edit_instructor_nombre').textContent = nombre;
+                document.getElementById('edit_correo').value = correo;
+                document.getElementById('edit_telefono').value = telefono || '';
 
-                const modalEl = document.getElementById('asignarMateriasModal');
+                const modalEl = document.getElementById('editarInstructorModal');
                 const modal = new bootstrap.Modal(modalEl);
                 modal.show();
-                modalEl.addEventListener('hidden.bs.modal', limpiarBackdrop, { once: true });
-            } else {
-                alert('Error al cargar el formulario de materias: ' + (data.message || 'Error desconocido'));
             }
-        } catch (error) {
-            console.error('Error:', error);
-            alert('Error al cargar el formulario de materias');
-        }
-    }
 
-    function cambiarPaginaFichas(idInstructor, pagina) {
-        cargarDetallesInstructor(idInstructor, pagina);
-    }
-</script>
+            if (event.target.closest('.cambiar-estado-instructor')) {
+                handleCambiarEstado(event);
+            }
+
+            if (event.target.closest('.gestionar-fichas')) {
+                handleGestionarFichas(event);
+            }
+
+            if (event.target.closest('.generar-reportes')) {
+                handleGenerarReportes(event);
+            }
+        });
+
+        // Función para cargar detalles del instructor
+        async function cargarDetallesInstructor(idInstructor, paginaFichas = 1) {
+            try {
+                const response = await fetch(`get_instructor_details.php?id_instructor=${idInstructor}&pagina_fichas=${paginaFichas}`);
+                const data = await response.json();
+
+                if (data.success) {
+                    document.getElementById('detallesInstructorContent').innerHTML = data.html;
+                    const modalEl = document.getElementById('detallesInstructorModal');
+                    const modal = new bootstrap.Modal(modalEl);
+                    modal.show();
+                    
+                    // Asignar event listeners a los nuevos elementos
+                    asignarEventListenersDinamicos();
+                } else {
+                    Swal.fire('Error', 'Error al cargar los detalles del instructor', 'error');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                Swal.fire('Error', 'Error al cargar los detalles del instructor', 'error');
+            }
+        }
+
+        // Cargar formulario de asignación de materias
+        async function cargarFormularioMaterias(idInstructor, nombre) {
+            try {
+                const response = await fetch(`get_materias.php?id_instructor=${encodeURIComponent(idInstructor)}`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                if (data.success) {
+                    document.getElementById('asignarMateriasContent').innerHTML = data.html;
+                    document.getElementById('asignarMateriasModalLabel').textContent = `Asignar Materias - ${nombre}`;
+
+                    const modalEl = document.getElementById('asignarMateriasModal');
+                    const modal = new bootstrap.Modal(modalEl);
+                    modal.show();
+                } else {
+                    Swal.fire('Error', 'Error al cargar el formulario de materias: ' + (data.message || 'Error desconocido'), 'error');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                Swal.fire('Error', 'Error al cargar el formulario de materias', 'error');
+            }
+        }
+
+        // Cargar gestión de fichas
+        async function cargarGestionFichas(idInstructor, nombre) {
+            try {
+                const response = await fetch(`get_fichas_instructor.php?id_instructor=${idInstructor}`);
+                const data = await response.json();
+
+                if (data.success) {
+                    document.getElementById('gestionarFichasContent').innerHTML = data.html;
+                    document.getElementById('gestionarFichasModalLabel').textContent = `Gestionar Fichas - ${nombre}`;
+                    const modalEl = document.getElementById('gestionarFichasModal');
+                    const modal = new bootstrap.Modal(modalEl);
+                    modal.show();
+                } else {
+                    Swal.fire('Error', data.message, 'error');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                Swal.fire('Error', 'Error al cargar gestión de fichas', 'error');
+            }
+        }
+
+        // Cargar opciones de reporte
+        async function cargarOpcionesReporte(idInstructor, nombre) {
+            try {
+                const response = await fetch(`generar_reporte_instructor.php?id_instructor=${idInstructor}`);
+                const data = await response.json();
+
+                if (data.success) {
+                    document.getElementById('reportesModalContent').innerHTML = data.html;
+
+                    const modalEl = document.getElementById('reportesModal');
+                    const modal = new bootstrap.Modal(modalEl);
+                    modal.show();
+                } else {
+                    Swal.fire('Error', data.message, 'error');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                Swal.fire('Error', 'Error al cargar opciones de reporte', 'error');
+            }
+        }
+
+        function cambiarPaginaFichas(idInstructor, pagina) {
+            cargarDetallesInstructor(idInstructor, pagina);
+        }
+
+        // Función global para generar reportes (llamada desde el modal)
+        async function generarReporte(tipo, idInstructor, idFicha = null) {
+            try {
+                let url = `procesar_reporte_instructor.php?id_instructor=${idInstructor}&tipo_reporte=${tipo}`;
+                if (idFicha) {
+                    url += `&id_ficha=${idFicha}`;
+                }
+
+                // Mostrar loading
+                if (window.Swal) {
+                    window.Swal.fire({
+                        title: 'Generando reporte...',
+                        text: 'Por favor espera',
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            window.Swal.showLoading();
+                        }
+                    });
+                }
+
+                // Crear formulario temporal para forzar descarga
+                const form = document.createElement('form');
+                form.method = 'GET';
+                form.action = url;
+                form.target = '_blank';
+                form.style.display = 'none';
+                document.body.appendChild(form);
+                form.submit();
+                document.body.removeChild(form);
+
+                // Cerrar loading después de un momento
+                setTimeout(() => {
+                    if (window.Swal) {
+                        window.Swal.fire('Éxito', 'Reporte generado correctamente', 'success');
+                    }
+                }, 1000);
+            } catch (error) {
+                console.error('Error:', error);
+                if (window.Swal) {
+                    window.Swal.fire('Error', 'No se pudo generar el reporte', 'error');
+                }
+            }
+        }
+
+        // Función para generar reporte de ficha seleccionada
+        function generarReporteFichaSeleccionada(idInstructor) {
+            const selectFicha = document.getElementById('selectFichaIndividual');
+            if (!selectFicha) {
+                console.error('Select de ficha no encontrado');
+                return;
+            }
+            
+            const idFicha = selectFicha.value;
+            
+            if (!idFicha) {
+                if (window.Swal) {
+                    window.Swal.fire('Atención', 'Por favor selecciona una ficha', 'warning');
+                } else {
+                    alert('Por favor selecciona una ficha');
+                }
+                return;
+            }
+            
+            generarReporte('ficha_individual', idInstructor, idFicha);
+        }
+    </script>
 
 </body>
 </html>

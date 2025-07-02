@@ -83,7 +83,7 @@ try {
         LEFT JOIN actividades_user au ON u.id = au.id_user AND au.nota IS NOT NULL
         WHERE u.id = ? AND u.id_rol = 4 AND u.nit = ?
         GROUP BY u.id, u.nombres, u.apellidos, u.correo, u.telefono, u.fecha_registro, 
-                 u.id_estado, e.estado, uf.id_ficha, f.id_ficha, fo.nombre, tf.tipo_formacion, j.jornada
+                u.id_estado, e.estado, uf.id_ficha, f.id_ficha, fo.nombre, tf.tipo_formacion, j.jornada
     ");
     $stmt->execute([$id_aprendiz, $nit_usuario]);
     $aprendiz = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -220,9 +220,9 @@ try {
     echo '<tr>';
     echo '<td style="font-weight: bold;">Estado Académico:</td>';
     echo '<td colspan="7" style="font-weight: bold; color: ' . 
-         ($aprendiz['estado_academico'] === 'APROBADO' ? 'green' : 
-          ($aprendiz['estado_academico'] === 'SIN CALIFICAR' ? 'orange' : 'red')) . ';">' . 
-         $aprendiz['estado_academico'] . '</td>';
+        ($aprendiz['estado_academico'] === 'APROBADO' ? 'green' : 
+        ($aprendiz['estado_academico'] === 'SIN CALIFICAR' ? 'orange' : 'red')) . ';">' . 
+        $aprendiz['estado_academico'] . '</td>';
     echo '</tr>';
     
     echo '<tr><td colspan="8"></td></tr>'; // Fila vacía
@@ -255,9 +255,9 @@ try {
             echo '<td>' . $porcentaje_trimestre . '%</td>';
             echo '<td>' . $trimestre['estado_trimestre'] . '</td>';
             echo '<td colspan="2">' . 
-                 ($trimestre['estado_trimestre'] === 'APROBADO' ? 'Rendimiento satisfactorio' : 
-                  ($trimestre['estado_trimestre'] === 'SIN CALIFICAR' ? 'Pendiente de evaluación' : 'Requiere refuerzo')) . 
-                 '</td>';
+                ($trimestre['estado_trimestre'] === 'APROBADO' ? 'Rendimiento satisfactorio' : 
+                ($trimestre['estado_trimestre'] === 'SIN CALIFICAR' ? 'Pendiente de evaluación' : 'Requiere refuerzo')) . 
+                '</td>';
             echo '</tr>';
         }
     }

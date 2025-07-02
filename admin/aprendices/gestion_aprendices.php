@@ -78,20 +78,55 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action'])) {
             $id_aprendiz = $_POST['id_aprendiz'];
             $nueva_ficha = $_POST['nueva_ficha'];
 
-            try {
-                $conexion->beginTransaction();
+            // Obtener la ficha actual y formación del aprendiz
+            $stmt = $conexion->prepare("
+                SELECT uf.id_ficha, f.id_formacion
+                FROM user_ficha uf
+                LEFT JOIN fichas f ON uf.id_ficha = f.id_ficha
+                WHERE uf.id_user = ? AND uf.id_estado = 1
+                LIMIT 1
+            ");
+            $stmt->execute([$id_aprendiz]);
+            $actual = $stmt->fetch(PDO::FETCH_ASSOC);
 
-                // Actualizar la ficha del aprendiz
-                $stmt = $conexion->prepare("UPDATE user_ficha SET id_ficha = ? WHERE id_user = ?");
-                $stmt->execute([$nueva_ficha, $id_aprendiz]);
+            // Obtener la formación de la nueva ficha
+            $stmt = $conexion->prepare("SELECT id_formacion FROM fichas WHERE id_ficha = ?");
+            $stmt->execute([$nueva_ficha]);
+            $nueva_formacion = $stmt->fetchColumn();
 
-                $conexion->commit();
-                $alertMessage = "Ficha del aprendiz actualizada correctamente";
-                $alertType = "success";
-            } catch (PDOException $e) {
-                $conexion->rollBack();
-                $alertMessage = "Error al cambiar ficha: " . $e->getMessage();
-                $alertType = "danger";
+            if ($actual && $actual['id_ficha']) {
+                // Ya tiene ficha, solo permitir cambio si es la misma formación
+                if ($actual['id_formacion'] == $nueva_formacion) {
+                    try {
+                        $conexion->beginTransaction();
+                        $stmt = $conexion->prepare("UPDATE user_ficha SET id_ficha = ? WHERE id_user = ?");
+                        $stmt->execute([$nueva_ficha, $id_aprendiz]);
+                        $conexion->commit();
+                        $alertMessage = "Ficha del aprendiz actualizada correctamente";
+                        $alertType = "success";
+                    } catch (PDOException $e) {
+                        $conexion->rollBack();
+                        $alertMessage = "Error al cambiar ficha: " . $e->getMessage();
+                        $alertType = "danger";
+                    }
+                } else {
+                    $alertMessage = "Solo puedes cambiar a una ficha de la misma formación.";
+                    $alertType = "danger";
+                }
+            } else {
+                // No tiene ficha, asignar la ficha seleccionada
+                try {
+                    $conexion->beginTransaction();
+                    $stmt = $conexion->prepare("INSERT INTO user_ficha (id_user, id_ficha, fecha_asig, id_estado) VALUES (?, ?, NOW(), 1)");
+                    $stmt->execute([$id_aprendiz, $nueva_ficha]);
+                    $conexion->commit();
+                    $alertMessage = "Ficha asignada correctamente al aprendiz";
+                    $alertType = "success";
+                } catch (PDOException $e) {
+                    $conexion->rollBack();
+                    $alertMessage = "Error al asignar ficha: " . $e->getMessage();
+                    $alertType = "danger";
+                }
             }
             break;
     }
@@ -161,6 +196,7 @@ try {
             e.estado,
             uf.id_ficha,
             f.id_ficha as ficha_numero,
+            f.id_formacion as id_formacion,
             fo.nombre as programa_formacion,
             tf.tipo_formacion,
             j.jornada,
@@ -256,6 +292,26 @@ try {
 } catch (PDOException $e) {
     // Mantener array vacío
 }
+
+// Obtener todas las formaciones activas
+$formaciones_disponibles = [];
+try {
+    $stmt = $conexion->query("SELECT id_formacion, nombre FROM formacion ORDER BY nombre");
+    $formaciones_disponibles = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    $formaciones_disponibles = [];
+}
+
+// Endpoint AJAX para fichas por formación
+if (isset($_GET['ajax_fichas']) && isset($_GET['id_formacion'])) {
+    $id_formacion = $_GET['id_formacion'];
+    $stmt = $conexion->prepare("SELECT id_ficha, id_ficha as ficha_numero FROM fichas WHERE id_formacion = ? AND id_estado = 1 ORDER BY id_ficha");
+    $stmt->execute([$id_formacion]);
+    $fichas = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    header('Content-Type: application/json');
+    echo json_encode($fichas);
+    exit;
+}
 ?>
 
 <!DOCTYPE html>
@@ -271,6 +327,9 @@ try {
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="../styles/sidebard.css">
     <link rel="stylesheet" href="../styles/main.css">
+    <!-- Select2 CSS y JS -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 </head>
 
 <body>
@@ -465,6 +524,14 @@ try {
                                                             </button>
                                                         </div>
                                                     </div>
+                                                    <!-- En el loop de aprendices, en el botón de cambiar ficha -->
+                                                    <button class="btn btn-secondary cambiar-ficha"
+                                                        data-id="<?php echo $aprendiz['id']; ?>"
+                                                        data-nombre="<?php echo htmlspecialchars($aprendiz['nombres'] . ' ' . $aprendiz['apellidos']); ?>"
+                                                        data-ficha="<?php echo $aprendiz['ficha_numero'] ?? ''; ?>"
+                                                        data-formacion="<?php echo $aprendiz['id_formacion'] ?? ''; ?>">
+                                                        <i class="bi bi-folder-symlink"></i> Cambiar Ficha
+                                                    </button>
                                                 </div>
                                             </div>
                                         </div>
@@ -664,12 +731,12 @@ try {
         </div>
     </div>
 
-    <!-- Modal para cambiar ficha -->
+    <!-- Modal para cambiar/asignar ficha y formación -->
     <div class="modal fade" id="cambiarFichaModal" tabindex="-1" aria-labelledby="cambiarFichaModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header bg-info text-white">
-                    <h5 class="modal-title" id="cambiarFichaModalLabel">Cambiar Ficha del Aprendiz</h5>
+                    <h5 class="modal-title" id="cambiarFichaModalLabel">Cambiar/Asignar Ficha y Formación</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <form action="" method="POST" id="cambiarFichaForm">
@@ -687,15 +754,25 @@ try {
                             <p class="text-muted" id="ficha_actual"></p>
                         </div>
 
-                        <div class="mb-3">
-                            <label for="nueva_ficha" class="form-label">Nueva Ficha *</label>
-                            <select class="form-select" id="nueva_ficha" name="nueva_ficha" required>
-                                <option value="">Seleccionar ficha</option>
-                                <?php foreach ($fichas_disponibles as $ficha): ?>
-                                    <option value="<?php echo $ficha['id_ficha']; ?>">
-                                        <?php echo $ficha['id_ficha'] . ' - ' . htmlspecialchars($ficha['programa']); ?>
+                        <!-- Select de formación, solo visible si NO tiene ficha -->
+                        <div class="mb-3" id="formacion_group" style="display:none;">
+                            <label for="nueva_formacion" class="form-label">Formación *</label>
+                            <select class="form-select select2" id="nueva_formacion" name="nueva_formacion">
+                                <option value="">Buscar formación...</option>
+                                <?php foreach ($formaciones_disponibles as $formacion): ?>
+                                    <option value="<?php echo $formacion['id_formacion']; ?>">
+                                        <?php echo htmlspecialchars($formacion['nombre']); ?>
                                     </option>
                                 <?php endforeach; ?>
+                            </select>
+                        </div>
+
+                        <!-- Select de ficha, siempre visible -->
+                        <div class="mb-3">
+                            <label for="nueva_ficha" class="form-label">Nueva Ficha *</label>
+                            <select class="form-select select2" id="nueva_ficha" name="nueva_ficha" required>
+                                <option value="">Buscar ficha...</option>
+                                <!-- Opciones se llenan dinámicamente -->
                             </select>
                         </div>
 
@@ -706,7 +783,7 @@ try {
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="submit" class="btn btn-info">Cambiar Ficha</button>
+                        <button type="submit" class="btn btn-info">Guardar</button>
                     </div>
                 </form>
             </div>
@@ -781,7 +858,6 @@ try {
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="../js/sidebard.js"></script>
 
-    // En la sección de JavaScript (después de la línea ~600), reemplaza todo el JavaScript con:
     <script>
     let aprendicesData = [];
     let paginaActual = 1;
@@ -823,7 +899,7 @@ try {
         });
     });
 
-    // Función para realizar búsqueda global con AJAX
+    // Función para realizar búsqueda global with AJAX
     async function realizarBusquedaGlobal() {
         if (isSearching) return;
         
@@ -953,7 +1029,7 @@ try {
         }
     }
 
-    // Actualizar paginación global
+    // Actualizar paginacion global
     function actualizarPaginacionGlobal(totalPaginas, paginaActual) {
         // Ocultar la paginación original de PHP si existe
         const paginacionOriginal = document.querySelector('.pagination');
@@ -1198,11 +1274,30 @@ try {
             const idAprendiz = button.getAttribute('data-id');
             const nombre = button.getAttribute('data-nombre');
             const fichaActual = button.getAttribute('data-ficha');
+            const formacionActual = button.getAttribute('data-formacion'); // agrega este data-attr si lo tienes
 
             document.getElementById('ficha_id_aprendiz').value = idAprendiz;
             document.getElementById('ficha_aprendiz_nombre').textContent = nombre;
             document.getElementById('ficha_actual').textContent = fichaActual || 'Sin asignar';
 
+            // Si NO tiene ficha, mostrar select de formación y limpiar fichas
+            if (!fichaActual || fichaActual === 'Sin asignar') {
+                $('#formacion_group').show();
+                $('#nueva_formacion').val('').trigger('change');
+                $('#nueva_ficha').html('<option value="">Buscar ficha...</option>').val('').trigger('change');
+            } else {
+                // Si tiene ficha, ocultar formación y cargar solo fichas de esa formación
+                $('#formacion_group').hide();
+                // Puedes obtener la formación actual desde un atributo data-formacion o por AJAX
+                let idFormacion = button.getAttribute('data-formacion');
+                if (!idFormacion) {
+                    // Si no tienes el atributo, puedes hacer un fetch AJAX aquí para obtener la formación
+                    // Por simplicidad, asume que lo tienes en data-formacion
+                }
+                cargarFichasPorFormacion(idFormacion, fichaActual);
+            }
+
+            // Mostrar modal
             const modalEl = document.getElementById('cambiarFichaModal');
             const modal = new bootstrap.Modal(modalEl);
             modal.show();
@@ -1210,14 +1305,72 @@ try {
         }
     });
 
-    // Mostrar modal de reportes
-    function mostrarModalReportes() {
-        const modalEl = document.getElementById('reportesModal');
-        const modal = new bootstrap.Modal(modalEl);
-        modal.show();
-        modalEl.addEventListener('hidden.bs.modal', limpiarBackdrop, { once: true });
+    // Cuando cambia la formación, cargar fichas de esa formación
+    $('#nueva_formacion').on('change', function() {
+        const idFormacion = $(this).val();
+        cargarFichasPorFormacion(idFormacion, null);
+    });
+
+    function cargarFichasPorFormacion(idFormacion, fichaActual) {
+        if (!idFormacion) {
+            $('#nueva_ficha').html('<option value="">Buscar ficha...</option>').val('').trigger('change');
+            return;
+        }
+        $.get('gestion_aprendices.php', { ajax_fichas: 1, id_formacion: idFormacion }, function(data) {
+            let options = '<option value="">Buscar ficha...</option>';
+            data.forEach(function(ficha) {
+                options += `<option value="${ficha.id_ficha}" ${fichaActual == ficha.id_ficha ? 'selected' : ''}>${ficha.ficha_numero}</option>`;
+            });
+            $('#nueva_ficha').html(options).val(fichaActual || '').trigger('change');
+        }, 'json');
     }
 
+    // Inicializa Select2 cada vez que se abre el modal (por si se agregan dinámicamente)
+    $('#cambiarFichaModal').on('shown.bs.modal', function () {
+        if (window.jQuery && $.fn.select2) {
+            $('.select2').select2({
+                width: '100%',
+                dropdownParent: $('#cambiarFichaModal')
+            });
+        }
+    });
+    // Mostrar modal dinámico según si tiene ficha o no
+    document.addEventListener('click', function(event) {
+        if (event.target.closest('.cambiar-ficha')) {
+            const button = event.target.closest('.cambiar-ficha');
+            const idAprendiz = button.getAttribute('data-id');
+            const nombre = button.getAttribute('data-nombre');
+            const fichaActual = button.getAttribute('data-ficha');
+            const formacionActual = button.getAttribute('data-formacion'); // agrega este data-attr si lo tienes
+
+            document.getElementById('ficha_id_aprendiz').value = idAprendiz;
+            document.getElementById('ficha_aprendiz_nombre').textContent = nombre;
+            document.getElementById('ficha_actual').textContent = fichaActual || 'Sin asignar';
+
+            // Si NO tiene ficha, mostrar select de formación y limpiar fichas
+            if (!fichaActual || fichaActual === 'Sin asignar') {
+                $('#formacion_group').show();
+                $('#nueva_formacion').val('').trigger('change');
+                $('#nueva_ficha').html('<option value="">Buscar ficha...</option>').val('').trigger('change');
+            } else {
+                // Si tiene ficha, ocultar formación y cargar solo fichas de esa formación
+                $('#formacion_group').hide();
+                // Puedes obtener la formación actual desde un atributo data-formacion o por AJAX
+                let idFormacion = button.getAttribute('data-formacion');
+                if (!idFormacion) {
+                    // Si no tienes el atributo, puedes hacer un fetch AJAX aquí para obtener la formación
+                    // Por simplicidad, asume que lo tienes en data-formacion
+                }
+                cargarFichasPorFormacion(idFormacion, fichaActual);
+            }
+
+            // Mostrar modal
+            const modalEl = document.getElementById('cambiarFichaModal');
+            const modal = new bootstrap.Modal(modalEl);
+            modal.show();
+            modalEl.addEventListener('hidden.bs.modal', limpiarBackdrop, { once: true });
+        }
+    });
     // Generar reportes
     function generarReporte(tipo) {
         if (tipo === 'general') {
