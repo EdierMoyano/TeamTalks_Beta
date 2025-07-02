@@ -1,6 +1,10 @@
 <?php
-require_once $_SERVER['DOCUMENT_ROOT'] . '/teamtalks/conexion/init.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/conexion/init.php';
 include 'session.php';
+if ($_SESSION['rol'] !== 3 && $_SESSION['rol'] !== 5) {
+    header('Location:' . BASE_URL . '/includes/exit.php?motivo=acceso-denegado');
+    exit;
+}
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $id_tema_foro = (int) $_POST['id_tema_foro'];
@@ -53,7 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->execute([$id_respuesta_padre]);
             $autor_padre = $stmt->fetch(PDO::FETCH_ASSOC);
 
-            if ($autor_padre && $autor_padre['id_user'] == $id_user) {
+            if ($autor_padre && $autor_padre['id_user'] != $id_user) {
                 $mensaje = 'Han respondido a tu comentario en el foro.';
                 $url = BASE_URL . "/mod/ver_respuestas.php?id_tema=$id_tema_foro";
 

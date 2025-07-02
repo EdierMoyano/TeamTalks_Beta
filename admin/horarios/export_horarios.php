@@ -25,11 +25,10 @@ try {
             h.nombre_horario,
             h.descripcion,
             h.fecha_creacion,
-            h.tipo_horario,
             j.jornada,
             e.estado,
-            COUNT(hf.id_horario_ficha) as fichas_asignadas,
-            GROUP_CONCAT(DISTINCT f.numero_ficha ORDER BY f.numero_ficha SEPARATOR ', ') as numeros_fichas,
+            COUNT(h.id_ficha) as fichas_asignadas,
+            GROUP_CONCAT(DISTINCT f.id_fichaORDER BY f.id_ficha SEPARATOR ', ') as numeros_fichas,
             GROUP_CONCAT(DISTINCT hd.dia_semana ORDER BY 
                 CASE hd.dia_semana 
                     WHEN 'Lunes' THEN 1 
@@ -44,7 +43,7 @@ try {
         FROM horario h
         LEFT JOIN jornada j ON h.id_jornada = j.id_jornada
         LEFT JOIN estado e ON h.id_estado = e.id_estado
-        LEFT JOIN horarios_ficha hf ON h.id_horario = hf.id_horario
+        LEFT JOIN horario hf ON h.id_horario = h.id_horario
         LEFT JOIN fichas f ON hf.id_ficha = f.id_ficha
         LEFT JOIN horario hd ON h.id_horario = hd.id_horario_padre
         WHERE h.nombre_horario IS NOT NULL
@@ -81,7 +80,6 @@ echo '<?xml version="1.0" encoding="UTF-8"?>';
                 <Cell><Data ss:Type="String">Nombre Horario</Data></Cell>
                 <Cell><Data ss:Type="String">Descripción</Data></Cell>
                 <Cell><Data ss:Type="String">Jornada</Data></Cell>
-                <Cell><Data ss:Type="String">Tipo</Data></Cell>
                 <Cell><Data ss:Type="String">Días</Data></Cell>
                 <Cell><Data ss:Type="String">Hora Inicio</Data></Cell>
                 <Cell><Data ss:Type="String">Hora Fin</Data></Cell>
@@ -98,7 +96,6 @@ echo '<?xml version="1.0" encoding="UTF-8"?>';
                     <Cell><Data ss:Type="String"><?php echo htmlspecialchars($horario['nombre_horario']); ?></Data></Cell>
                     <Cell><Data ss:Type="String"><?php echo htmlspecialchars($horario['descripcion'] ?? ''); ?></Data></Cell>
                     <Cell><Data ss:Type="String"><?php echo htmlspecialchars($horario['jornada'] ?? ''); ?></Data></Cell>
-                    <Cell><Data ss:Type="String"><?php echo htmlspecialchars($horario['tipo_horario']); ?></Data></Cell>
                     <Cell><Data ss:Type="String"><?php echo htmlspecialchars($horario['dias_semana'] ?? ''); ?></Data></Cell>
                     <Cell><Data ss:Type="String"><?php echo htmlspecialchars($horario['hora_inicio'] ?? ''); ?></Data></Cell>
                     <Cell><Data ss:Type="String"><?php echo htmlspecialchars($horario['hora_fin'] ?? ''); ?></Data></Cell>

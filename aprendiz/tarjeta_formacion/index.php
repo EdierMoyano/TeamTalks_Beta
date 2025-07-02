@@ -44,6 +44,7 @@ $formaciones = $stmt->fetchAll(PDO::FETCH_ASSOC);
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0">
   <link rel="icon" href="../../assets/img/icon2.png">
+  <link rel="stylesheet" href="../../styles/header.css">
 
 
   <style>

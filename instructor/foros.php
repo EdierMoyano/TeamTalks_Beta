@@ -1,7 +1,11 @@
 <?php
-require_once $_SERVER['DOCUMENT_ROOT'] . '/teamtalks/conexion/init.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/conexion/init.php';
 include 'session.php';
 $id_instructor = $_SESSION['documento'];
+if ($_SESSION['rol'] !== 3) {
+    header('Location:' . BASE_URL . '/includes/exit.php?motivo=acceso-denegado');
+    exit;
+}
 
 
 $sql = "

@@ -307,3 +307,26 @@
             padding: 15px;
             margin-bottom: 20px;
         }
+
+        /* Ajustes para los gráficos de Chart.js en el dashboard */
+.card .card-body canvas {
+  /* Altura máxima para gráficos grandes */
+  max-height: 260px;
+  /* Centrar el gráfico */
+  display: block;
+  margin: 0 auto;
+}
+
+/* Para pantallas pequeñas, reducir aún más la altura */
+@media (max-width: 768px) {
+  .card .card-body canvas {
+    max-height: 180px;
+  }
+}
+
+/* Opcional: que las tarjetas de gráficos tengan altura mínima igual */
+.card.h-100 {
+  min-height: 340px;
+  display: flex;
+  flex-direction: column;
+}
