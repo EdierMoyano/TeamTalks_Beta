@@ -1,3 +1,9 @@
+<?php
+require_once $_SERVER['DOCUMENT_ROOT'] . '/teamtalks/conexion/init.php';
+
+?>
+
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -25,7 +31,7 @@
       <div class="content_box_404">
         <h3>¡Parece que estás perdido!</h3>
         <p>La página que buscas no está disponible</p>
-        <a href="../../index.php" class="btn btn-primary link_404">Ir al inicio</a>
+        <a href="<?= BASE_URL ?>/index.php" class="btn btn-primary link_404">Ir al inicio</a>
       </div>
     </div>
   </section>
