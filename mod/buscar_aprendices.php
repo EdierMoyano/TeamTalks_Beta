@@ -1,6 +1,9 @@
 <?php
-require_once $_SERVER['DOCUMENT_ROOT'] . '/teamtalks/conexion/init.php';
-
+require_once $_SERVER['DOCUMENT_ROOT'] . '/conexion/init.php';
+if ($_SESSION['rol'] !== 3 && $_SESSION['rol'] !== 5) {
+    header('Location:' . BASE_URL . '/includes/exit.php?motivo=acceso-denegado');
+    exit;
+}
 $id_ficha = $_POST['id_ficha'] ?? 0;
 $query = $_POST['query'] ?? '';
 $page = $_POST['page'] ?? 1;
