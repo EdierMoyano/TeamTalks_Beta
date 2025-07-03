@@ -7,7 +7,6 @@ if ($_SESSION['rol'] !== 2) {
 }
 
 require_once '../../conexion/conexion.php';
-require_once '../../includes/functions.php';
 
 // Inicializar mensaje de alerta
 $alertMessage = '';

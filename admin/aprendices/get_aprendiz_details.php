@@ -91,14 +91,13 @@ try {
                 ELSE 'Reprobado'
             END as estado_trimestre
         FROM trimestre t
-        LEFT JOIN materia_ficha mf ON t.id_trimestre = mf.id_trimestre
+        LEFT JOIN materia_ficha mf ON t.id_trimestre = mf.id_trimestre AND mf.id_ficha = ?
         LEFT JOIN actividades a ON mf.id_materia_ficha = a.id_materia_ficha
         LEFT JOIN actividades_user au ON a.id_actividad = au.id_actividad AND au.id_user = ?
-        WHERE mf.id_ficha = ? OR mf.id_ficha IS NULL
         GROUP BY t.id_trimestre, t.trimestre
         ORDER BY t.id_trimestre
     ");
-    $stmt->execute([$id_aprendiz, $aprendiz['id_ficha']]);
+    $stmt->execute([$aprendiz['id_ficha'], $id_aprendiz]);
     $notas_trimestre = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     // Obtener actividades recientes
@@ -178,29 +177,6 @@ try {
                         <p><strong><i class="bi bi-book"></i> Programa:</strong><br><?php echo htmlspecialchars($aprendiz['programa_formacion']); ?></p>
                         <p><strong><i class="bi bi-clock"></i> Jornada:</strong><br><?php echo htmlspecialchars($aprendiz['jornada']); ?></p>
                     <?php endif; ?>
-                    
-                    <div class="d-grid gap-2 mt-3">
-                        <button class="btn btn-warning editar-aprendiz" 
-                                data-id="<?php echo $aprendiz['id']; ?>"
-                                data-nombre="<?php echo htmlspecialchars($aprendiz['nombres'] . ' ' . $aprendiz['apellidos']); ?>"
-                                data-correo="<?php echo htmlspecialchars($aprendiz['correo']); ?>"
-                                data-telefono="<?php echo htmlspecialchars($aprendiz['telefono'] ?? ''); ?>">
-                            <i class="bi bi-pencil"></i> Editar Datos
-                        </button>
-                        <button class="btn btn-info cambiar-estado"
-                                data-id="<?php echo $aprendiz['id']; ?>"
-                                data-nombre="<?php echo htmlspecialchars($aprendiz['nombres'] . ' ' . $aprendiz['apellidos']); ?>">
-                            <i class="bi bi-arrow-repeat"></i> Cambiar Estado
-                        </button>
-                        <?php if ($aprendiz['ficha_numero']): ?>
-                            <button class="btn btn-secondary cambiar-ficha"
-                                    data-id="<?php echo $aprendiz['id']; ?>"
-                                    data-nombre="<?php echo htmlspecialchars($aprendiz['nombres'] . ' ' . $aprendiz['apellidos']); ?>"
-                                    data-ficha="<?php echo $aprendiz['ficha_numero']; ?>">
-                                <i class="bi bi-folder-symlink"></i> Cambiar Ficha
-                            </button>
-                        <?php endif; ?>
-                    </div>
                 </div>
             </div>
 

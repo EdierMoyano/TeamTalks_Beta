@@ -8,7 +8,6 @@ if ($_SESSION['rol'] !== 2) {
 }
 
 require_once '../../conexion/conexion.php';
-require_once '../../includes/functions.php';
 
 // Verificar si el usuario está autenticado
 if (!isset($_SESSION['documento'])) {

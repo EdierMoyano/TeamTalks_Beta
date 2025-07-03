@@ -9,7 +9,6 @@ if ($_SESSION['rol'] !== 2) {
 
 
 require_once '../../conexion/conexion.php';
-require_once '../../includes/functions.php';
 
 // Verificar si el usuario está autenticado
 if (!isset($_SESSION['documento'])) {
@@ -207,7 +206,6 @@ try {
 <body>
     <div class="wrapper">
         <?php include '../includes/sidebard.php'; ?>
-
         <div class="main-content">
             <div class="container mt-4">
                 <div class="card">

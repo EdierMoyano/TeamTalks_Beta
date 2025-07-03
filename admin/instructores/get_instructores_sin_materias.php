@@ -78,7 +78,7 @@ try {
     <div class="row">
         <?php foreach ($instructores_sin_materias as $instructor): ?>
             <div class="col-md-6 col-lg-4 mb-4">
-                <div class="card h-100 border-primary shadow-sm instructor-card">
+                <div class="card h-70 border-primary shadow-sm instructor-card">
                     <div class="card-header bg-primary text-white">
                         <div class="d-flex justify-content-between align-items-center">
                             <h6 class="mb-0 fw-bold">
@@ -94,29 +94,29 @@ try {
                         <div class="instructor-info">
                             <div class="info-item mb-2">
                                 <i class="bi bi-person-vcard text-primary"></i>
-                                <strong>Documento:</strong> 
+                                <strong>Documento:</strong>
                                 <span class="text-muted"><?php echo $instructor['id']; ?></span>
                             </div>
                             <div class="info-item mb-2">
                                 <i class="bi bi-envelope text-primary"></i>
-                                <strong>Correo:</strong> 
+                                <strong>Correo:</strong>
                                 <span class="text-muted"><?php echo htmlspecialchars($instructor['correo']); ?></span>
                             </div>
                             <div class="info-item mb-2">
                                 <i class="bi bi-telephone text-primary"></i>
-                                <strong>Teléfono:</strong> 
+                                <strong>Teléfono:</strong>
                                 <span class="text-muted"><?php echo htmlspecialchars($instructor['telefono'] ?? 'No registrado'); ?></span>
                             </div>
                             <div class="info-item mb-3">
                                 <i class="bi bi-calendar text-primary"></i>
-                                <strong>Registro:</strong> 
+                                <strong>Registro:</strong>
                                 <span class="text-muted"><?php echo date('d/m/Y', strtotime($instructor['fecha_registro'])); ?></span>
                             </div>
                         </div>
 
                         <div class="alert alert-warning py-2 mb-3 border-warning">
                             <small>
-                                <i class="bi bi-exclamation-triangle text-warning"></i> 
+                                <i class="bi bi-exclamation-triangle text-warning"></i>
                                 <strong>Sin materias especializadas</strong>
                             </small>
                         </div>
@@ -144,7 +144,7 @@ try {
             <div class="d-flex align-items-center">
                 <i class="bi bi-info-circle text-primary me-2"></i>
                 <div>
-                    <strong class="text-primary">Total:</strong> 
+                    <strong class="text-primary">Total:</strong>
                     <span class="text-muted"><?php echo count($instructores_sin_materias); ?> instructor(es) sin materias asignadas.</span>
                 </div>
             </div>

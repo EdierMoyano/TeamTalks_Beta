@@ -92,27 +92,18 @@ try {
             e.estado,
             uf.id_ficha,
             f.id_ficha as ficha_numero,
+            f.id_formacion as id_formacion,
             fo.nombre as programa_formacion,
             tf.tipo_formacion,
             j.jornada,
-            -- Calcular promedio general
             COALESCE(AVG(au.nota), 0) as promedio_general,
-            -- Contar actividades totales y aprobadas
             COUNT(au.id_actividad_user) as total_actividades,
             SUM(CASE WHEN au.nota >= 4.0 THEN 1 ELSE 0 END) as actividades_aprobadas,
-            -- Calcular porcentaje de aprobación
             CASE 
                 WHEN COUNT(au.id_actividad_user) > 0 
                 THEN ROUND((SUM(CASE WHEN au.nota >= 4.0 THEN 1 ELSE 0 END) * 100.0 / COUNT(au.id_actividad_user)), 2)
                 ELSE 0 
-            END as porcentaje_aprobacion,
-            -- Calcular índice de información (para ordenamiento)
-            (
-                CASE WHEN u.telefono IS NOT NULL AND u.telefono != '' THEN 1 ELSE 0 END +
-                CASE WHEN uf.id_ficha IS NOT NULL THEN 2 ELSE 0 END +
-                CASE WHEN COUNT(au.id_actividad_user) > 0 THEN 3 ELSE 0 END +
-                CASE WHEN AVG(au.nota) IS NOT NULL THEN 2 ELSE 0 END
-            ) as indice_informacion
+            END as porcentaje_aprobacion
         FROM usuarios u
         LEFT JOIN user_ficha uf ON u.id = uf.id_user AND uf.id_estado = 1
         LEFT JOIN fichas f ON uf.id_ficha = f.id_ficha
@@ -124,7 +115,7 @@ try {
         WHERE $where_clause
         GROUP BY u.id, u.nombres, u.apellidos, u.correo, u.telefono, u.fecha_registro, 
                  u.id_estado, e.estado, uf.id_ficha, f.id_ficha, fo.nombre, tf.tipo_formacion, j.jornada
-        ORDER BY indice_informacion DESC, total_actividades DESC, u.nombres, u.apellidos
+        ORDER BY total_actividades DESC, u.nombres, u.apellidos
         LIMIT $aprendices_por_pagina OFFSET $offset
     ";
 
@@ -141,37 +132,48 @@ try {
             $bg_class = $border_class;
             ?>
             <div class="col-md-6 col-lg-4 mb-4">
-                <div class="card h-100 border-<?php echo $border_class; ?> shadow-sm">
+                <div class="card h-100 border-<?php echo $border_class; ?> shadow-sm aprendiz-card">
                     <div class="card-header bg-<?php echo $bg_class; ?> text-white">
                         <div class="d-flex justify-content-between align-items-center">
                             <h6 class="mb-0 fw-bold">
                                 <i class="bi bi-person-badge"></i>
                                 <?php echo htmlspecialchars($aprendiz['nombres'] . ' ' . $aprendiz['apellidos']); ?>
                             </h6>
-                            <div class="d-flex align-items-center gap-2">
-                                <span class="badge bg-light text-dark">
-                                    <?php echo htmlspecialchars($aprendiz['estado']); ?>
-                                </span>
-                                <!-- Indicador de información -->
-                                <?php if ($aprendiz['indice_informacion'] >= 6): ?>
-                                    <i class="bi bi-star-fill text-warning" title="Información completa"></i>
-                                <?php elseif ($aprendiz['indice_informacion'] >= 3): ?>
-                                    <i class="bi bi-star-half text-warning" title="Información parcial"></i>
-                                <?php else: ?>
-                                    <i class="bi bi-star text-muted" title="Información básica"></i>
-                                <?php endif; ?>
-                            </div>
+                            <span class="badge bg-light text-dark">
+                                <?php echo htmlspecialchars($aprendiz['estado']); ?>
+                            </span>
                         </div>
                     </div>
                     <div class="card-body">
-                        <p class="card-text">
-                            <small class="text-muted">
-                                <i class="bi bi-person-vcard"></i> <strong>Documento:</strong> <?php echo $aprendiz['id']; ?><br>
-                                <i class="bi bi-envelope"></i> <strong>Correo:</strong> <?php echo htmlspecialchars($aprendiz['correo']); ?><br>
-                                <i class="bi bi-telephone"></i> <strong>Teléfono:</strong> <?php echo htmlspecialchars($aprendiz['telefono'] ?? 'No registrado'); ?><br>
-                                <i class="bi bi-folder"></i> <strong>Ficha:</strong> <?php echo $aprendiz['ficha_numero'] ?? 'Sin asignar'; ?>
-                            </small>
-                        </p>
+                        <div class="aprendiz-info">
+                            <div class="info-item mb-2">
+                                <i class="bi bi-person-vcard text-primary"></i>
+                                <strong>Documento:</strong>
+                                <span class="text-muted"><?php echo $aprendiz['id']; ?></span>
+                            </div>
+                            <div class="info-item mb-2">
+                                <i class="bi bi-envelope text-primary"></i>
+                                <strong>Correo:</strong>
+                                <span class="text-muted"><?php echo htmlspecialchars($aprendiz['correo']); ?></span>
+                            </div>
+                            <div class="info-item mb-2">
+                                <i class="bi bi-telephone text-primary"></i>
+                                <strong>Teléfono:</strong>
+                                <span class="text-muted"><?php echo htmlspecialchars($aprendiz['telefono'] ?? 'No registrado'); ?></span>
+                            </div>
+                            <div class="info-item mb-2">
+                                <i class="bi bi-folder text-primary"></i>
+                                <strong>Ficha:</strong>
+                                <span class="text-muted"><?php echo $aprendiz['ficha_numero'] ?? 'Sin asignar'; ?></span>
+                            </div>
+                            <?php if ($aprendiz['programa_formacion']): ?>
+                                <div class="info-item mb-3">
+                                    <i class="bi bi-book text-primary"></i>
+                                    <strong>Programa:</strong>
+                                    <span class="text-muted"><?php echo htmlspecialchars($aprendiz['programa_formacion']); ?></span>
+                                </div>
+                            <?php endif; ?>
+                        </div>
 
                         <div class="row text-center mt-3">
                             <div class="col-6">
@@ -184,27 +186,6 @@ try {
                                 <h5 class="text-success mb-0"><?php echo number_format($aprendiz['porcentaje_aprobacion'], 1); ?>%</h5>
                                 <small class="text-muted">Aprobación</small>
                             </div>
-                        </div>
-
-                        <?php if ($aprendiz['programa_formacion']): ?>
-                            <div class="mt-2">
-                                <small class="text-muted">
-                                    <i class="bi bi-book"></i> <?php echo htmlspecialchars($aprendiz['programa_formacion']); ?>
-                                </small>
-                            </div>
-                        <?php endif; ?>
-
-                        <!-- Indicador de completitud de información -->
-                        <div class="mt-2">
-                            <div class="progress" style="height: 4px;">
-                                <div class="progress-bar bg-info" role="progressbar" 
-                                     style="width: <?php echo min(100, ($aprendiz['indice_informacion'] / 8) * 100); ?>%"
-                                     title="Completitud de información: <?php echo round(($aprendiz['indice_informacion'] / 8) * 100); ?>%">
-                                </div>
-                            </div>
-                            <small class="text-muted">
-                                Información: <?php echo round(($aprendiz['indice_informacion'] / 8) * 100); ?>% completa
-                            </small>
                         </div>
                     </div>
                     <div class="card-footer bg-transparent">
@@ -224,10 +205,48 @@ try {
                                     </button>
                                 </div>
                             </div>
+                            <!-- BOTÓN CAMBIAR FICHA - AGREGADO -->
+                            <button class="btn btn-secondary cambiar-ficha"
+                                data-id="<?php echo $aprendiz['id']; ?>"
+                                data-nombre="<?php echo htmlspecialchars($aprendiz['nombres'] . ' ' . $aprendiz['apellidos']); ?>"
+                                data-ficha="<?php echo $aprendiz['ficha_numero'] ?? ''; ?>"
+                                data-formacion="<?php echo $aprendiz['id_formacion'] ?? ''; ?>">
+                                <i class="bi bi-folder-symlink"></i> Cambiar Ficha
+                            </button>
                         </div>
                     </div>
                 </div>
             </div>
+
+            <style>
+                .aprendiz-card {
+                    transition: all 0.3s ease;
+                }
+
+                .aprendiz-card:hover {
+                    transform: translateY(-5px);
+                    box-shadow: 0 8px 25px rgba(14, 74, 134, 0.15) !important;
+                }
+
+                .info-item {
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    font-size: 0.9em;
+                }
+
+                .info-item i {
+                    width: 16px;
+                    flex-shrink: 0;
+                }
+
+                .aprendiz-info {
+                    background-color: #f8f9fa;
+                    padding: 15px;
+                    border-radius: 8px;
+                    margin-bottom: 15px;
+                }
+            </style>
             <?php
         }
     } else {

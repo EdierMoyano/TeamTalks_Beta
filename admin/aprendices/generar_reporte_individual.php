@@ -8,6 +8,13 @@ if (!isset($_SESSION['documento']) || $_SESSION['rol'] !== 2) {
 }
 
 require_once '../../conexion/conexion.php';
+require_once '../../vendor/autoload.php';
+
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Style\Border;
 
 // Crear instancia de la conexión
 $db = new Database();
@@ -55,19 +62,14 @@ try {
             fo.nombre as programa_formacion,
             tf.tipo_formacion,
             j.jornada,
-            -- Promedio general
             COALESCE(AVG(au.nota), 0) as promedio_general,
-            -- Total actividades
             COUNT(au.id_actividad_user) as total_actividades,
-            -- Actividades aprobadas
             SUM(CASE WHEN au.nota >= 4.0 THEN 1 ELSE 0 END) as actividades_aprobadas,
-            -- Porcentaje de aprobación
             CASE 
                 WHEN COUNT(au.id_actividad_user) > 0 
                 THEN ROUND((SUM(CASE WHEN au.nota >= 4.0 THEN 1 ELSE 0 END) * 100.0 / COUNT(au.id_actividad_user)), 2)
                 ELSE 0 
             END as porcentaje_aprobacion,
-            -- Estado de aprobación general
             CASE 
                 WHEN AVG(au.nota) >= 4.0 THEN 'APROBADO'
                 WHEN AVG(au.nota) IS NULL THEN 'SIN CALIFICAR'
@@ -141,168 +143,201 @@ try {
     $stmt->execute([$id_aprendiz, $aprendiz['id_ficha']]);
     $actividades = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // Generar archivo Excel
-    $nombre_archivo = "reporte_" . strtolower(str_replace(' ', '_', $aprendiz['nombres'] . '_' . $aprendiz['apellidos']));
-    
-    header('Content-Type: application/vnd.ms-excel');
-    header('Content-Disposition: attachment;filename="' . $nombre_archivo . '_' . date('Y-m-d') . '.xls"');
-    header('Cache-Control: max-age=0');
+    // Crear nuevo Spreadsheet
+    $spreadsheet = new Spreadsheet();
+    $sheet = $spreadsheet->getActiveSheet();
+    $sheet->setTitle('Reporte Individual');
 
-    echo '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">';
-    echo '<head><meta charset="UTF-8"><title>Reporte Individual - ' . htmlspecialchars($aprendiz['nombres'] . ' ' . $aprendiz['apellidos']) . '</title></head>';
-    echo '<body>';
-    
-    echo '<table border="1">';
-    
-    // Encabezado principal
-    echo '<tr style="background-color: #0e4a86; color: white; font-weight: bold;">';
-    echo '<td colspan="8" style="text-align: center; font-size: 16px;">REPORTE INDIVIDUAL - TEAMTALKS</td>';
-    echo '</tr>';
-    echo '<tr style="background-color: #f8f9fa;">';
-    echo '<td colspan="8" style="text-align: center;">Generado el: ' . date('d/m/Y H:i:s') . '</td>';
-    echo '</tr>';
-    echo '<tr><td colspan="8"></td></tr>'; // Fila vacía
-    
+    // Configurar encabezado principal
+    $sheet->setCellValue('A1', 'REPORTE INDIVIDUAL - TEAMTALKS');
+    $sheet->mergeCells('A1:H1');
+    $sheet->getStyle('A1')->applyFromArray([
+        'font' => ['bold' => true, 'size' => 16, 'color' => ['rgb' => 'FFFFFF']],
+        'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '0e4a86']],
+        'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER]
+    ]);
+
+    $sheet->setCellValue('A2', 'Generado el: ' . date('d/m/Y H:i:s'));
+    $sheet->mergeCells('A2:H2');
+    $sheet->getStyle('A2')->applyFromArray([
+        'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => 'f8f9fa']],
+        'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER]
+    ]);
+
+    $row = 4;
+
     // Información personal
-    echo '<tr style="background-color: #28a745; color: white; font-weight: bold;">';
-    echo '<td colspan="8" style="text-align: center;">INFORMACIÓN PERSONAL</td>';
-    echo '</tr>';
-    
-    echo '<tr>';
-    echo '<td style="font-weight: bold;">Documento:</td>';
-    echo '<td>' . htmlspecialchars($aprendiz['documento']) . '</td>';
-    echo '<td style="font-weight: bold;">Nombres:</td>';
-    echo '<td>' . htmlspecialchars($aprendiz['nombres']) . '</td>';
-    echo '<td style="font-weight: bold;">Apellidos:</td>';
-    echo '<td>' . htmlspecialchars($aprendiz['apellidos']) . '</td>';
-    echo '<td style="font-weight: bold;">Estado:</td>';
-    echo '<td>' . htmlspecialchars($aprendiz['estado']) . '</td>';
-    echo '</tr>';
-    
-    echo '<tr>';
-    echo '<td style="font-weight: bold;">Correo:</td>';
-    echo '<td colspan="3">' . htmlspecialchars($aprendiz['correo']) . '</td>';
-    echo '<td style="font-weight: bold;">Teléfono:</td>';
-    echo '<td>' . htmlspecialchars($aprendiz['telefono'] ?? 'No registrado') . '</td>';
-    echo '<td style="font-weight: bold;">Fecha Registro:</td>';
-    echo '<td>' . date('d/m/Y', strtotime($aprendiz['fecha_registro'])) . '</td>';
-    echo '</tr>';
-    
+    $sheet->setCellValue('A' . $row, 'INFORMACIÓN PERSONAL');
+    $sheet->mergeCells('A' . $row . ':H' . $row);
+    $sheet->getStyle('A' . $row)->applyFromArray([
+        'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
+        'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '28a745']],
+        'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER]
+    ]);
+    $row++;
+
+    $sheet->setCellValue('A' . $row, 'Documento:');
+    $sheet->setCellValue('B' . $row, $aprendiz['documento']);
+    $sheet->setCellValue('C' . $row, 'Nombres:');
+    $sheet->setCellValue('D' . $row, $aprendiz['nombres']);
+    $sheet->setCellValue('E' . $row, 'Apellidos:');
+    $sheet->setCellValue('F' . $row, $aprendiz['apellidos']);
+    $sheet->setCellValue('G' . $row, 'Estado:');
+    $sheet->setCellValue('H' . $row, $aprendiz['estado']);
+    $row++;
+
+    $sheet->setCellValue('A' . $row, 'Correo:');
+    $sheet->setCellValue('B' . $row, $aprendiz['correo']);
+    $sheet->mergeCells('B' . $row . ':D' . $row);
+    $sheet->setCellValue('E' . $row, 'Teléfono:');
+    $sheet->setCellValue('F' . $row, $aprendiz['telefono'] ?? 'No registrado');
+    $sheet->setCellValue('G' . $row, 'Fecha Registro:');
+    $sheet->setCellValue('H' . $row, date('d/m/Y', strtotime($aprendiz['fecha_registro'])));
+    $row++;
+
     if ($aprendiz['ficha_numero']) {
-        echo '<tr>';
-        echo '<td style="font-weight: bold;">Ficha:</td>';
-        echo '<td>' . htmlspecialchars($aprendiz['ficha_numero']) . '</td>';
-        echo '<td style="font-weight: bold;">Programa:</td>';
-        echo '<td colspan="3">' . htmlspecialchars($aprendiz['programa_formacion']) . '</td>';
-        echo '<td style="font-weight: bold;">Jornada:</td>';
-        echo '<td>' . htmlspecialchars($aprendiz['jornada']) . '</td>';
-        echo '</tr>';
+        $sheet->setCellValue('A' . $row, 'Ficha:');
+        $sheet->setCellValue('B' . $row, $aprendiz['ficha_numero']);
+        $sheet->setCellValue('C' . $row, 'Programa:');
+        $sheet->setCellValue('D' . $row, $aprendiz['programa_formacion']);
+        $sheet->mergeCells('D' . $row . ':F' . $row);
+        $sheet->setCellValue('G' . $row, 'Jornada:');
+        $sheet->setCellValue('H' . $row, $aprendiz['jornada']);
+        $row++;
     }
-    
-    echo '<tr><td colspan="8"></td></tr>'; // Fila vacía
-    
+
+    $row++;
+
     // Resumen académico
-    echo '<tr style="background-color: #17a2b8; color: white; font-weight: bold;">';
-    echo '<td colspan="8" style="text-align: center;">RESUMEN ACADÉMICO</td>';
-    echo '</tr>';
-    
-    echo '<tr>';
-    echo '<td style="font-weight: bold;">Promedio General:</td>';
-    echo '<td>' . number_format($aprendiz['promedio_general'], 2) . '</td>';
-    echo '<td style="font-weight: bold;">Total Actividades:</td>';
-    echo '<td>' . $aprendiz['total_actividades'] . '</td>';
-    echo '<td style="font-weight: bold;">Actividades Aprobadas:</td>';
-    echo '<td>' . $aprendiz['actividades_aprobadas'] . '</td>';
-    echo '<td style="font-weight: bold;">% Aprobación:</td>';
-    echo '<td>' . number_format($aprendiz['porcentaje_aprobacion'], 2) . '%</td>';
-    echo '</tr>';
-    
-    echo '<tr>';
-    echo '<td style="font-weight: bold;">Estado Académico:</td>';
-    echo '<td colspan="7" style="font-weight: bold; color: ' . 
-        ($aprendiz['estado_academico'] === 'APROBADO' ? 'green' : 
-        ($aprendiz['estado_academico'] === 'SIN CALIFICAR' ? 'orange' : 'red')) . ';">' . 
-        $aprendiz['estado_academico'] . '</td>';
-    echo '</tr>';
-    
-    echo '<tr><td colspan="8"></td></tr>'; // Fila vacía
-    
+    $sheet->setCellValue('A' . $row, 'RESUMEN ACADÉMICO');
+    $sheet->mergeCells('A' . $row . ':H' . $row);
+    $sheet->getStyle('A' . $row)->applyFromArray([
+        'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
+        'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '17a2b8']],
+        'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER]
+    ]);
+    $row++;
+
+    $sheet->setCellValue('A' . $row, 'Promedio General:');
+    $sheet->setCellValue('B' . $row, number_format($aprendiz['promedio_general'], 2));
+    $sheet->setCellValue('C' . $row, 'Total Actividades:');
+    $sheet->setCellValue('D' . $row, $aprendiz['total_actividades']);
+    $sheet->setCellValue('E' . $row, 'Actividades Aprobadas:');
+    $sheet->setCellValue('F' . $row, $aprendiz['actividades_aprobadas']);
+    $sheet->setCellValue('G' . $row, '% Aprobación:');
+    $sheet->setCellValue('H' . $row, number_format($aprendiz['porcentaje_aprobacion'], 2) . '%');
+    $row++;
+
+    $sheet->setCellValue('A' . $row, 'Estado Académico:');
+    $sheet->setCellValue('B' . $row, $aprendiz['estado_academico']);
+    $sheet->mergeCells('B' . $row . ':H' . $row);
+    $row++;
+
+    $row++;
+
     // Rendimiento por trimestre
     if (!empty($trimestres)) {
-        echo '<tr style="background-color: #ffc107; color: black; font-weight: bold;">';
-        echo '<td colspan="8" style="text-align: center;">RENDIMIENTO POR TRIMESTRE</td>';
-        echo '</tr>';
-        
-        echo '<tr style="background-color: #f8f9fa; font-weight: bold;">';
-        echo '<td>TRIMESTRE</td>';
-        echo '<td>PROMEDIO</td>';
-        echo '<td>TOTAL ACTIVIDADES</td>';
-        echo '<td>ACTIVIDADES APROBADAS</td>';
-        echo '<td>% APROBACIÓN</td>';
-        echo '<td>ESTADO</td>';
-        echo '<td colspan="2">OBSERVACIONES</td>';
-        echo '</tr>';
-        
+        $sheet->setCellValue('A' . $row, 'RENDIMIENTO POR TRIMESTRE');
+        $sheet->mergeCells('A' . $row . ':H' . $row);
+        $sheet->getStyle('A' . $row)->applyFromArray([
+            'font' => ['bold' => true, 'color' => ['rgb' => '000000']],
+            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => 'ffc107']],
+            'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER]
+        ]);
+        $row++;
+
+        $headers = ['TRIMESTRE', 'PROMEDIO', 'TOTAL ACTIVIDADES', 'ACTIVIDADES APROBADAS', '% APROBACIÓN', 'ESTADO', 'OBSERVACIONES'];
+        $col = 'A';
+        foreach ($headers as $header) {
+            $sheet->setCellValue($col . $row, $header);
+            $col++;
+        }
+        $sheet->getStyle('A' . $row . ':G' . $row)->applyFromArray([
+            'font' => ['bold' => true],
+            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => 'f8f9fa']]
+        ]);
+        $row++;
+
         foreach ($trimestres as $trimestre) {
             $porcentaje_trimestre = $trimestre['total_actividades_trimestre'] > 0 ? 
                 round(($trimestre['actividades_aprobadas_trimestre'] / $trimestre['total_actividades_trimestre']) * 100, 2) : 0;
             
-            echo '<tr>';
-            echo '<td>' . htmlspecialchars($trimestre['trimestre']) . '</td>';
-            echo '<td>' . ($trimestre['promedio_trimestre'] ? number_format($trimestre['promedio_trimestre'], 2) : 'N/A') . '</td>';
-            echo '<td>' . $trimestre['total_actividades_trimestre'] . '</td>';
-            echo '<td>' . $trimestre['actividades_aprobadas_trimestre'] . '</td>';
-            echo '<td>' . $porcentaje_trimestre . '%</td>';
-            echo '<td>' . $trimestre['estado_trimestre'] . '</td>';
-            echo '<td colspan="2">' . 
-                ($trimestre['estado_trimestre'] === 'APROBADO' ? 'Rendimiento satisfactorio' : 
-                ($trimestre['estado_trimestre'] === 'SIN CALIFICAR' ? 'Pendiente de evaluación' : 'Requiere refuerzo')) . 
-                '</td>';
-            echo '</tr>';
+            $sheet->setCellValue('A' . $row, $trimestre['trimestre']);
+            $sheet->setCellValue('B' . $row, $trimestre['promedio_trimestre'] ? number_format($trimestre['promedio_trimestre'], 2) : 'N/A');
+            $sheet->setCellValue('C' . $row, $trimestre['total_actividades_trimestre']);
+            $sheet->setCellValue('D' . $row, $trimestre['actividades_aprobadas_trimestre']);
+            $sheet->setCellValue('E' . $row, $porcentaje_trimestre . '%');
+            $sheet->setCellValue('F' . $row, $trimestre['estado_trimestre']);
+            
+            $observacion = ($trimestre['estado_trimestre'] === 'APROBADO') ? 'Rendimiento satisfactorio' : 
+                          (($trimestre['estado_trimestre'] === 'SIN CALIFICAR') ? 'Pendiente de evaluación' : 'Requiere refuerzo');
+            $sheet->setCellValue('G' . $row, $observacion);
+            $row++;
         }
     }
-    
-    echo '<tr><td colspan="8"></td></tr>'; // Fila vacía
-    
+
+    $row++;
+
     // Detalle de actividades
     if (!empty($actividades)) {
-        echo '<tr style="background-color: #6f42c1; color: white; font-weight: bold;">';
-        echo '<td colspan="8" style="text-align: center;">DETALLE DE ACTIVIDADES</td>';
-        echo '</tr>';
-        
-        echo '<tr style="background-color: #f8f9fa; font-weight: bold;">';
-        echo '<td>TRIMESTRE</td>';
-        echo '<td>MATERIA</td>';
-        echo '<td>ACTIVIDAD</td>';
-        echo '<td>FECHA ENTREGA</td>';
-        echo '<td>FECHA ENTREGADO</td>';
-        echo '<td>NOTA</td>';
-        echo '<td>ESTADO</td>';
-        echo '<td>COMENTARIOS</td>';
-        echo '</tr>';
-        
+        $sheet->setCellValue('A' . $row, 'DETALLE DE ACTIVIDADES');
+        $sheet->mergeCells('A' . $row . ':H' . $row);
+        $sheet->getStyle('A' . $row)->applyFromArray([
+            'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
+            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '6f42c1']],
+            'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER]
+        ]);
+        $row++;
+
+        $headers = ['TRIMESTRE', 'MATERIA', 'ACTIVIDAD', 'FECHA ENTREGA', 'FECHA ENTREGADO', 'NOTA', 'ESTADO', 'COMENTARIOS'];
+        $col = 'A';
+        foreach ($headers as $header) {
+            $sheet->setCellValue($col . $row, $header);
+            $col++;
+        }
+        $sheet->getStyle('A' . $row . ':H' . $row)->applyFromArray([
+            'font' => ['bold' => true],
+            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => 'f8f9fa']]
+        ]);
+        $row++;
+
         foreach ($actividades as $actividad) {
-            echo '<tr>';
-            echo '<td>' . htmlspecialchars($actividad['trimestre'] ?? 'N/A') . '</td>';
-            echo '<td>' . htmlspecialchars($actividad['materia'] ?? 'N/A') . '</td>';
-            echo '<td>' . htmlspecialchars($actividad['titulo']) . '</td>';
-            echo '<td>' . date('d/m/Y', strtotime($actividad['fecha_entrega'])) . '</td>';
-            echo '<td>' . ($actividad['fecha_entrega_estudiante'] ? date('d/m/Y', strtotime($actividad['fecha_entrega_estudiante'])) : 'No entregado') . '</td>';
-            echo '<td>' . ($actividad['nota'] ? number_format($actividad['nota'], 1) : 'N/A') . '</td>';
-            echo '<td>' . $actividad['estado_actividad'] . '</td>';
-            echo '<td>' . htmlspecialchars($actividad['comentario_inst'] ?? '') . '</td>';
-            echo '</tr>';
+            $sheet->setCellValue('A' . $row, $actividad['trimestre'] ?? 'N/A');
+            $sheet->setCellValue('B' . $row, $actividad['materia'] ?? 'N/A');
+            $sheet->setCellValue('C' . $row, $actividad['titulo']);
+            $sheet->setCellValue('D' . $row, date('d/m/Y', strtotime($actividad['fecha_entrega'])));
+            $sheet->setCellValue('E' . $row, $actividad['fecha_entrega_estudiante'] ? date('d/m/Y', strtotime($actividad['fecha_entrega_estudiante'])) : 'No entregado');
+            $sheet->setCellValue('F' . $row, $actividad['nota'] ? number_format($actividad['nota'], 1) : 'N/A');
+            $sheet->setCellValue('G' . $row, $actividad['estado_actividad']);
+            $sheet->setCellValue('H' . $row, $actividad['comentario_inst'] ?? '');
+            $row++;
         }
     }
+
+    // Ajustar ancho de columnas
+    foreach (range('A', 'H') as $col) {
+        $sheet->getColumnDimension($col)->setAutoSize(true);
+    }
+
+    // Aplicar bordes a toda la tabla
+    $sheet->getStyle('A1:H' . ($row - 1))->applyFromArray([
+        'borders' => [
+            'allBorders' => [
+                'borderStyle' => Border::BORDER_THIN,
+                'color' => ['rgb' => '000000']
+            ]
+        ]
+    ]);
+
+    // Configurar headers para descarga
+    $nombre_archivo = "reporte_" . strtolower(str_replace(' ', '_', $aprendiz['nombres'] . '_' . $aprendiz['apellidos'])) . '_' . date('Y-m-d');
     
-    // Pie de página
-    echo '<tr><td colspan="8"></td></tr>'; // Fila vacía
-    echo '<tr style="background-color: #6c757d; color: white; font-weight: bold;">';
-    echo '<td colspan="8" style="text-align: center;">REPORTE GENERADO POR TEAMTALKS - ' . date('d/m/Y H:i:s') . '</td>';
-    echo '</tr>';
-    
-    echo '</table>';
-    echo '</body></html>';
+    header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    header('Content-Disposition: attachment;filename="' . $nombre_archivo . '.xlsx"');
+    header('Cache-Control: max-age=0');
+
+    $writer = new Xlsx($spreadsheet);
+    $writer->save('php://output');
 
 } catch (PDOException $e) {
     die("Error al generar reporte: " . $e->getMessage());
