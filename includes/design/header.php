@@ -1,5 +1,6 @@
 <?php
 require_once $_SERVER['DOCUMENT_ROOT'] . '/teamtalks/conexion/init.php';
+
 $usuario_logueado = isset($_SESSION['documento']);
 $id_usuario = $_SESSION['documento'] ?? null;
 $username = $_SESSION['nombres'] ?? 'Nombres';
@@ -7,19 +8,80 @@ $lastname = $_SESSION['apellidos'] ?? 'Apellidos';
 $rol = $_SESSION['rol'] ?? null;
 $uri = $_SERVER['REQUEST_URI'];
 
+// NUEVA VALIDACIÓN: Cerrar sesión para super_admin (rol 1) y redirección automática según el rol
+if ($usuario_logueado && $rol) {
+    // Si es super_admin (rol 1), cerrar sesión y redirigir al index
+    if ($rol == 1) {
+        session_destroy();
+        header("Location: " . BASE_URL . "/index.php");
+        exit;
+    }
+    
+    $current_path = parse_url($uri, PHP_URL_PATH);
+    
+    // Definir las rutas correctas para cada rol (usando rutas relativas)
+    $rutas_por_rol = [
+        2 => '/admin/',           // Administrador
+        3 => '/instructor/',      // Instructor
+        4 => '/aprendiz/',        // Aprendiz
+        5 => '/transversal/'      // Transversal
+    ];
+    
+    // Verificar si el usuario está en la ruta correcta para su rol
+    if (isset($rutas_por_rol[$rol])) {
+        $ruta_correcta = $rutas_por_rol[$rol];
+        
+        // Si no está en su ruta correcta y no está en páginas compartidas
+        if (!str_contains($current_path, $ruta_correcta) && 
+            !str_contains($current_path, '/mod/') &&
+            !str_contains($current_path, '/ajax/') &&
+            !str_contains($current_path, '/actions/') &&
+            !str_contains($current_path, '/includes/') &&
+            !str_contains($current_path, '/assets/') &&
+            !str_contains($current_path, '/uploads/')) {
+            
+            // Redirigir a la página de inicio correspondiente
+            $pagina_inicio = '';
+            switch ($rol) {
+                case 2: // Administrador
+                    $pagina_inicio = BASE_URL . '/admin/index.php';
+                    break;
+                case 3: // Instructor
+                    $pagina_inicio = BASE_URL . '/instructor/index.php';
+                    break;
+                case 4: // Aprendiz
+                    $pagina_inicio = BASE_URL . '/aprendiz/index.php';
+                    break;
+                case 5: // Transversal
+                    $pagina_inicio = BASE_URL . '/transversal/index.php';
+                    break;
+            }
+            
+            if ($pagina_inicio) {
+                header("Location: $pagina_inicio");
+                exit;
+            }
+        }
+    }
+}
+
+// Determinar carpeta de inicio según la URL y rol
 if (strpos($uri, '/instructor/') !== false) {
     $carpeta_inicio = BASE_URL . '/instructor/index.php';
 } elseif (strpos($uri, '/transversal/') !== false) {
     $carpeta_inicio = BASE_URL . '/transversal/index.php';
 } elseif (strpos($uri, '/aprendiz/') !== false) {
     $carpeta_inicio = BASE_URL . '/aprendiz/tarjeta_formacion/index.php';
+} elseif (strpos($uri, '/admin/') !== false) {
+    $carpeta_inicio = BASE_URL . '/admin/index.php';
 } elseif (strpos($uri, '/mod/') !== false) {
-
     // Para rutas compartidas, usamos el rol para definir a qué dashboard enviar
     if ($rol == 3) { // Instructor gerente
         $carpeta_inicio = BASE_URL . '/instructor/index.php';
     } elseif ($rol == 5) { // Instructor transversal
         $carpeta_inicio = BASE_URL . '/transversal/index.php';
+    } elseif ($rol == 2) { // Administrador
+        $carpeta_inicio = BASE_URL . '/admin/index.php';
     } else {
         $carpeta_inicio = BASE_URL . '/index.php';
     }
@@ -38,6 +100,7 @@ if ($id_usuario) {
     $user = null;
 }
 
+// Cargar notificaciones
 $notificaciones = [];
 if ($id_usuario) {
     $stmt = $conex->prepare("
@@ -59,7 +122,6 @@ if ($id_usuario) {
     ORDER BY n.fecha DESC
     LIMIT 10
     ");
-
     $stmt->execute([$id_usuario]);
     $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
     foreach ($rows as $row) {
@@ -82,8 +144,8 @@ if ($id_usuario) {
     $stmt_count->execute([$id_usuario]);
     $notificaciones_no_leidas = $stmt_count->fetchColumn();
 }
-
 ?>
+
 <style>
     .btn-primary-modern {
         background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
@@ -106,6 +168,142 @@ if ($id_usuario) {
         color: white;
         box-shadow: 0 8px 25px rgba(37, 99, 235, 0.3);
         background: linear-gradient(135deg, #1e40af 0%, #1d4ed8 100%);
+    }
+
+    .btn-secondary-modern {
+        background: #6c757d;
+        border: none;
+        border-radius: 12px;
+        padding: 1rem 2rem;
+        font-weight: 600;
+        font-size: 0.875rem;
+        transition: all 0.3s ease;
+        color: white;
+        min-width: 140px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .btn-secondary-modern:hover {
+        background: #5a6268;
+        color: white;
+        transform: translateY(-1px);
+    }
+
+    /* Estilos para el modal de editar perfil */
+    .modal-editar-perfil .modal-content {
+        border-radius: 16px;
+        border: none;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+    }
+
+    .modal-editar-perfil .modal-header {
+        background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+        color: white;
+        border-radius: 16px 16px 0 0;
+        padding: 1.5rem 2rem;
+    }
+
+    .modal-editar-perfil .btn-close {
+        background: none;
+        border: none;
+        color: white;
+        font-size: 1.5rem;
+        opacity: 0.8;
+    }
+
+    .modal-editar-perfil .btn-close:hover {
+        opacity: 1;
+    }
+
+    .avatar-section {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .avatar-preview {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 4px solid #e9ecef;
+        margin-bottom: 0.5rem;
+    }
+
+    .avatar-label {
+        color: #6c757d;
+        font-size: 0.875rem;
+        margin: 0;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-label-modern {
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+
+    .form-control-modern {
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 0.875rem 1rem;
+        font-size: 0.875rem;
+        transition: all 0.3s ease;
+        background-color: #f9fafb;
+    }
+
+    .form-control-modern:focus {
+        border-color: #2563eb;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        background-color: white;
+        outline: none;
+    }
+
+    .form-control-modern.is-invalid {
+        border-color: #dc3545;
+        box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.1);
+    }
+
+    .file-input-wrapper {
+        position: relative;
+        display: inline-block;
+        width: 100%;
+    }
+
+    .file-input-modern {
+        position: absolute;
+        opacity: 0;
+        width: 100%;
+        height: 100%;
+        cursor: pointer;
+    }
+
+    .file-input-label {
+        display: block;
+        padding: 0.875rem 1rem;
+        background: #f3f4f6;
+        border: 2px dashed #d1d5db;
+        border-radius: 12px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        color: #374151;
+        font-weight: 500;
+    }
+
+    .file-input-label:hover {
+        background: #e5e7eb;
+        border-color: #9ca3af;
+    }
+
+    .password-group {
+        position: relative;
     }
 </style>
 
@@ -131,7 +329,6 @@ if ($id_usuario) {
                         <i class="fas fa-check-double"></i>
                         Marcar todas como leídas
                     </button>
-
                     <button type="button" id="eliminar-todas" class="btn-delete-all">
                         <i class="fas fa-trash-alt"></i>
                         Eliminar todas
@@ -150,7 +347,6 @@ if ($id_usuario) {
                     <p class="empty-text">No tienes notificaciones recientes</p>
                 </div>
             <?php else: ?>
-
                 <div class="notifications-list">
                     <?php foreach ($notificaciones as $index => $noti): ?>
                         <div class="notification-item <?= $noti['leido'] ? 'read' : 'unread' ?>"
@@ -160,33 +356,28 @@ if ($id_usuario) {
                                 <div class="notification-avatar">
                                     <i class="fas fa-comment-dots"></i>
                                 </div>
-
                                 <a href="<?= htmlspecialchars($noti['url_destino']) . '&id_notificacion=' . $noti['id_notificacion'] ?>"
                                     class="notification-body" style="text-decoration: none; color: inherit;">
                                     <div class="notification-message">
                                         <strong><?= htmlspecialchars($noti['autor']) ?></strong>
                                         <span class="action-text">respondió a tu comentario</span>
                                     </div>
-
                                     <?php if (!empty($noti['contenido']) && $noti['contenido'] !== 'Sin contenido disponible'): ?>
                                         <div class="notification-preview">
                                             <i class="fas fa-quote-left quote-icon"></i>
                                             <span class="preview-text"><?= htmlspecialchars($noti['contenido']) ?></span>
                                         </div>
                                     <?php endif; ?>
-
                                     <div class="notification-meta">
                                         <span class="notification-time">
                                             <i class="fas fa-clock"></i>
                                             <?= $noti['fecha'] ?>
                                         </span>
-
                                         <?php if (!$noti['leido']): ?>
                                             <span class="notification-badge">Nuevo</span>
                                         <?php endif; ?>
                                     </div>
                                 </a>
-
                                 <div class="notification-actions">
                                     <button type="button"
                                         class="btn-delete-individual"
@@ -194,7 +385,6 @@ if ($id_usuario) {
                                         title="Eliminar notificación">
                                         <i class="fas fa-times"></i>
                                     </button>
-
                                     <?php if (!$noti['leido']): ?>
                                         <div class="unread-indicator"></div>
                                     <?php endif; ?>
@@ -230,7 +420,6 @@ if ($id_usuario) {
                     <i class="fas fa-sign-in-alt"></i>
                     Iniciar Sesión
                 </a>
-
                 <!-- Mobile Menu Toggle -->
                 <button class="mobile-toggle" onclick="toggleMobileMenu()">
                     <i class="fas fa-bars mobile-toggle-icon"></i>
@@ -276,8 +465,7 @@ if ($id_usuario) {
                         </li>
 
                         <!-- Nueva opción de Certificados solo para aprendices -->
-                        <?php if ($rol == 4): // Solo para aprendices 
-                        ?>
+                        <?php if ($rol == 4): // Solo para aprendices ?>
                             <li>
                                 <a class="dropdown-item" href="<?= BASE_URL ?>/aprendiz/certificados/index.php">
                                     <i class="bi bi-file-break-fill"></i>
@@ -299,7 +487,6 @@ if ($id_usuario) {
                 </div>
 
                 <!-- Mobile Menu Toggle - SOLO PARA USUARIOS NO LOGUEADOS -->
-                <!-- Este botón ya no aparecerá para usuarios logueados gracias al CSS -->
                 <button class="mobile-toggle" onclick="toggleMobileMenu()">
                     <i class="fas fa-bars mobile-toggle-icon"></i>
                 </button>
@@ -316,7 +503,6 @@ if ($id_usuario) {
                     <li><a href="about_we.php" class="header-mobile-nav-link">Sobre nosotros</a></li>
                     <li><a href="contact_us.php" class="header-mobile-nav-link">Contáctanos</a></li>
                 </ul>
-
             <?php else: ?>
                 <!-- Para usuarios logueados, el menú móvil estará oculto por CSS -->
                 <ul class="mobile-nav-links">
@@ -328,7 +514,6 @@ if ($id_usuario) {
 </header>
 
 <?php if ($usuario_logueado): ?>
-
     <script>
         (function() {
             const timeoutInSeconds = <?= $timeout ?? 500000000000 ?>; // Tiempo de inactividad en segundos
@@ -341,9 +526,7 @@ if ($id_usuario) {
                         alert('Tu sesión ha expirado por inactividad.');
                         window.location.href = '<?= BASE_URL ?>/login/login.php';
                     })
-
                     .catch(() => {
-
                         // Si no logra salir, al menos redirige
                         window.location.href = '<?= BASE_URL ?>/login/login.php';
                     });
@@ -376,7 +559,6 @@ if ($id_usuario) {
                 </button>
             </div>
             <div class="modal-body">
-
                 <!-- Avatar Section -->
                 <div class="avatar-section">
                     <img id="imgPreview" src="<?= BASE_URL ?>/<?= $user['avatar'] ?? 'uploads/avatar/user.webp' ?>" alt="Avatar actual" class="avatar-preview">
@@ -446,7 +628,6 @@ if ($id_usuario) {
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
             </div>
             <div class="modal-body">
-
                 <!-- Puedes agregar aquí más opciones configurables -->
                 <div class="mb-3">
                     <label for="tema" class="form-label">Tema de interfaz</label>
@@ -455,7 +636,6 @@ if ($id_usuario) {
                         <option value="oscuro">Oscuro</option>
                     </select>
                 </div>
-
                 <div class="mb-3">
                     <label for="notificaciones" class="form-label">Notificaciones</label>
                     <select name="notificaciones" id="notificaciones" class="form-select">
@@ -475,10 +655,8 @@ if ($id_usuario) {
 <script>
     // Mobile menu toggle - MODIFICADO PARA USUARIOS LOGUEADOS
     function toggleMobileMenu() {
-
         // Solo funciona si NO hay usuario logueado
         const userSectionLogged = document.querySelector('.user-section-logged');
-
         if (!userSectionLogged) {
             document.body.classList.toggle('mobile-nav-active');
         }
@@ -529,7 +707,6 @@ if ($id_usuario) {
         function validarCorreo() {
             const correo = email.value.trim();
             eliminarError(email);
-
             if (correo !== "") {
                 const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
                 if (!regex.test(correo)) {
@@ -545,21 +722,18 @@ if ($id_usuario) {
             const valor = telefono.value.trim();
             eliminarError(telefono);
             if (valor !== "") {
-
                 // Solo permitir números, espacios, guiones, paréntesis y signo +
                 const regex = /^[\d\s\-()+ ]*$/;
                 if (!regex.test(valor)) {
                     mostrarError(telefono, "Solo se permiten números y caracteres: + - ( ) espacios");
                     return false;
                 }
-
                 // Verificar que tenga al menos 7 dígitos si se ingresa algo
                 const soloNumeros = valor.replace(/[\s\-()+ ]/g, '');
                 if (soloNumeros.length > 0 && soloNumeros.length < 7) {
                     mostrarError(telefono, "El teléfono debe tener al menos 7 dígitos");
                     return false;
                 }
-
                 // Verificar que no sea solo caracteres especiales
                 if (soloNumeros.length === 0 && valor.length > 0) {
                     mostrarError(telefono, "Debe contener al menos un número");
@@ -572,9 +746,8 @@ if ($id_usuario) {
         function validarPassword() {
             const pass = password.value;
             eliminarError(password);
-
             if (pass !== "") {
-                const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+                const regex = /^(?=.[a-z])(?=.[A-Z])(?=.*\d).{8,}$/;
                 if (!regex.test(pass)) {
                     mostrarError(password, "Mínimo 8 caracteres, una mayúscula, una minúscula y un número.");
                     return false;
@@ -607,14 +780,11 @@ if ($id_usuario) {
 
         // NUEVO: Filtro de entrada para teléfono - previene escritura de caracteres no válidos
         telefono.addEventListener("keypress", function(e) {
-
             // Permitir: números (0-9), espacio, guión, paréntesis, signo +, backspace, delete, tab, escape, enter
             const allowedKeys = [8, 9, 27, 13, 46]; // backspace, tab, escape, enter, delete
             const allowedChars = /[\d\s\-()+ ]/;
-
             // Si es una tecla especial, permitir
             if (allowedKeys.indexOf(e.keyCode) !== -1 ||
-
                 // Permitir Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X
                 (e.keyCode === 65 && e.ctrlKey === true) ||
                 (e.keyCode === 67 && e.ctrlKey === true) ||
@@ -622,7 +792,6 @@ if ($id_usuario) {
                 (e.keyCode === 88 && e.ctrlKey === true)) {
                 return;
             }
-
             // Si el carácter no está permitido, prevenir la entrada
             if (!allowedChars.test(e.key)) {
                 e.preventDefault();
@@ -631,13 +800,11 @@ if ($id_usuario) {
 
         // NUEVO: Validación adicional en paste para teléfono
         telefono.addEventListener("paste", function(e) {
-
             // Permitir el paste pero validar después
             setTimeout(() => {
                 const valor = telefono.value;
                 const regex = /^[\d\s\-()+ ]*$/;
                 if (!regex.test(valor)) {
-
                     // Limpiar caracteres no válidos
                     telefono.value = valor.replace(/[^\d\s\-()+ ]/g, '');
                     validarTodo();
@@ -653,19 +820,16 @@ if ($id_usuario) {
 
         window.validarAvatarActual = function() {
             const file = avatarInput.files[0];
-
             if (!file) {
                 eliminarError(avatarInput);
                 vistaPrevia.innerHTML = "";
                 return true;
             }
-
             if (!file.type.startsWith('image/')) {
                 mostrarError(avatarInput, "Solo se permiten archivos de imagen.");
                 vistaPrevia.innerHTML = "";
                 return false;
             }
-
             if (file.size > 1024 * 1024) {
                 mostrarError(avatarInput, "El archivo no debe superar 1MB.");
                 vistaPrevia.innerHTML = "";
@@ -681,19 +845,16 @@ if ($id_usuario) {
             reader.onload = function(e) {
                 const img = new Image();
                 img.onload = function() {
-
                     if (img.width > 800 || img.height > 800) {
                         mostrarError(avatarInput, "El avatar no debe superar 800x800 píxeles.");
                         vistaPrevia.innerHTML = "";
                         btnGuardar.disabled = true;
-
                     } else {
                         eliminarError(avatarInput);
-                        vistaPrevia.innerHTML = `<img src="${e.target.result}" alt="Vista previa" style="max-width:100px; max-height:100px; border-radius:50%;">`;
+                        vistaPrevia.innerHTML = <img src="${e.target.result}" alt="Vista previa" style="max-width:100px; max-height:100px; border-radius:50%;">;
                         validarTodo();
                     }
                 };
-
                 img.src = e.target.result;
             };
             reader.readAsDataURL(file);
@@ -705,11 +866,9 @@ if ($id_usuario) {
         const badgeElement = document.getElementById('notification-count');
         const unreadItems = document.querySelectorAll('.notification-panel .notification-item.unread');
         const count = unreadItems.length;
-
         if (badgeElement) {
             if (count === 0) {
                 badgeElement.classList.add('hidden');
-
             } else {
                 badgeElement.textContent = count > 99 ? '99+' : count;
                 badgeElement.classList.remove('hidden');
@@ -719,31 +878,25 @@ if ($id_usuario) {
 
     // JavaScript para las notificaciones
     document.addEventListener('DOMContentLoaded', function() {
-
         // Marcar notificación individual como leída
         document.querySelectorAll('.notification-panel .notification-item').forEach(item => {
             item.addEventListener('click', function(e) {
                 const notificationId = this.dataset.notificationId;
-
                 // Marcar visualmente como leída
                 this.classList.remove('unread');
                 this.classList.add('read');
-
                 // Remover indicador de no leída
                 const indicator = this.querySelector('.unread-indicator');
-
                 if (indicator) {
                     indicator.style.animation = 'fadeOut 0.3s ease forwards';
                     setTimeout(() => indicator.remove(), 300);
                 }
-
                 // Remover badge "Nuevo"
                 const badge = this.querySelector('.notification-badge');
                 if (badge) {
                     badge.style.animation = 'fadeOut 0.3s ease forwards';
                     setTimeout(() => badge.remove(), 300);
                 }
-
                 // Actualizar badge del icono
                 setTimeout(() => {
                     actualizarBadgeNotificaciones();
@@ -766,12 +919,10 @@ if ($id_usuario) {
                             'Content-Type': 'application/x-www-form-urlencoded'
                         }
                     })
-
                     .then(response => response.json())
                     .then(data => {
                         if (data.success) {
                             this.innerHTML = '<i class="fas fa-check-double"></i> ¡Marcadas!';
-
                             // Actualizar notificaciones en el panel
                             document.querySelectorAll('.notification-panel .notification-item.unread').forEach(item => {
                                 item.classList.remove('unread');
@@ -781,7 +932,6 @@ if ($id_usuario) {
                                 if (badge) badge.remove();
                                 if (indicator) indicator.remove();
                             });
-
                             // Actualizar badge del icono
                             actualizarBadgeNotificaciones();
                             setTimeout(() => {
@@ -792,7 +942,6 @@ if ($id_usuario) {
                                     this.parentElement.style.display = 'none';
                                 }
                             }, 2000);
-
                         } else {
                             this.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error';
                             setTimeout(() => {
@@ -801,7 +950,6 @@ if ($id_usuario) {
                             }, 2000);
                         }
                     })
-
                     .catch(error => {
                         console.error('Error:', error);
                         this.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error';
@@ -819,11 +967,9 @@ if ($id_usuario) {
         if (deleteAllBtn) {
             deleteAllBtn.addEventListener('click', function(e) {
                 e.preventDefault();
-
                 if (!confirm('¿Estás seguro de que quieres eliminar todas las notificaciones?')) {
                     return;
                 }
-
                 const originalContent = this.innerHTML;
                 this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Eliminando...';
                 this.disabled = true;
@@ -834,12 +980,10 @@ if ($id_usuario) {
                             'Content-Type': 'application/x-www-form-urlencoded'
                         }
                     })
-
                     .then(response => response.json())
                     .then(data => {
                         if (data.success) {
                             this.innerHTML = '<i class="fas fa-check"></i> ¡Eliminadas!';
-
                             // Limpiar el panel de notificaciones
                             const notificationsList = document.querySelector('.notifications-list');
                             if (notificationsList) {
@@ -853,20 +997,17 @@ if ($id_usuario) {
                                 </div>
                             `;
                             }
-
                             // Ocultar botones de acción
                             const headerActions = document.querySelector('.header-actions');
                             if (headerActions) {
                                 headerActions.style.display = 'none';
                             }
-
                             // Actualizar badge del icono
                             actualizarBadgeNotificaciones();
                             setTimeout(() => {
                                 this.innerHTML = originalContent;
                                 this.disabled = false;
                             }, 2000);
-
                         } else {
                             this.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error';
                             setTimeout(() => {
@@ -876,7 +1017,6 @@ if ($id_usuario) {
                             alert(data.message || 'Error al eliminar las notificaciones');
                         }
                     })
-
                     .catch(error => {
                         console.error('Error:', error);
                         this.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error';
@@ -900,7 +1040,6 @@ if ($id_usuario) {
                 if (!confirm('¿Eliminar esta notificación?')) {
                     return;
                 }
-
                 const originalContent = btn.innerHTML;
                 btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
                 btn.disabled = true;
@@ -910,9 +1049,8 @@ if ($id_usuario) {
                             'X-Requested-With': 'XMLHttpRequest',
                             'Content-Type': 'application/x-www-form-urlencoded'
                         },
-                        body: `id_notificacion=${notificationId}`
+                        body: id_notificacion=${notificationId}
                     })
-
                     .then(response => response.json())
                     .then(data => {
                         if (data.success) {
@@ -920,7 +1058,6 @@ if ($id_usuario) {
                             setTimeout(() => {
                                 notificationItem.remove();
                                 actualizarBadgeNotificaciones();
-
                                 // Verificar si quedan notificaciones
                                 const remainingNotifications = document.querySelectorAll('.notification-item');
                                 if (remainingNotifications.length === 0) {
@@ -936,7 +1073,6 @@ if ($id_usuario) {
                                     </div>
                                 `;
                                     }
-
                                     // Ocultar botones de acción
                                     const headerActions = document.querySelector('.header-actions');
                                     if (headerActions) {
@@ -944,14 +1080,12 @@ if ($id_usuario) {
                                     }
                                 }
                             }, 300);
-
                         } else {
                             btn.innerHTML = originalContent;
                             btn.disabled = false;
                             alert(data.message || 'Error al eliminar la notificación');
                         }
                     })
-
                     .catch(error => {
                         console.error('Error:', error);
                         btn.innerHTML = originalContent;
@@ -967,7 +1101,6 @@ if ($id_usuario) {
         function iniciarSistemaNotificaciones() {
             // Verificar nuevas notificaciones cada 30 segundos
             notificationInterval = setInterval(verificarNuevasNotificaciones, 30000);
-
             // También verificar al enfocar la ventana
             window.addEventListener('focus', verificarNuevasNotificaciones);
         }
@@ -979,12 +1112,10 @@ if ($id_usuario) {
                         'X-Requested-With': 'XMLHttpRequest'
                     }
                 })
-
                 .then(response => response.json())
                 .then(data => {
                     if (data.success && data.nuevas_notificaciones > 0) {
                         actualizarBadgeNotificaciones(data.total_no_leidas);
-
                         // Mostrar notificación del navegador si está permitido
                         if (Notification.permission === 'granted' && data.ultima_notificacion) {
                             new Notification('Nueva respuesta en el foro', {
@@ -1003,7 +1134,6 @@ if ($id_usuario) {
                 if (total > 0) {
                     badge.textContent = total > 99 ? '99+' : total;
                     badge.style.display = 'block';
-
                 } else {
                     badge.style.display = 'none';
                 }
@@ -1027,17 +1157,14 @@ if ($id_usuario) {
     // Agregar estilos CSS para animaciones
     const style = document.createElement('style');
     style.textContent = `
-
         @keyframes slideOutNotification {
             from { opacity: 1; transform: translateX(0); }
             to { opacity: 0; transform: translateX(100%); }
         }
-
         @keyframes fadeOut {
             from { opacity: 1; }
             to { opacity: 0; }
         }
-
         .notification-badge.hidden {
             display: none !important;
         }
