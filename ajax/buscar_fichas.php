@@ -1,5 +1,5 @@
 <?php
-require_once $_SERVER['DOCUMENT_ROOT'] . '/teamtalks/conexion/init.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/conexion/init.php';
 include 'session.php';
 
 $id_instructor = (int)$_SESSION['documento'];
@@ -8,12 +8,27 @@ $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $limit = 6;
 $offset = ($page - 1) * $limit;
 
+// Get total stats
+$stats_sql = "
+    SELECT 
+        COUNT(DISTINCT f.id_ficha) as total_fichas,
+        COUNT(DISTINCT uf.id_user) as total_aprendices
+    FROM fichas f
+    LEFT JOIN user_ficha uf ON f.id_ficha = uf.id_ficha
+    WHERE f.id_instructor = :id
+";
+$stats_stmt = $conex->prepare($stats_sql);
+$stats_stmt->execute(['id' => $id_instructor]);
+$stats = $stats_stmt->fetch(PDO::FETCH_ASSOC);
+
 if ($q === '') {
-    // Consulta con paginación
+    // Query with pagination
     $sql = "
-        SELECT f.id_ficha, fo.nombre AS nombre_formacion
+        SELECT f.id_ficha, fo.nombre AS nombre_formacion, tf.tipo_ficha, tfo.tipo_formacion
         FROM fichas f
         JOIN formacion fo ON f.id_formacion = fo.id_formacion
+        JOIN tipo_ficha tf ON f.id_tipo_ficha = tf.id_tipo_ficha
+        JOIN tipo_formacion tfo ON fo.id_tipo_formacion = tfo.id_tipo_formacion
         WHERE f.id_instructor = :id
         ORDER BY f.id_ficha ASC
         LIMIT $limit OFFSET $offset
@@ -22,16 +37,19 @@ if ($q === '') {
     $stmt->execute(['id' => $id_instructor]);
     $fichas = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // Total de fichas para paginación
+    // Total for pagination
     $total = $conex->prepare("SELECT COUNT(*) FROM fichas WHERE id_instructor = :id");
     $total->execute(['id' => $id_instructor]);
     $total_pages = ceil($total->fetchColumn() / $limit);
+    $total_fichas_query = $total->fetchColumn();
 } else {
-    // Búsqueda por número de ficha o nombre de formación (sin paginación)
+    // Search by ficha number or formation name (no pagination)
     $sql = "
-        SELECT f.id_ficha, fo.nombre AS nombre_formacion
+        SELECT f.id_ficha, fo.nombre AS nombre_formacion, tf.tipo_ficha, tfo.tipo_formacion
         FROM fichas f
         JOIN formacion fo ON f.id_formacion = fo.id_formacion
+        JOIN tipo_ficha tf ON f.id_tipo_ficha = tf.id_tipo_ficha
+        JOIN tipo_formacion tfo ON fo.id_tipo_formacion = tfo.id_tipo_formacion
         WHERE f.id_instructor = :id
         AND (CAST(f.id_ficha AS CHAR) LIKE :q1 OR fo.nombre LIKE :q2)
         ORDER BY f.id_ficha ASC
@@ -44,51 +62,78 @@ if ($q === '') {
     ]);
     $fichas = $stmt->fetchAll(PDO::FETCH_ASSOC);
     $total_pages = 0;
+    $total_fichas_query = count($fichas);
 }
-?>
 
-<?php if (count($fichas) > 0): ?>
-  <div class="row g-4">
-    <?php foreach ($fichas as $ficha): ?>
-      <div class="col-md-6 col-lg-4">
-        <div class="card border-0 shadow-sm ficha-card h-100" style="transition: transform 0.2s ease-in-out;">
-          <div class="card-body">
-            <h5 class="card-title mb-2" style="color: #0E4A86;">
-              <i class="bi bi-journal-code me-1" ></i>Ficha <?= htmlspecialchars($ficha['id_ficha']) ?>
-            </h5>
-            <p class="card-text text-muted">
-              <strong>Formación:</strong><br><?= htmlspecialchars($ficha['nombre_formacion']) ?>
-            </p>
-            <div class="d-flex justify-content-between mt-4">
-              <button class="btn btn-detalles btn-outline-primary w-100 me-2 fichas" data-id="<?= $ficha['id_ficha'] ?>">
-                <i class="bi bi-info-circle"></i> Detalles
-              </button>
-              <a href="../mod/ver_aprendices.php?id_ficha=<?= $ficha['id_ficha'] ?>" class="btn w-100" style="background-color: #0E4A86; color: white">
-                <i class="bi bi-people"></i> Aprendices
-              </a>
+// Generate HTML
+$html = '';
+
+if (count($fichas) > 0) {
+    foreach ($fichas as $ficha) {
+        $html .= '
+        <div class="ficha-card">
+            <div class="ficha-header">
+                <div class="ficha-icon">
+                    <i class="bi bi-journal-code"></i>
+                </div>
+                <div class="ficha-info">
+                    <h3 class="ficha-number">Ficha ' . htmlspecialchars($ficha['id_ficha']) . '</h3>
+                    <p class="ficha-type">' . htmlspecialchars($ficha['tipo_ficha']) . ' • ' . htmlspecialchars($ficha['tipo_formacion']) . '</p>
+                </div>
             </div>
-          </div>
-        </div>
-      </div>
-    <?php endforeach; ?>
-  </div>
+            
+            <div class="ficha-content">
+                <div class="ficha-formation">
+                    <div class="formation-label">Programa de Formación</div>
+                    <p class="formation-name">' . htmlspecialchars($ficha['nombre_formacion']) . '</p>
+                </div>
+            </div>
+            
+            <div class="ficha-actions">
+                <button class="btn-modern btn-outline-modern btn-detalles" data-id="' . $ficha['id_ficha'] . '">
+                    <i class="bi bi-info-circle"></i>
+                    Detalles
+                </button>
+                <a href="../mod/ver_aprendices.php?id_ficha=' . $ficha['id_ficha'] . '" class="btn-modern btn-primary-modern">
+                    <i class="bi bi-people"></i>
+                    Aprendices
+                </a>
+            </div>
+        </div>';
+    }
 
-  <?php if ($q === '' && $total_pages > 1): ?>
-    <div class="d-flex justify-content-center mt-4">
-      <nav>
-        <ul class="pagination">
-          <?php for ($i = 1; $i <= $total_pages; $i++): ?>
-            <li class="page-item <?= ($i == $page ? 'active' : '') ?>">
-              <a class="page-link" href="#" onclick="buscarFicha(<?= $i ?>)"><?= $i ?></a>
-            </li>
-          <?php endfor; ?>
-        </ul>
-      </nav>
-    </div>
-  <?php endif; ?>
+    // Add pagination if needed
+    if ($q === '' && $total_pages > 1) {
+        $html .= '<div class="pagination-container">
+            <div class="pagination-modern">';
+        
+        for ($i = 1; $i <= $total_pages; $i++) {
+            $activeClass = ($i == $page) ? 'active' : '';
+            $html .= '<a class="page-btn ' . $activeClass . '" href="#" data-page="' . $i . '">' . $i . '</a>';
+        }
+        
+        $html .= '</div></div>';
+    }
+} else {
+    $html = '
+    <div class="empty-state">
+        <i class="bi bi-folder-x empty-icon"></i>
+        <h3 class="empty-title">No se encontraron fichas</h3>
+        <p class="empty-description">' . 
+        ($q ? 'No hay fichas que coincidan con "' . htmlspecialchars($q) . '"' : 'No tienes fichas asignadas') . 
+        '</p>
+    </div>';
+}
 
-<?php else: ?>
-  <div class="col-12 text-center">
-    <p class="text-muted">No se encontraron coincidencias.</p>
-  </div>
-<?php endif; ?>
+// Generate count text
+$count_text = '';
+
+
+// Return JSON response
+echo json_encode([
+    'html' => $html,
+    'count_text' => $count_text,
+    'total_fichas' => $stats['total_fichas'],
+    'total_aprendices' => $stats['total_aprendices']
+]);
+?>

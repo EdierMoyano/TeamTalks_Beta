@@ -1,11 +1,11 @@
 <?php
-require_once $_SERVER['DOCUMENT_ROOT'] . '/teamtalks/conexion/init.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/conexion/init.php';
 include 'session.php';
 
-// Obtener el ID de la ficha desde la URL, asegurándose de que sea un entero
+// Get ficha ID from URL, ensuring it's an integer
 $id_ficha = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 
-// Consulta SQL para obtener todos los detalles de la ficha
+// SQL query to get all ficha details
 $sql = "
     SELECT 
         f.id_ficha, 
@@ -16,70 +16,109 @@ $sql = "
         j.jornada, 
         tf.tipo_ficha,
         tfo.tipo_formacion,
-        f.id_trimestre
+        f.id_trimestre,
+        COUNT(uf.id_user) as total_aprendices
     FROM fichas f
     JOIN formacion fo ON f.id_formacion = fo.id_formacion
     JOIN tipo_formacion tfo ON fo.id_tipo_formacion = tfo.id_tipo_formacion
     JOIN usuarios u ON f.id_instructor = u.id
     JOIN jornada j ON f.id_jornada = j.id_jornada
     JOIN tipo_ficha tf ON f.id_tipo_ficha = tf.id_tipo_ficha
+    LEFT JOIN user_ficha uf ON f.id_ficha = uf.id_ficha
     WHERE f.id_ficha = :id
+    GROUP BY f.id_ficha
 ";
 
 $stmt = $conex->prepare($sql);
 $stmt->execute(['id' => $id_ficha]);
 $ficha = $stmt->fetch(PDO::FETCH_ASSOC);
 
-
-// Si se encuentra la ficha, mostrar los datos en una tabla para el modal
+// If ficha is found, show data in a modern card design
 if ($ficha): ?>
-    <div class="card shadow-sm border-0">
-        <div class="card-header text-white d-flex justify-content-between align-items-center" style="background-color: #0E4A86;">
-            <h5 class="mb-0">📘 Detalles de la Ficha</h5>
-            <span class="badge bg-light" style="color: #0E4A86">Ficha #<?= htmlspecialchars($ficha['id_ficha']) ?></span>
+
+<div class="detail-card-modern">
+    <div class="detail-header-modern">
+        <div class="header-content-modern">
+            <h2 class="ficha-title-modern">
+                <i class="bi bi-journal-bookmark"></i>
+                Información de la Ficha
+            </h2>
+            <span class="ficha-badge-modern">Ficha #<?= htmlspecialchars($ficha['id_ficha']) ?></span>
         </div>
-        <div class="card-body">
-            <div class="mb-3">
-                <h6 class="text-muted">Nombre del Programa</h6>
-                <p class="fs-5 fw-semibold"><?= htmlspecialchars($ficha['nombre_formacion']) ?></p>
+    </div>
+    
+    <div class="detail-body-modern">
+        <div class="program-info-modern">
+            <h3 class="program-name-modern">
+                <?= htmlspecialchars($ficha['nombre_formacion']) ?>
+            </h3>
+            <p class="program-type-modern">
+                <?= htmlspecialchars($ficha['tipo_formacion']) ?> • <?= htmlspecialchars($ficha['tipo_ficha']) ?>
+            </p>
+        </div>
+
+        <div class="info-grid-modern">
+            <!-- Academic Information -->
+            <div class="info-section-modern">
+                <h4 class="section-title-modern">
+                    <i class="bi bi-mortarboard-fill section-icon-modern"></i>
+                    Información Académica
+                </h4>
+                <div class="info-item-modern">
+                    <div class="info-label-modern">Ambiente</div>
+                    <div class="info-value-modern">
+                        <span class="status-badge-modern"><?= htmlspecialchars($ficha['id_ambiente']) ?></span>
+                    </div>
+                </div>
+                <div class="info-item-modern">
+                    <div class="info-label-modern">Trimestre Actual</div>
+                    <div class="info-value-modern">
+                        <span class="status-badge-modern secondary-badge-modern"><?= htmlspecialchars($ficha['id_trimestre']) ?></span>
+                    </div>
+                </div>
+                <div class="info-item-modern">
+                    <div class="info-label-modern">Jornada</div>
+                    <div class="info-value-modern">
+                        <span class="status-badge-modern"><?= htmlspecialchars($ficha['jornada']) ?></span>
+                    </div>
+                </div>
             </div>
 
-            <div class="row g-3">
-                <div class="col-md-6">
-                    <h6 class="text-muted mb-1">Ambiente</h6>
-                    <span class="badge bg-primary"><?= htmlspecialchars($ficha['id_ambiente']) ?></span>
+            <!-- Instructor Information -->
+            <div class="info-section-modern">
+                <h4 class="section-title-modern">
+                    <i class="bi bi-person-badge-fill section-icon-modern"></i>
+                    Instructor Responsable
+                </h4>
+                <div class="info-item-modern">
+                    <div class="info-label-modern">Nombre Completo</div>
+                    <div class="info-value-modern"><?= htmlspecialchars($ficha['nom_instru'] . ' ' . $ficha['ape_instru']) ?></div>
                 </div>
-                <div class="col-md-6">
-                    <h6 class="text-muted mb-1">Trimestre</h6>
-                    <span class="badge bg-secondary"><?= htmlspecialchars($ficha['id_trimestre']) ?></span>
-                </div>
-            </div>
-
-            <hr>
-
-            <div class="row g-3">
-                <div class="col-md-6">
-                    <h6 class="text-muted mb-1">Instructor Gerente</h6>
-                    <p class="mb-0"><?= htmlspecialchars($ficha['nom_instru'] . ' ' . $ficha['ape_instru']) ?></p>
-                </div>
-                <div class="col-md-6">
-                    <h6 class="text-muted mb-1">Jornada</h6>
-                    <span class="badge bg-primary"><?= htmlspecialchars($ficha['jornada']) ?></span>
+                <div class="info-item-modern">
+                    <div class="info-label-modern">Rol</div>
+                    <div class="info-value-modern">
+                        <span class="status-badge-modern highlight-badge-modern">Instructor Gerente</span>
+                    </div>
                 </div>
             </div>
 
-            <div class="row g-3 mt-3">
-                <div class="col-md-6">
-                    <h6 class="text-muted mb-1">Modalidad</h6>
-                    <span class="badge bg-secondary"><?= htmlspecialchars($ficha['tipo_ficha']) ?></span>
-                </div>
-                <div class="col-md-6">
-                    <h6 class="text-muted mb-1">Tipo de Formación</h6>
-                    <span class="badge" style="background-color: #0E4A86;"><?= htmlspecialchars($ficha['tipo_formacion']) ?></span>
-                </div>
+            <!-- Statistics -->
+            <div class="stats-section-modern">
+                <h4 class="stats-title-modern">
+                    <i class="bi bi-people-fill section-icon-modern"></i>
+                    Aprendices Matriculados
+                </h4>
+                <span class="stats-number-modern"><?= htmlspecialchars($ficha['total_aprendices']) ?></span>
+                <span class="stats-label-modern">Total de Aprendices</span>
             </div>
         </div>
     </div>
+</div>
+
 <?php else: ?>
-    <div class="alert alert-warning">No se encontraron detalles de la ficha.</div>
+    <div class="empty-state">
+        <i class="bi bi-exclamation-triangle empty-icon"></i>
+        <h3 class="empty-title">Información no encontrada</h3>
+        <p class="empty-description">No se encontraron detalles de la ficha solicitada.</p>
+    </div>
 <?php endif; ?>

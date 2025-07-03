@@ -6,7 +6,6 @@ if ($_SESSION['rol'] !== 2) {
     exit;
 }
 require_once '../../conexion/conexion.php';
-require_once '../../includes/functions.php';
 
 // Verificar si el usuario está autenticado
 if (!isset($_SESSION['documento'])) {
@@ -363,7 +362,7 @@ try {
                                     data-instructor="<?php echo strtolower($ficha['instructor_lider']); ?>"
                                     data-jornada="<?php echo $ficha['jornada']; ?>"
                                     data-tipo="<?php echo $ficha['tipo_formacion']; ?>">
-                                    <div class="card h-100 border-primary">
+                                    <div class="card h-70 border-primary">
                                         <div class="card-header bg-light">
                                             <div class="d-flex justify-content-between align-items-center">
                                                 <h6 class="mb-0 fw-bold text-primary">

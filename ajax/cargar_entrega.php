@@ -1,5 +1,5 @@
 <?php
-require_once $_SERVER['DOCUMENT_ROOT'] . '/teamtalks/conexion/init.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/conexion/init.php';
 include 'session.php';
 
 
@@ -63,6 +63,7 @@ if ($data):
 
         .nota:hover {
             background-color: #0b3a6b;
+            color: white;
         }
 
         .form-control {

@@ -1,6 +1,10 @@
 <?php
-require_once $_SERVER['DOCUMENT_ROOT'] . '/teamtalks/conexion/init.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/conexion/init.php';
 include 'session.php';
+if ($_SESSION['rol'] !== 3 && $_SESSION['rol'] !== 5) {
+    header('Location:' . BASE_URL . '/includes/exit.php?motivo=acceso-denegado');
+    exit;
+}
 
 $id = $_POST['id_actividad'] ?? 0;
 $num = $_POST['archivo_num'] ?? 0;

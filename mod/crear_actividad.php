@@ -1,6 +1,14 @@
 <?php
-require_once $_SERVER['DOCUMENT_ROOT'] . '/teamtalks/conexion/init.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/conexion/init.php';
 include 'session.php';
+
+if ($_SESSION['rol'] !== 3 && $_SESSION['rol'] !== 5) {
+    header('Location:' . BASE_URL . '/includes/exit.php?motivo=acceso-denegado');
+    exit;
+}
+
+$rol = $_SESSION['rol'] ?? '';
+$subcarpeta = $rol === 5 ? 'transversal' : 'instructor';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $id_ficha = $_POST['id_ficha'] ?? 0;
@@ -10,7 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $id_materia_ficha = $_POST['id_materia_ficha'] ?? 0;
 
     $archivosPermitidos = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'jpg', 'jpeg', 'png', 'gif', 'mp4', 'avi', 'mov', 'wmv', 'mkv', 'txt'];
-    $nombresFinales = [null, null, null]; // Para archivo1, archivo2, archivo3
+    $nombresFinales = [null, null, null];
     $uploads_dir = '../uploads/';
 
     if (!is_dir($uploads_dir)) {
@@ -24,17 +32,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $ext = strtolower(pathinfo($archivo['name'], PATHINFO_EXTENSION));
             $size = $archivo['size'];
 
-            // ✅ Validar extensión
             if (!in_array($ext, $archivosPermitidos)) {
                 $_SESSION['error_actividad'] = "El archivo {$i} tiene una extensión no permitida.";
-                header("Location: ../instructor/actividades.php?id=" . (int)$id_ficha);
+                header("Location: ../$subcarpeta/actividades.php?id=" . (int)$id_ficha);
                 exit;
             }
 
-            // ✅ Validar tamaño máximo por archivo (20MB)
             if ($size > 20 * 1024 * 1024) {
                 $_SESSION['error_actividad'] = "El archivo {$i} excede el límite de 20MB.";
-                header("Location: ../instructor/actividades.php?id=" . (int)$id_ficha);
+                header("Location: ../$subcarpeta/actividades.php?id=" . (int)$id_ficha);
                 exit;
             }
 
@@ -45,13 +51,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $nombresFinales[$i - 1] = $nombreFinal;
             } else {
                 $_SESSION['error_actividad'] = "Error al subir el archivo {$i}.";
-                header("Location: ../instructor/actividades.php?id=" . (int)$id_ficha);
+                header("Location: ../$subcarpeta/actividades.php?id=" . (int)$id_ficha);
                 exit;
             }
         }
     }
 
-    // ✅ Insertar actividad
+    // Insertar actividad
     $sql = "INSERT INTO actividades (titulo, descripcion, fecha_entrega, archivo1, archivo2, archivo3, id_materia_ficha)
             VALUES (:titulo, :descripcion, :fecha_entrega, :archivo1, :archivo2, :archivo3, :id_materia_ficha)";
     $stmt = $conex->prepare($sql);
@@ -66,18 +72,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($stmt->execute()) {
         $id_actividad = $conex->lastInsertId();
 
-        // ✅ Obtener aprendices asociados
+        // Obtener aprendices asociados
         $sqlAprendices = "
             SELECT u.id AS id_user
-            FROM materia_ficha mf
-            JOIN fichas f ON f.id_ficha = mf.id_ficha
-            JOIN user_ficha uf ON uf.id_ficha = f.id_ficha
+            FROM user_ficha uf
             JOIN usuarios u ON u.id = uf.id_user
-            WHERE mf.id_materia_ficha = :id_materia_ficha
+            WHERE uf.id_ficha = :id_ficha
             AND u.id_rol = 4
         ";
         $stmtAprendices = $conex->prepare($sqlAprendices);
-        $stmtAprendices->execute(['id_materia_ficha' => $id_materia_ficha]);
+        $stmtAprendices->execute(['id_ficha' => $id_ficha]);
+
         $aprendices = $stmtAprendices->fetchAll(PDO::FETCH_ASSOC);
 
         $sqlInsertActividadUser = "
@@ -94,12 +99,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ]);
         }
 
+        // Insertar notificaciones
+        $sqlNotificacion = "
+            INSERT INTO notificaciones 
+            (id_usuario, tipo, mensaje, url_destino, leido, fecha, id_emisor, id_respuesta_foro)
+            VALUES (:id_usuario, 'actividad', :mensaje, :url_destino, 0, NOW(), :id_emisor, NULL)
+        ";
+        $stmtNotif = $conex->prepare($sqlNotificacion);
+
+        $mensajeNotif = "Se ha asignado una nueva actividad: " . $titulo;
+        $urlDestino = BASE_URL . "/aprendiz/actividades.php";
+        $idEmisor = $_SESSION['documento'];
+
+        foreach ($aprendices as $aprendiz) {
+            $stmtNotif->execute([
+                'id_usuario'   => $aprendiz['id_user'],
+                'mensaje'      => $mensajeNotif,
+                'url_destino'  => $urlDestino,
+                'id_emisor'    => $idEmisor
+            ]);
+        }
+
         $_SESSION['actividad_creada'] = $titulo;
-        header("Location: ../instructor/actividades.php?id=" . (int)$id_ficha);
+        header("Location: ../$subcarpeta/actividades.php?id=" . (int)$id_ficha);
         exit;
     } else {
         $_SESSION['error_actividad'] = "Ocurrió un error al guardar la actividad.";
-        header("Location: ../instructor/actividades.php?id=" . (int)$id_ficha);
+        header("Location: ../$subcarpeta/actividades.php?id=" . (int)$id_ficha);
         exit;
     }
 }

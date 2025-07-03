@@ -30,7 +30,7 @@ session_write_close();
 $motivo = $_GET['motivo'] ?? '';
 
 if ($motivo === 'acceso-denegado') {
-    header("Location: ../includes/404/404.html");
+    header("Location: 404/404.php");
     exit;
 } else {
     header("Location: ../index.php");
