@@ -63,6 +63,7 @@ if ($data):
 
         .nota:hover {
             background-color: #0b3a6b;
+            color: white;
         }
 
         .form-control {

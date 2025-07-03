@@ -1,12 +1,12 @@
 <?php
 require_once $_SERVER['DOCUMENT_ROOT'] . '/conexion/init.php';
+
 if ($_SESSION['rol'] !== 3 && $_SESSION['rol'] !== 5) {
     header('Location:' . BASE_URL . '/includes/exit.php?motivo=acceso-denegado');
     exit;
 }
 
 $id = $_POST['id'];
-
 
 $sql = "
 SELECT 
@@ -29,95 +29,112 @@ $data = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if ($data): ?>
 
-
-<style>
-    img.user-default {
-        position: absolute;
-        right: 60px;
-        bottom: 280px;
-    }
-
-    @media (max-width: 991px) {
-        img.user-default {
-            max-width: 70px;
-            max-height: 70px;
-            top: 120px;
-            right: 40px;
-        }
-    }
-
-</style>
-    <div class="card shadow-sm border-0">
-        <div class="card-header text-white d-flex justify-content-between align-items-center" style="background-color: #0E4A86">
-            <h5 class="mb-0">📋 Detalles del Aprendiz</h5>
-            <span class="badge bg-light" style="color: #0E4A86;">ID: <?= htmlspecialchars($data['id']) ?></span>
+<div class="detail-card">
+    <div class="detail-header">
+        <div class="header-content">
+            <h2 class="student-title">
+                <i class="bi bi-person-circle"></i>
+                Información del Aprendiz
+            </h2>
+            <span class="student-badge">ID: <?= htmlspecialchars($data['id']) ?></span>
         </div>
-        <div class="card-body">
-            <div class="mb-3">
-                <h6 class="text-muted mb-1">Nombre Completo</h6>
-                <p class="fw-semibold fs-5"><?= htmlspecialchars($data['nombres'] . ' ' . $data['apellidos']) ?></p>
-            </div>
+    </div>
+    
+    <div class="detail-body">
+        <div class="student-main-info">
+            <img 
+                class="student-avatar-large" 
+                src="<?= BASE_URL ?>/<?= empty($data['avatar']) ? 'uploads/avatar/user.webp' : htmlspecialchars($data['avatar']) ?>" 
+                alt="Avatar de <?= htmlspecialchars($data['nombres']) ?>"
+            >
+            <h3 class="student-full-name">
+                <?= htmlspecialchars($data['nombres'] . ' ' . $data['apellidos']) ?>
+            </h3>
+        </div>
 
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <h6 class="text-muted mb-1">Correo Electrónico</h6>
-                    <p class="mb-0"><?= htmlspecialchars($data['correo']) ?></p>
+        <div class="info-grid">
+            <!-- Contact Information -->
+            <div class="info-section">
+                <h4 class="section-title">
+                    <i class="bi bi-person-lines-fill section-icon"></i>
+                    Información de Contacto
+                </h4>
+                <div class="info-item">
+                    <div class="info-label">Correo Electrónico</div>
+                    <div class="info-value"><?= htmlspecialchars($data['correo']) ?></div>
                 </div>
-                <div class="col-md-6 mb-3">
-                    <h6 class="text-muted mb-1">Teléfono</h6>
-                    <p class="mb-0"><?= htmlspecialchars($data['telefono']) ?></p>
-                    <img class="user-default" src="<?= BASE_URL ?>/<?= empty($data['avatar']) ? 'uploads/avatar/user.webp' : htmlspecialchars($user['avatar']) ?>" alt="Avatar" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 3px solid #ffffff; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);">
-
-                </div>
-
-                <div class="col-md-6 mb-3">
-                </div>
-            </div>
-
-            <hr>
-
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <h6 class="text-muted mb-1">Ficha</h6>
-                    <span class="badge bg-primary fs-6"><?= htmlspecialchars($data['ficha']) ?></span>
-                </div>
-                <div class="col-md-6 mb-3">
-                    <h6 class="text-muted mb-1">Modalidad</h6>
-                    <span class="badge bg-secondary fs-6"><?= htmlspecialchars($data['tipo_ficha']) ?></span>
+                <div class="info-item">
+                    <div class="info-label">Teléfono</div>
+                    <div class="info-value"><?= htmlspecialchars($data['telefono']) ?></div>
                 </div>
             </div>
 
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <div class="mb-3">
-                        <h6 class="text-muted mb-1">Formación</h6>
-                        <p class="mb-0 fw-medium"><?= htmlspecialchars($data['formacion']) ?></p>
-                    </div>
-
-                    <div class="mb-3">
-                        <h6 class="text-muted mb-1">Tipo de Formación</h6>
-                        <span class="badge fs-6" style="background-color: #0E4A86;"><?= htmlspecialchars($data['tipo_formacion']) ?></span>
+            <!-- Academic Information -->
+            <div class="info-section">
+                <h4 class="section-title">
+                    <i class="bi bi-mortarboard-fill section-icon"></i>
+                    Información Académica
+                </h4>
+                <div class="info-item">
+                    <div class="info-label">Ficha</div>
+                    <div class="info-value">
+                        <span class="status-badge"><?= htmlspecialchars($data['ficha']) ?></span>
                     </div>
                 </div>
-
-                <div class="col-md-6 mb-3">
-                    <div class="mb-3">
-                        <h6 class="text-muted mb-1">Estado</h6>
-                        <span class="badge bg-primary fs-6"><?= htmlspecialchars($data['estado']) ?></span>
-                    </div>
-
-                    <div class="mb-3">
-                        <h6 class="text-muted mb-1">Entregas del aprendiz</h6>
-                        <a href="actividades_aprendiz.php?id=<?= $data['id'] ?>"><span class="fs-6" style="color: #0E4A86;">Ver aquí las actividades del aprendiz <i class="bi bi-box-arrow-up-right"></i></span></a>
-                    </div>
-
+                <div class="info-item">
+                    <div class="info-label">Modalidad</div>
+                    <div class="info-value"><?= htmlspecialchars($data['tipo_ficha']) ?></div>
                 </div>
+                <div class="info-item">
+                    <div class="info-label">Estado</div>
+                    <div class="info-value">
+                        <span class="status-badge"><?= htmlspecialchars($data['estado']) ?></span>
+                    </div>
+                </div>
+            </div>
 
+            <!-- Training Information -->
+            <div class="info-section">
+                <h4 class="section-title">
+                    <i class="bi bi-book-fill section-icon"></i>
+                    Información de Formación
+                </h4>
+                <div class="info-item">
+                    <div class="info-label">Programa de Formación</div>
+                    <div class="info-value"><?= htmlspecialchars($data['formacion']) ?></div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Tipo de Formación</div>
+                    <div class="info-value">
+                        <span class="status-badge"><?= htmlspecialchars($data['tipo_formacion']) ?></span>
+                    </div>
+                </div>
+            </div>
 
-
+            <!-- Activities -->
+            <div class="info-section">
+                <h4 class="section-title">
+                    <i class="bi bi-clipboard-check-fill section-icon"></i>
+                    Actividades y Entregas
+                </h4>
+                <div class="info-item">
+                    <div class="info-label">Gestión de Actividades</div>
+                    <div class="info-value">
+                        <a href="actividades_aprendiz.php?id=<?= $data['id'] ?>" class="activities-link">
+                            <i class="bi bi-box-arrow-up-right"></i>
+                            Ver todas las actividades
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
+</div>
+
 <?php else: ?>
-    <div class="alert alert-warning">No se encontró información del aprendiz.</div>
+    <div class="empty-state">
+        <i class="bi bi-exclamation-triangle empty-icon"></i>
+        <h3 class="empty-title">Información no encontrada</h3>
+        <p class="empty-description">No se encontró información del aprendiz solicitado.</p>
+    </div>
 <?php endif; ?>

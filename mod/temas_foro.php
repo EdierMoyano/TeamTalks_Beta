@@ -1,13 +1,20 @@
 <?php
 require_once $_SERVER['DOCUMENT_ROOT'] . '/conexion/init.php';
 include 'session.php';
+
 if ($_SESSION['rol'] !== 3 && $_SESSION['rol'] !== 5) {
     header('Location:' . BASE_URL . '/includes/exit.php?motivo=acceso-denegado');
     exit;
 }
 
+$id_instructor = $_SESSION['documento'];
+$rol = $_SESSION['rol'] ?? '';
+$redirecciones = [
+    3 => '/instructor/foros.php',
+    5 => '/transversal/foros.php'
+];
+$destino = BASE_URL . ($redirecciones[$rol] ?? '/index.php');
 $id_foro = isset($_GET['id_foro']) ? (int) $_GET['id_foro'] : 0;
-
 $id_user = $_SESSION['documento'];
 
 // Verificar foro
@@ -20,12 +27,11 @@ $stmt = $conex->prepare("
     JOIN formacion fo ON fi.id_formacion = fo.id_formacion
     WHERE f.id_foro = ?
 ");
-
 $stmt->execute([$id_foro]);
 $foro = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if (!$foro) {
-    echo "<div class='alert alert-danger text-center mt-4'>ID de foro inválido.</div>";
+    echo "<div class='tt-alert tt-alert--error'>ID de foro inválido.</div>";
     exit;
 }
 
@@ -37,508 +43,349 @@ $stmt = $conex->prepare("
     WHERE tf.id_foro = ?
     ORDER BY tf.fecha_creacion DESC
 ");
-
 $stmt->execute([$id_foro]);
 $temas = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Foros</title>
+    <title>Temas del Foro - TeamTalks</title>
     <link rel="stylesheet" href="<?= BASE_URL ?>/styles/style_side.css" />
     <link rel="stylesheet" href="<?= BASE_URL ?>/styles/header.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>/styles/temas_foro.css">
     <link rel="icon" href="<?= BASE_URL ?>/assets/img/icon2.png" />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
-    <link
-        rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-        integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw=="
-        crossorigin="anonymous"
-        referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css" />
-    <style>
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
 
-        ::-webkit-scrollbar-track {
-            background: var(--background-color);
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: var(--border-color);
-            border-radius: 4px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: var(--text-muted);
-        }
-
-        /* Layout principal */
-        .main-content {
-            margin-left: 280px;
-            transition: margin-left 0.4s ease;
-            padding-top: 20px;
-        }
-
-        body.sidebar-collapsed .main-content {
-            margin-left: 200px;
-        }
-
-        /* Estilos base */
-        h3.section-title {
-            color: #0E4A86;
-            font-size: 1.5rem;
-        }
-
-        .card-custom {
-            border-left: 5px solid #0E4A86;
-            transition: all 0.3s ease-in-out;
-        }
-
-        .card-custom:hover {
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-            transform: translateY(-2px);
-        }
-
-        .btn-main,
-        .crear {
-            background-color: #0E4A86;
-            border-color: #0E4A86;
-            color: #fff;
-        }
-
-        .btn-main:hover,
-        .crear:hover {
-            background-color: #0c3d71;
-            color: white;
-            border-color: #0c3d71;
-        }
-
-        .form-label {
-            color: #0E4A86;
-            font-weight: 500;
-        }
-
-        .cancelar {
-            color: #0E4A86;
-            background-color: white;
-            border-color: #0E4A86;
-        }
-
-        .cancelar:hover {
-            color: #0E4A86;
-            background-color: rgb(224, 224, 224);
-            border-color: #0E4A86;
-        }
-
-        .tema-card-link {
-            text-decoration: none;
-            display: block;
-            transition: all 0.2s ease-in-out;
-        }
-
-        .tema-card {
-            background-color: #fff;
-            border-left: 5px solid #0E4A86;
-            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-        }
-
-        .tema-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
-            background-color: #f9fbfd;
-        }
-
-        .icon-container {
-            width: 48px;
-            height: 48px;
-            background-color: #0E4A86;
-        }
-
-        .but {
-            background-color: #0E4A86;
-            border-color: rgb(14, 74, 134);
-            color: white;
-            cursor: default;
-        }
-
-        .but:hover {
-            background-color: rgb(9, 50, 91);
-            border-color: rgb(23, 101, 180);
-            color: white;
-            cursor: default;
-        }
-
-        .info-text {
-            font-size: 0.9rem;
-        }
-
-        /* Responsive Design */
-
-        /* Tablets (768px - 1024px) */
-        @media (max-width: 1024px) and (min-width: 768px) {
-            .main-content {
-                margin-left: 200px;
-                padding: 15px;
-            }
-
-            body.sidebar-collapsed .main-content {
-                margin-left: 150px;
-            }
-
-            h3.section-title {
-                font-size: 1.3rem;
-            }
-
-            .icon-container {
-                width: 40px;
-                height: 40px;
-            }
-
-            .tema-card {
-                padding: 1rem !important;
-            }
-
-            .info-text {
-                font-size: 0.85rem;
-            }
-        }
-
-        /* Móviles (hasta 767px) */
-        @media (max-width: 767px) {
-            body {
-                padding-top: 120px !important;
-            }
-
-            .main-content {
-                margin-left: 0;
-                padding: 10px;
-            }
-
-            body.sidebar-collapsed .main-content {
-                margin-left: 0;
-            }
-
-            /* Header responsive */
-            .header-section {
-                flex-direction: column;
-                gap: 15px;
-                align-items: stretch !important;
-            }
-
-            .header-info {
-                order: 2;
-            }
-
-            .header-actions {
-                order: 1;
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-            }
-
-            h3.section-title {
-                font-size: 1.2rem;
-                margin-bottom: 0;
-            }
-
-            .info-text {
-                font-size: 0.8rem;
-                line-height: 1.4;
-            }
-
-            .info-text strong {
-                display: block;
-                margin-top: 5px;
-            }
-
-            .info-text strong:first-child {
-                margin-top: 0;
-            }
-
-            /* Botón nuevo tema más pequeño en móvil */
-            .btn-nuevo-tema {
-                font-size: 0.85rem;
-                padding: 8px 16px;
-            }
-
-            /* Tarjetas de temas responsive */
-            .tema-card {
-                padding: 15px !important;
-                margin-bottom: 15px;
-            }
-
-            .tema-card-content {
-                flex-direction: column !important;
-                gap: 15px !important;
-            }
-
-            .icon-container {
-                width: 35px;
-                height: 35px;
-                align-self: flex-start;
-            }
-
-            .tema-info {
-                width: 100%;
-            }
-
-            .tema-header {
-                flex-direction: column !important;
-                align-items: flex-start !important;
-                gap: 5px;
-            }
-
-            .tema-title {
-                font-size: 1rem;
-                line-height: 1.3;
-            }
-
-            .tema-date {
-                font-size: 0.75rem;
-            }
-
-            .tema-description {
-                font-size: 0.85rem;
-                line-height: 1.4;
-                margin-bottom: 10px !important;
-            }
-
-            .tema-author {
-                font-size: 0.75rem;
-                text-align: left !important;
-            }
-
-            /* Modal responsive */
-            .modal-dialog {
-                margin: 10px;
-                max-width: calc(100% - 20px);
-            }
-
-            .modal-header {
-                padding: 15px 20px;
-            }
-
-            .modal-title {
-                font-size: 1.1rem;
-            }
-
-            .modal-body {
-                padding: 20px;
-            }
-
-            .modal-footer {
-                padding: 15px 20px;
-                flex-direction: column;
-                gap: 10px;
-            }
-
-            .modal-footer .btn {
-                width: 100%;
-                margin: 0;
-            }
-
-            /* Formulario responsive */
-            .form-control {
-                font-size: 16px;
-                /* Evita zoom en iOS */
-            }
-
-            textarea.form-control {
-                min-height: 120px;
-            }
-        }
-
-        /* Móviles pequeños (hasta 480px) */
-        @media (max-width: 480px) {
-            .main-content {
-                padding: 8px;
-            }
-
-            h3.section-title {
-                font-size: 1.1rem;
-            }
-
-            .btn-nuevo-tema {
-                font-size: 0.8rem;
-                padding: 6px 12px;
-            }
-
-            .tema-card {
-                padding: 12px !important;
-            }
-
-            .icon-container {
-                width: 30px;
-                height: 30px;
-            }
-
-            .tema-title {
-                font-size: 0.95rem;
-            }
-
-            .tema-description {
-                font-size: 0.8rem;
-            }
-
-            .info-text {
-                font-size: 0.75rem;
-            }
-        }
-
-        /* Mejoras adicionales para touch */
-        @media (hover: none) and (pointer: coarse) {
-            .tema-card:hover {
-                transform: none;
-            }
-
-            .tema-card:active {
-                transform: scale(0.98);
-                background-color: #f0f8ff;
-            }
-
-            .btn:active {
-                transform: scale(0.95);
-            }
-        }
-    </style>
 </head>
 
-<body class="sidebar-collapsed" style="padding-top: 180px;">
+<body class="sidebar-collapsed tt-forum-container" style="padding-top: 180px;">
     <?php include 'design/header.php'; ?>
     <?php include 'design/sidebar.php'; ?>
 
-    <main class="main-content">
-        <div class="container-fluid">
-            <div class="d-flex justify-content-between align-items-center mb-4 header-section">
-                <div class="header-info">
-                    <div class="d-flex align-items-center mb-2 header-actions d-md-none">
-                        <a href="../instructor/foros.php" class="but btn me-2" style="cursor: pointer;">
-                            <i class="bi bi-arrow-90deg-left"></i>
-                        </a>
-                        <button class="btn btn-main btn-sm rounded-pill shadow-sm btn-nuevo-tema" data-bs-toggle="modal" data-bs-target="#modalCrearTema">
-                            <i class="bi bi-plus-circle me-1"></i>Nuevo tema
-                        </button>
-                    </div>
+    <main class="tt-main">
+        <!-- Header Section -->
+        <div class="tt-header">
+            <div class="tt-header-content">
+                <div class="tt-header-info">
+                    <a href="<?= $destino ?>" class="tt-back-btn">
+                        <i class="bi bi-arrow-left"></i>
+                        Volver
+                    </a>
 
-                    <h3 class="section-title mb-1">
-                        <a href="../instructor/foros.php" class="but btn d-none d-md-inline-block me-2" style="cursor: pointer;">
-                            <i class="bi bi-arrow-90deg-left"></i>
-                        </a>
-                        <i class="bi bi-chat-dots-fill me-2"></i>Temas del foro
-                    </h3>
+                    <h1 class="tt-title">
+                        <div class="tt-title-icon">
+                            <i class="bi bi-chat-dots-fill"></i>
+                        </div>
+                        Temas del foro
+                    </h1>
 
-                    <div class="text-muted mb-0 info-text">
-                        <strong>Materia:</strong> <?= htmlspecialchars($foro['materia']) ?>
-                        <strong>Ficha:</strong> <?= $foro['id_ficha'] ?>
-                        <strong>Formación:</strong> <?= $foro['nombre_formacion'] ?>
+                    <p class="tt-subtitle">
+                        Explora y participa en las discusiones de este foro educativo
+                    </p>
+
+                    <div class="tt-meta-grid">
+                        <div class="tt-meta-item">
+                            <div class="tt-meta-icon">
+                                <i class="bi bi-book"></i>
+                            </div>
+                            <div class="tt-meta-content">
+                                <div class="tt-meta-label">Materia</div>
+                                <div class="tt-meta-value"><?= htmlspecialchars($foro['materia']) ?></div>
+                            </div>
+                        </div>
+                        <div class="tt-meta-item">
+                            <div class="tt-meta-icon">
+                                <i class="bi bi-folder"></i>
+                            </div>
+                            <div class="tt-meta-content">
+                                <div class="tt-meta-label">Ficha</div>
+                                <div class="tt-meta-value"><?= $foro['id_ficha'] ?></div>
+                            </div>
+                        </div>
+                        <div class="tt-meta-item">
+                            <div class="tt-meta-icon">
+                                <i class="bi bi-mortarboard"></i>
+                            </div>
+                            <div class="tt-meta-content">
+                                <div class="tt-meta-label">Formación</div>
+                                <div class="tt-meta-value"><?= htmlspecialchars($foro['nombre_formacion']) ?></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <button class="btn btn-main btn-sm rounded-pill shadow-sm d-none d-md-block" data-bs-toggle="modal" data-bs-target="#modalCrearTema">
-                    <i class="bi bi-plus-circle me-1"></i>Nuevo tema
+                <button class="tt-btn tt-btn--primary" data-bs-toggle="modal" data-bs-target="#modalCrearTema">
+                    <i class="bi bi-plus-circle"></i>
+                    Nuevo tema
                 </button>
             </div>
+        </div>
 
-            <?php if (count($temas) > 0): ?>
-                <div class="row g-3">
-                    <?php foreach ($temas as $tema): ?>
-                        <div class="col-12">
-                            <a href="ver_respuestas.php?id_tema=<?= $tema['id_tema_foro'] ?>" class="tema-card-link">
-                                <div class="tema-card d-flex align-items-start gap-3 p-3 shadow-sm rounded-4 tema-card-content">
-                                    <div class="icon-container d-flex align-items-center justify-content-center rounded-circle flex-shrink-0">
-                                        <i class="bi bi-chat-text text-white" style="font-size: 1.2rem;"></i>
-                                    </div>
-
-                                    <div class="flex-grow-1 tema-info">
-                                        <div class="d-flex justify-content-between align-items-start flex-wrap tema-header">
-                                            <h5 class="mb-1 text-dark fw-semibold tema-title"><?= htmlspecialchars($tema['titulo']) ?></h5>
-                                            <small class="text-muted tema-date"><?= date("d/m/Y H:i", strtotime($tema['fecha_creacion'])) ?></small>
-                                        </div>
-
-                                        <p class="text-secondary small mb-1 tema-description">
-                                            <?= nl2br(htmlspecialchars(mb_strimwidth($tema['descripcion'], 0, 140, "..."))) ?>
-                                        </p>
-
-                                        <div class="text-end tema-author">
-                                            <small class="text-muted fst-italic">
-                                                <i class="bi bi-person-circle me-1"></i><?= htmlspecialchars($tema['nombres'] . ' ' . $tema['apellidos']) ?>
-                                            </small>
-                                        </div>
-                                    </div>
-                                </div>
-                            </a>
-                        </div>
-                    <?php endforeach; ?>
-                </div>
-            <?php else: ?>
-                <div class="alert alert-info text-center mt-4 shadow-sm">
-                    <i class="bi bi-info-circle me-1"></i>Este foro aún no tiene temas creados.
+        <!-- Topics Section -->
+        <?php if (count($temas) > 0): ?>
+            <!-- View Controls (only show if more than 6 topics) -->
+            <?php if (count($temas) > 6): ?>
+                <div class="tt-view-controls">
+                    <div class="tt-view-toggle">
+                        <button class="tt-view-btn active" data-view="list">
+                            <i class="bi bi-list-ul"></i>
+                            Lista
+                        </button>
+                        <button class="tt-view-btn" data-view="grid">
+                            <i class="bi bi-grid-3x3-gap"></i>
+                            Cuadrícula
+                        </button>
+                    </div>
+                    <div class="tt-topics-count">
+                        <?= count($temas) ?> tema<?= count($temas) !== 1 ? 's' : '' ?>
+                    </div>
                 </div>
             <?php endif; ?>
-        </div>
+
+            <div class="tt-topics <?= count($temas) > 6 ? 'tt-topics--list' : '' ?>" id="topicsContainer">
+                <?php foreach ($temas as $tema): ?>
+                    <a href="ver_respuestas.php?id_tema=<?= $tema['id_tema_foro'] ?>" class="tt-topic">
+                        <div class="tt-topic-header">
+                            <div class="tt-topic-icon">
+                                <i class="bi bi-chat-text"></i>
+                            </div>
+                            <div class="tt-topic-content">
+                                <h3 class="tt-topic-title"><?= htmlspecialchars($tema['titulo']) ?></h3>
+                                <p class="tt-topic-description">
+                                    <?= nl2br(htmlspecialchars($tema['descripcion'])) ?>
+                                </p>
+                            </div>
+                        </div>
+                        <div class="tt-topic-footer">
+                            <div class="tt-topic-author">
+                                <i class="bi bi-person-circle"></i>
+                                <?= htmlspecialchars($tema['nombres'] . ' ' . $tema['apellidos']) ?>
+                            </div>
+                            <div class="tt-topic-date">
+                                <?= date("d/m/Y H:i", strtotime($tema['fecha_creacion'])) ?>
+                            </div>
+                        </div>
+                    </a>
+                <?php endforeach; ?>
+            </div>
+        <?php else: ?>
+            <div class="tt-empty">
+                <div class="tt-empty-icon">
+                    <i class="bi bi-chat-dots"></i>
+                </div>
+                <h2 class="tt-empty-title">No hay temas aún</h2>
+                <p class="tt-empty-description">
+                    Este foro está esperando su primer tema. ¡Sé el primero en iniciar una conversación!
+                </p>
+                <button class="tt-btn tt-btn--primary" data-bs-toggle="modal" data-bs-target="#modalCrearTema">
+                    <i class="bi bi-plus-circle"></i>
+                    Crear primer tema
+                </button>
+                <img src="<?= BASE_URL ?>/assets/img/n-foro.webp" alt="Sin temas" class="tt-empty-image">
+            </div>
+        <?php endif; ?>
     </main>
 
     <!-- Modal Crear Tema -->
-    <div class="modal fade" id="modalCrearTema" tabindex="-1" aria-labelledby="crearTemaLabel" aria-hidden="true">
+    <div class="modal fade tt-modal" id="modalCrearTema" tabindex="-1" aria-labelledby="crearTemaLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg">
-            <form action="crear_tema_foro.php?id_ficha=<?= $foro['id_ficha'] ?>" method="POST" class="modal-content border-0 shadow-lg rounded-4">
-                <!-- Encabezado del modal -->
-                <div class="modal-header" style="background-color: #0E4A86; border-top-left-radius: 1rem; border-top-right-radius: 1rem;">
-                    <h5 class="modal-title text-white fw-semibold" id="crearTemaLabel">
-                        <i class="bi bi-plus-circle me-2"></i>Crear nuevo tema
+            <form action="crear_tema_foro.php?id_ficha=<?= $foro['id_ficha'] ?>" method="POST" class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="crearTemaLabel">
+                        <i class="bi bi-plus-circle me-2"></i>
+                        Crear nuevo tema
                     </h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
                 </div>
 
-                <!-- Cuerpo del modal -->
-                <div class="modal-body bg-white">
+                <div class="modal-body">
                     <input type="hidden" name="id_foro" value="<?= $foro['id_foro'] ?>">
 
-                    <div class="mb-4">
-                        <label for="titulo" class="form-label fw-semibold" style="color: #0E4A86;">Título del tema</label>
+                    <div class="tt-form-group">
+                        <label for="titulo" class="tt-form-label">
+                            <i class="bi bi-type"></i>
+                            Título del tema
+                        </label>
                         <input
                             type="text"
-                            class="form-control border rounded-3 shadow-sm"
+                            class="tt-form-control"
                             name="titulo"
                             id="titulo"
                             placeholder="Ej. Dudas sobre proyecto final"
                             required>
                     </div>
 
-                    <div class="mb-3">
-                        <label for="descripcion" class="form-label fw-semibold" style="color: #0E4A86;">Descripción</label>
+                    <div class="tt-form-group">
+                        <label for="descripcion" class="tt-form-label">
+                            <i class="bi bi-text-paragraph"></i>
+                            Descripción
+                        </label>
                         <textarea
-                            class="form-control border rounded-3 shadow-sm"
+                            class="tt-form-control"
                             name="descripcion"
                             id="descripcion"
-                            rows="5"
-                            placeholder="Escribe una descripción clara del tema..."
+                            rows="6"
+                            placeholder="Describe tu tema de manera clara y detallada..."
                             required
-                            style="max-height: 180px; resize: vertical;"></textarea>
+                            style="resize: vertical; min-height: 120px;"></textarea>
                     </div>
                 </div>
 
-                <!-- Pie del modal -->
-                <div class="modal-footer bg-light rounded-bottom-4">
-                    <button type="button" class="btn cancelar rounded-pill" data-bs-dismiss="modal">
+                <div class="modal-footer">
+                    <button type="button" class="tt-btn tt-btn--secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle"></i>
                         Cancelar
                     </button>
-                    <button type="submit" class="btn crear rounded-pill">
-                        Crear
+                    <button type="submit" class="tt-btn tt-btn--primary">
+                        <i class="bi bi-check-circle"></i>
+                        Crear tema
                     </button>
                 </div>
             </form>
         </div>
-    </div>
+        </main>
+
+        <script>
+            // Enhanced interactions and animations
+            document.addEventListener('DOMContentLoaded', function() {
+                // Smooth scroll behavior
+                document.documentElement.style.scrollBehavior = 'smooth';
+
+                // View toggle functionality
+                const viewButtons = document.querySelectorAll('.tt-view-btn');
+                const topicsContainer = document.getElementById('topicsContainer');
+
+                viewButtons.forEach(button => {
+                    button.addEventListener('click', function() {
+                        const view = this.dataset.view;
+
+                        // Update active button
+                        viewButtons.forEach(btn => btn.classList.remove('active'));
+                        this.classList.add('active');
+
+                        // Update container class
+                        topicsContainer.className = view === 'grid' ? 'tt-topics tt-topics--grid' : 'tt-topics';
+
+                        // Store preference
+                        localStorage.setItem('tt-topics-view', view);
+                    });
+                });
+
+                // Restore saved view preference
+                const savedView = localStorage.getItem('tt-topics-view');
+                if (savedView && topicsContainer) {
+                    const targetButton = document.querySelector(`[data-view="${savedView}"]`);
+                    if (targetButton) {
+                        targetButton.click();
+                    }
+                }
+
+                // Add loading state to form submission
+                const form = document.querySelector('#modalCrearTema form');
+                if (form) {
+                    form.addEventListener('submit', function() {
+                        const submitBtn = form.querySelector('button[type="submit"]');
+                        const originalText = submitBtn.innerHTML;
+                        submitBtn.innerHTML = '<i class="bi bi-arrow-clockwise"></i> Creando...';
+                        submitBtn.disabled = true;
+
+                        setTimeout(() => {
+                            submitBtn.innerHTML = originalText;
+                            submitBtn.disabled = false;
+                        }, 3000);
+                    });
+                }
+
+                // Enhanced topic hover effects (only for non-touch devices)
+                if (window.matchMedia('(hover: hover)').matches) {
+                    const topics = document.querySelectorAll('.tt-topic');
+                    topics.forEach(topic => {
+                        topic.addEventListener('mouseenter', function() {
+                            this.style.transform = 'translateY(-6px) scale(1.01)';
+                        });
+
+                        topic.addEventListener('mouseleave', function() {
+                            this.style.transform = 'translateY(0) scale(1)';
+                        });
+                    });
+                }
+
+                // Add ripple effect to buttons
+                const buttons = document.querySelectorAll('.tt-btn');
+                buttons.forEach(button => {
+                    button.addEventListener('click', function(e) {
+                        const ripple = document.createElement('span');
+                        const rect = this.getBoundingClientRect();
+                        const size = Math.max(rect.width, rect.height);
+                        const x = e.clientX - rect.left - size / 2;
+                        const y = e.clientY - rect.top - size / 2;
+
+                        ripple.style.cssText = `
+                position: absolute;
+                width: ${size}px;
+                height: ${size}px;
+                left: ${x}px;
+                top: ${y}px;
+                background: rgba(255, 255, 255, 0.3);
+                border-radius: 50%;
+                transform: scale(0);
+                animation: ripple 0.6s linear;
+                pointer-events: none;
+            `;
+
+                        this.appendChild(ripple);
+
+                        setTimeout(() => {
+                            ripple.remove();
+                        }, 600);
+                    });
+                });
+
+                // Add CSS for ripple animation
+                const style = document.createElement('style');
+                style.textContent = `
+        @keyframes ripple {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+    `;
+                document.head.appendChild(style);
+
+                // Intersection Observer for lazy loading animations
+                const observerOptions = {
+                    threshold: 0.1,
+                    rootMargin: '0px 0px -50px 0px'
+                };
+
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            entry.target.style.animationPlayState = 'running';
+                            observer.unobserve(entry.target);
+                        }
+                    });
+                }, observerOptions);
+
+                // Observe all topics for animation
+                document.querySelectorAll('.tt-topic').forEach(topic => {
+                    topic.style.animationPlayState = 'paused';
+                    observer.observe(topic);
+                });
+            });
+        </script>
 </body>
 
 </html>

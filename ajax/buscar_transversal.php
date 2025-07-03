@@ -8,6 +8,30 @@ $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $limit = 6;
 $offset = ($page - 1) * $limit;
 
+// Get total stats
+$stats_sql = "
+    SELECT 
+        COUNT(DISTINCT mf.id_materia_ficha) as total_materias,
+        COUNT(DISTINCT mf.id_ficha) as total_fichas
+    FROM materia_ficha mf
+    WHERE mf.id_instructor = :id
+";
+$stats_stmt = $conex->prepare($stats_sql);
+$stats_stmt->execute(['id' => $id_instructor]);
+$stats = $stats_stmt->fetch(PDO::FETCH_ASSOC);
+
+// 🔽 NUEVO BLOQUE: Contar total de aprendices únicos asignados a fichas del instructor
+$aprendices_sql = "
+    SELECT COUNT(DISTINCT uf.id_user) AS total_aprendices
+    FROM materia_ficha mf
+    JOIN fichas f ON mf.id_ficha = f.id_ficha
+    JOIN user_ficha uf ON f.id_ficha = uf.id_ficha
+    WHERE mf.id_instructor = :id
+";
+$aprendices_stmt = $conex->prepare($aprendices_sql);
+$aprendices_stmt->execute(['id' => $id_instructor]);
+$total_aprendices = $aprendices_stmt->fetchColumn();
+
 if ($q === '') {
   // Mostrar fichas paginadas normalmente
   $sql = "
@@ -22,7 +46,7 @@ if ($q === '') {
         WHERE mf.id_instructor = :id
         ORDER BY mf.id_materia_ficha ASC
         LIMIT $limit OFFSET $offset
-        ";
+    ";
   $stmt = $conex->prepare($sql);
   $stmt->execute(['id' => $id_instructor]);
   $fichas = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -31,6 +55,7 @@ if ($q === '') {
   $total = $conex->prepare("SELECT COUNT(*) FROM materia_ficha WHERE id_instructor = :id");
   $total->execute(['id' => $id_instructor]);
   $total_pages = ceil($total->fetchColumn() / $limit);
+  $total_fichas_query = $total->fetchColumn();
 } else {
   // Búsqueda por nombre de materia, nombre de formación o número de ficha (sin paginación)
   $sql = "
@@ -57,53 +82,73 @@ if ($q === '') {
   ]);
   $fichas = $stmt->fetchAll(PDO::FETCH_ASSOC);
   $total_pages = 0; // No hay paginación en búsqueda
+  $total_fichas_query = count($fichas);
 }
-?>
 
-<?php if (count($fichas) > 0): ?>
-  <div class="row g-4">
-    <?php foreach ($fichas as $ficha): ?>
-      <div class="col-md-6 col-lg-4">
-        <div class="card border-0 shadow-sm ficha-card h-100" style="transition: transform 0.2s ease-in-out;">
-          <div class="card-body">
-            <h5 class="card-title mb-2" style="color: #0E4A86;">
-              <i class="bi bi-journal-code me-1"></i><?= htmlspecialchars($ficha['nombre_materia']) ?>
-            </h5>
-            <p class="card-text text-muted">
-              <strong>Ficha:</strong> <?= htmlspecialchars($ficha['ficha_materia']) ?>
-            </p>
-            <p class="card-text text-muted">
-              <strong>Formación:</strong> <?= htmlspecialchars($ficha['nombre_formacion']) ?>
-            </p>
-            <div class="d-flex justify-content-between mt-4">
-              <button class="btn btn-detalles btn-outline-primary w-100 me-2 fichas" data-id="<?= $ficha['ficha_materia'] ?>">
-                <i class="bi bi-info-circle"></i> Detalles
-              </button>
-              <a href="../mod/ver_aprendices.php?id_ficha=<?= $ficha['ficha_materia'] ?>" class="btn w-100" style="background-color: #0E4A86; color: white">
-                <i class="bi bi-people"></i> Aprendices
-              </a>
+// Generate HTML
+$html = '';
+if (count($fichas) > 0) {
+  foreach ($fichas as $ficha) {
+    $html .= '
+        <div class="ficha-card">
+            <div class="ficha-header">
+                <div class="ficha-icon">
+                    <i class="bi bi-book"></i>
+                </div>
+                <div class="ficha-info">
+                    <h3 class="ficha-number">' . htmlspecialchars($ficha['nombre_materia']) . '</h3>
+                    <p class="ficha-type">Materia Transversal • Ficha ' . htmlspecialchars($ficha['ficha_materia']) . '</p>
+                </div>
             </div>
-          </div>
-        </div>
-      </div>
-    <?php endforeach; ?>
-  </div>
+            
+            <div class="ficha-content">
+                <div class="ficha-formation">
+                    <div class="formation-label">Programa de Formación</div>
+                    <p class="formation-name">' . htmlspecialchars($ficha['nombre_formacion']) . '</p>
+                </div>
+            </div>
+            
+            <div class="ficha-actions">
+                <button class="btn-modern btn-outline-modern btn-detalles fichas" data-id="' . $ficha['ficha_materia'] . '">
+                    <i class="bi bi-info-circle"></i>
+                    Detalles
+                </button>
+                <a href="../mod/ver_aprendices.php?id_ficha=' . $ficha['ficha_materia'] . '" class="btn-modern btn-primary-modern">
+                    <i class="bi bi-people"></i>
+                    Aprendices
+                </a>
+            </div>
+        </div>';
+  }
 
-  <?php if ($q === '' && $total_pages > 1): ?>
-    <div class="d-flex justify-content-center mt-4">
-      <nav>
-        <ul class="pagination">
-          <?php for ($i = 1; $i <= $total_pages; $i++): ?>
-            <li class="page-item <?= ($i == $page ? 'active' : '') ?>">
-              <a class="page-link" href="#" onclick="buscarFicha(<?= $i ?>)"><?= $i ?></a>
-            </li>
-          <?php endfor; ?>
-        </ul>
-      </nav>
-    </div>
-  <?php endif; ?>
-<?php else: ?>
-  <div class="col-12 text-center">
-    <p class="text-muted">No se encontraron coincidencias.</p>
-  </div>
-<?php endif; ?>
+  // Add pagination if needed
+  if ($q === '' && $total_pages > 1) {
+    $html .= '<div class="pagination-container">
+            <div class="pagination-modern">';
+
+    for ($i = 1; $i <= $total_pages; $i++) {
+      $activeClass = ($i == $page) ? 'active' : '';
+      $html .= '<a class="page-btn ' . $activeClass . '" href="#" data-page="' . $i . '">' . $i . '</a>';
+    }
+
+    $html .= '</div></div>';
+  }
+} else {
+  $html = '
+    <div class="empty-state">
+        <i class="bi bi-folder-x empty-icon"></i>
+        <h3 class="empty-title">No se encontraron materias</h3>
+        <p class="empty-description">' .
+    ($q ? 'No hay materias que coincidan con "' . htmlspecialchars($q) . '"' : 'No tienes materias transversales asignadas') .
+    '</p>
+    </div>';
+}
+
+// Return JSON response
+echo json_encode([
+  'html' => $html,
+  'count_text' => '',
+  'total_materias' => $stats['total_materias'],
+  'total_fichas' => $stats['total_fichas'],
+  'total_aprendices' => $total_aprendices // 👈 NUEVO DATO DEVUELTO
+]);

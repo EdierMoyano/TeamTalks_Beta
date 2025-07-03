@@ -8,7 +8,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/conexion/init.php';
 <aside class="sidebar collapsed" id="sidebar">
   <nav class="sidebar-nav">
     <ul class="nav-list primary-nav">
-      <button class="toggler sidebar-toggler" onclick="toggleSidebar()">
+      <button class="toggler sidebar-toggler" onclick="toggleSidebar()" style="height: 50px;">
         <span class="material-symbols-rounded">
           <i class="bi bi-chevron-right toggle-icon"></i>
         </span>

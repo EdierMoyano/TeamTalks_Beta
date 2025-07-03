@@ -95,26 +95,29 @@ if ($id_usuario) {
 
 <style>
     .btn-primary-modern {
-        background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+        width: 100%;
+        padding: var(--space-3) var(--space-4);
+        background: var(--primary);
+        color: var(--white);
         border: none;
-        border-radius: 12px;
-        padding: 1rem 2rem;
-        font-weight: 600;
-        font-size: 0.875rem;
-        transition: all 0.3s ease;
-        color: white;
-        min-width: 140px;
+        border-radius: var(--border-radius);
+        font-size: var(--font-size-sm);
+        font-weight: 500;
+        cursor: pointer;
+        transition: var(--transition);
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 0.5rem;
+        gap: var(--space-2);
+        position: relative;
+        overflow: hidden;
     }
 
     .btn-primary-modern:hover {
         transform: translateY(-2px);
         color: white;
         box-shadow: 0 8px 25px rgba(37, 99, 235, 0.3);
-        background: linear-gradient(135deg, #1e40af 0%, #1d4ed8 100%);
+        background: var(--primary);
     }
 </style>
 
@@ -315,6 +318,7 @@ if ($id_usuario) {
             const timeoutInSeconds = <?= $timeout ?? 500000000000 ?>; // Tiempo de inactividad en segundos
             const timeoutMillis = timeoutInSeconds * 1000; // Tiempo en milisegundos
             let timeoutId;
+
             function cerrarSesion() {
                 fetch('<?= BASE_URL ?>/includes/exit.php')
                     .then(() => {
@@ -326,6 +330,7 @@ if ($id_usuario) {
                         window.location.href = '<?= BASE_URL ?>/login/login.php';
                     });
             }
+
             function resetTimer() {
                 clearTimeout(timeoutId);
                 timeoutId = setTimeout(cerrarSesion, timeoutMillis);
@@ -458,6 +463,7 @@ if ($id_usuario) {
             document.body.classList.remove('mobile-nav-active');
         }
     });
+
     function mostrarError(elemento, mensaje) {
         eliminarError(elemento);
         const error = document.createElement("div");
@@ -467,12 +473,14 @@ if ($id_usuario) {
         contenedor.appendChild(error);
         elemento.classList.add("is-invalid");
     }
+
     function eliminarError(elemento) {
         elemento.classList.remove("is-invalid");
         const contenedor = elemento.closest(".mb-3") || elemento.parentElement;
         const errores = contenedor.querySelectorAll(".text-danger");
         errores.forEach(e => e.remove());
     }
+
     function validarFormularioEditarPerfil() {
         return validarTodo();
     }
@@ -482,6 +490,7 @@ if ($id_usuario) {
         const password = document.getElementById("password");
         const confirmar = document.getElementById("confirmar_password");
         const btnGuardar = document.querySelector('#modalEditarPerfil .btn.btn-primary-modern');
+
         function validarCorreo() {
             const correo = email.value.trim();
             eliminarError(email);

@@ -1,5 +1,4 @@
 <?php
-
 require_once $_SERVER['DOCUMENT_ROOT'] . '/conexion/init.php';
 require_once __DIR__ . '/../vendor/autoload.php';
 include 'session.php';

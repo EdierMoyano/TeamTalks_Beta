@@ -1,5 +1,5 @@
 <?php
-require_once $_SERVER['DOCUMENT_ROOT'] . '/teamtalks/conexion/init.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/conexion/init.php';
 include 'session.php';
 
 $id_usuario = $_SESSION['documento'] ?? null;
@@ -16,6 +16,23 @@ $destino = BASE_URL . ($redirecciones[$rol] ?? '/index.php');
 if (!$id_usuario) {
     header("Location: ../login/login.php");
     exit;
+}
+
+// Función para eliminar avatar anterior si existe y no es el predeterminado
+function eliminarAvatarAnterior($id_usuario, $conex)
+{
+    $stmt = $conex->prepare("SELECT avatar FROM usuarios WHERE id = ?");
+    $stmt->execute([$id_usuario]);
+    $usuario = $stmt->fetch();
+
+    if (!empty($usuario['avatar']) && strpos($usuario['avatar'], 'default.jpg') === false) {
+        $ruta_anterior = realpath($_SERVER['DOCUMENT_ROOT'] . '/' . $usuario['avatar']);
+        $uploads_dir = realpath($_SERVER['DOCUMENT_ROOT'] . '/uploads/avatar');
+
+        if ($ruta_anterior && strpos($ruta_anterior, $uploads_dir) === 0 && file_exists($ruta_anterior)) {
+            unlink($ruta_anterior); // Elimina archivo físico
+        }
+    }
 }
 
 $email     = trim($_POST['email'] ?? '');
@@ -52,18 +69,8 @@ if ($avatar && $avatar['error'] === UPLOAD_ERR_OK) {
     } elseif ($avatar['size'] > 1024 * 1024) {
         $errores[] = "El archivo no debe superar 1MB.";
     } else {
-        // Obtener avatar actual antes de guardar uno nuevo
-        $stmt = $conex->prepare("SELECT avatar FROM usuarios WHERE id = ?");
-        $stmt->execute([$id_usuario]);
-        $usuario = $stmt->fetch();
-
-        // Eliminar avatar anterior si existe y no es vacío
-        if (!empty($usuario['avatar'])) {
-            $ruta_anterior = $_SERVER['DOCUMENT_ROOT'] . '/' . $usuario['avatar'];
-            if (file_exists($ruta_anterior)) {
-                unlink($ruta_anterior); // Elimina el archivo físico
-            }
-        }
+        // Eliminar avatar anterior
+        eliminarAvatarAnterior($id_usuario, $conex);
 
         // Crear carpeta si no existe
         $directorio_destino = '../uploads/avatar/';
