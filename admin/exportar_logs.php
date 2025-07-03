@@ -45,14 +45,14 @@ $sheet = $spreadsheet->getActiveSheet();
 $sheet->setTitle('Logs');
 
 // Encabezado grande
-$sheet->mergeCells('A1:G1');
+$sheet->mergeCells('A1:F1');
 $sheet->setCellValue('A1', 'REPORTE DE LOGS DEL SISTEMA');
 $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(16)->getColor()->setARGB('FFFFFFFF');
 $sheet->getStyle('A1')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
 $sheet->getStyle('A1')->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('FF0e4a86');
 
 // Fecha de generación
-$sheet->mergeCells('A2:G2');
+$sheet->mergeCells('A2:F2');
 $sheet->setCellValue('A2', 'Generado el: ' . date('d/m/Y H:i:s'));
 $sheet->getStyle('A2')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
 $sheet->getStyle('A2')->getFont()->setItalic(true);
@@ -60,9 +60,9 @@ $sheet->getStyle('A2')->getFont()->setItalic(true);
 // Cabecera
 $cabecera = ['Fecha', 'Usuario (ID)', 'Rol', 'Acción', 'Entidad', 'Descripción'];
 $sheet->fromArray($cabecera, NULL, 'A4');
-$sheet->getStyle('A4:G4')->getFont()->setBold(true)->getColor()->setARGB('FFFFFFFF');
-$sheet->getStyle('A4:G4')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-$sheet->getStyle('A4:G4')->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('FF0e4a86');
+$sheet->getStyle('A4:F4')->getFont()->setBold(true)->getColor()->setARGB('FFFFFFFF');
+$sheet->getStyle('A4:F4')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+$sheet->getStyle('A4:F4')->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('FF0e4a86');
 
 // Datos
 $fila = 5;

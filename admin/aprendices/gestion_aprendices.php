@@ -8,7 +8,6 @@ if (!isset($_SESSION['documento']) || $_SESSION['rol'] !== 2) {
 }
 
 require_once '../../conexion/conexion.php';
-require_once '../../includes/functions.php';
 
 // Crear instancia de la conexión
 $db = new Database();
@@ -393,9 +392,7 @@ if (isset($_GET['ajax_fichas']) && isset($_GET['id_formacion'])) {
                                     <button class="btn btn-primary active" id="btnTodosAprendices" onclick="mostrarSeccion('todos')">
                                         <i class="bi bi-people"></i> Todos los Aprendices
                                     </button>
-                                    <button class="btn btn-outline-primary" id="btnAprendicesActivos" onclick="mostrarSeccion('activos')">
-                                        <i class="bi bi-person-check"></i> Activos (<?php echo $stats['aprendices_activos']; ?>)
-                                    </button>
+                                    
                                     <button class="btn btn-outline-primary" id="btnAprendicesSuspendidos" onclick="mostrarSeccion('suspendidos')">
                                         <i class="bi bi-person-dash"></i> Suspendidos (<?php echo $stats['aprendices_suspendidos']; ?>)
                                     </button>

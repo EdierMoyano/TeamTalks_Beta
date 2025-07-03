@@ -14,15 +14,79 @@ $rol = $_SESSION['rol'] ?? null;
 
 $uri = $_SERVER['REQUEST_URI'];
 
+// NUEVA VALIDACIÓN: Cerrar sesión para super_admin (rol 1) y redirección automática según el rol
+if ($usuario_logueado && $rol) {
+    // Si es super_admin (rol 1), cerrar sesión y redirigir al index
+    if ($rol == 1) {
+        session_destroy();
+        header("Location: " . BASE_URL . "/index.php");
+        exit;
+    }
+    
+    $current_path = parse_url($uri, PHP_URL_PATH);
+    
+    // Definir las rutas correctas para cada rol (usando rutas relativas)
+    $rutas_por_rol = [
+        2 => '/admin/',           // Administrador
+        3 => '/instructor/',      // Instructor
+        4 => '/aprendiz/',        // Aprendiz
+        5 => '/transversal/'      // Transversal
+    ];
+    
+    // Verificar si el usuario está en la ruta correcta para su rol
+    if (isset($rutas_por_rol[$rol])) {
+        $ruta_correcta = $rutas_por_rol[$rol];
+        
+        // Si no está en su ruta correcta y no está en páginas compartidas
+        if (!str_contains($current_path, $ruta_correcta) && 
+            !str_contains($current_path, '/mod/') &&
+            !str_contains($current_path, '/ajax/') &&
+            !str_contains($current_path, '/actions/') &&
+            !str_contains($current_path, '/includes/') &&
+            !str_contains($current_path, '/assets/') &&
+            !str_contains($current_path, '/uploads/')) {
+            
+            // Redirigir a la página de inicio correspondiente
+            $pagina_inicio = '';
+            switch ($rol) {
+                case 2: // Administrador
+                    $pagina_inicio = BASE_URL . '/admin/index.php';
+                    break;
+                case 3: // Instructor
+                    $pagina_inicio = BASE_URL . '/instructor/index.php';
+                    break;
+                case 4: // Aprendiz
+                    $pagina_inicio = BASE_URL . '/aprendiz/index.php';
+                    break;
+                case 5: // Transversal
+                    $pagina_inicio = BASE_URL . '/transversal/index.php';
+                    break;
+            }
+            
+            if ($pagina_inicio) {
+                header("Location: $pagina_inicio");
+                exit;
+            }
+        }
+    }
+}
+
 if (strpos($uri, '/instructor/') !== false) {
 
     $carpeta_inicio = BASE_URL . '/instructor/index.php';
+
 } elseif (strpos($uri, '/transversal/') !== false) {
 
     $carpeta_inicio = BASE_URL . '/transversal/index.php';
+
 } elseif (strpos($uri, '/aprendiz/') !== false) {
 
     $carpeta_inicio = BASE_URL . '/aprendiz/tarjeta_formacion/index.php';
+
+} elseif (strpos($uri, '/admin/') !== false) {
+
+    $carpeta_inicio = BASE_URL . '/admin/index.php';
+
 } elseif (strpos($uri, '/mod/') !== false) {
 
     // Para rutas compartidas, usamos el rol para definir a qué dashboard enviar
@@ -30,16 +94,25 @@ if (strpos($uri, '/instructor/') !== false) {
     if ($rol == 3) { // Instructor gerente
 
         $carpeta_inicio = BASE_URL . '/instructor/index.php';
+
     } elseif ($rol == 5) { // Instructor transversal
 
         $carpeta_inicio = BASE_URL . '/transversal/index.php';
+
+    } elseif ($rol == 2) { // Administrador
+
+        $carpeta_inicio = BASE_URL . '/admin/index.php';
+
     } else {
 
         $carpeta_inicio = BASE_URL . '/index.php';
+
     }
+
 } else {
 
     $carpeta_inicio = BASE_URL . '/index.php';
+
 }
 
 $logo_href = !$usuario_logueado ? BASE_URL . '/index.php' : $carpeta_inicio;
@@ -53,9 +126,11 @@ if ($id_usuario) {
     $datos->execute([$id_usuario]);
 
     $user = $datos->fetch(PDO::FETCH_ASSOC);
+
 } else {
 
     $user = null;
+
 }
 
 $notificaciones = [];
@@ -123,7 +198,9 @@ if ($id_usuario) {
             'contenido' => $row['contenido'] ? mb_strimwidth($row['contenido'], 0, 100, '...') : 'Sin contenido disponible'
 
         ];
+
     }
+
 }
 
 // Contar notificaciones no leídas
@@ -137,11 +214,13 @@ if ($id_usuario) {
     $stmt_count->execute([$id_usuario]);
 
     $notificaciones_no_leidas = $stmt_count->fetchColumn();
+
 }
 
 ?>
 
 <style>
+
     .btn-primary-modern {
 
         background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
@@ -183,6 +262,7 @@ if ($id_usuario) {
         background: linear-gradient(135deg, #1e40af 0%, #1d4ed8 100%);
 
     }
+
 </style>
 
 <header class="modern-header">
@@ -481,6 +561,7 @@ if ($id_usuario) {
 
                         </li>
 
+<<<<<<< HEAD
                         <!-- Nueva opción de Certificados solo para aprendices -->
 
                         <?php if ($rol == 4): // Solo para aprendices 
@@ -495,6 +576,8 @@ if ($id_usuario) {
 
                         <?php endif; ?>
 
+=======
+>>>>>>> reporte-intru
                         <li>
 
                             <hr class="dropdown-divider">
@@ -572,6 +655,7 @@ if ($id_usuario) {
 <?php if ($usuario_logueado): ?>
 
     <script>
+
         (function() {
 
             const timeoutInSeconds = <?= $timeout ?? 500000000000 ?>; // Tiempo de inactividad en segundos
@@ -623,6 +707,7 @@ if ($id_usuario) {
             resetTimer();
 
         })();
+
     </script>
 
 <?php endif; ?>
@@ -822,6 +907,7 @@ if ($id_usuario) {
 </div>
 
 <script>
+
     // Mobile menu toggle - MODIFICADO PARA USUARIOS LOGUEADOS
 
     function toggleMobileMenu() {

@@ -8,7 +8,6 @@ if (!isset($_SESSION['documento']) || $_SESSION['rol'] !== 2) {
 }
 
 require_once '../../conexion/conexion.php';
-require_once '../../includes/functions.php';
 
 // Crear instancia de la conexión
 $db = new Database();
@@ -119,7 +118,7 @@ try {
             GROUP BY id_instructor
         ) materias_count ON u.id = materias_count.id_instructor
         WHERE $where_clause
-        ORDER BY u.nombres, u.apellidos
+        ORDER BY fichas_asignadas DESC, materias_especializadas DESC, u.nombres, u.apellidos
         LIMIT $instructores_por_pagina OFFSET $offset
     ";
 
@@ -306,7 +305,7 @@ try {
                             <div class="row" id="instructoresContainer">
                                 <?php foreach ($instructores as $instructor): ?>
                                     <div class="col-md-6 col-lg-4 mb-4">
-                                        <div class="card h-100 border-<?php echo ($instructor['id_rol'] == 3) ? 'primary' : 'success'; ?>">
+                                        <div class="card h-70 border-<?php echo ($instructor['id_rol'] == 3) ? 'primary' : 'success'; ?>">
                                             <div class="card-header bg-<?php echo ($instructor['id_rol'] == 3) ? 'primary' : 'success'; ?> text-white">
                                                 <div class="d-flex justify-content-between align-items-center">
                                                     <h6 class="mb-0 fw-bold">
@@ -341,10 +340,15 @@ try {
                                                 </div>
                                             </div>
                                             <div class="card-footer bg-transparent">
-                                                <div class="d-grid">
+                                                <div class="d-flex gap-2">
                                                     <button class="btn btn-outline-primary btn-sm ver-detalles"
                                                         data-instructor="<?php echo $instructor['id']; ?>">
-                                                        <i class="bi bi-eye"></i> Ver Detalles
+                                                        <i class="bi bi-eye"></i> Detalles
+                                                    </button>
+                                                    <button class="btn btn-success btn-sm btn-reportes"
+                                                        data-instructor="<?php echo $instructor['id']; ?>"
+                                                        data-nombre="<?php echo htmlspecialchars($instructor['nombres'] . ' ' . $instructor['apellidos']); ?>">
+                                                        <i class="bi bi-file-earmark-excel"></i> Reportes
                                                     </button>
                                                 </div>
                                             </div>
@@ -420,7 +424,7 @@ try {
                                 <i class="bi bi-info-circle"></i>
                                 <strong>Información:</strong> Estos instructores no tienen materias especializadas asignadas en el sistema.
                             </div>
-                            
+
                             <div id="instructoresSinMateriasContainer">
                                 <!-- Se cargará dinámicamente -->
                             </div>
@@ -493,7 +497,7 @@ try {
                 <form id="formCambiarEstado">
                     <div class="modal-body">
                         <input type="hidden" id="estado_id_instructor" name="id_instructor">
-                        
+
                         <div class="mb-3">
                             <label class="form-label">Instructor:</label>
                             <p class="fw-bold" id="estado_instructor_nombre"></p>
@@ -536,15 +540,6 @@ try {
             </div>
         </div>
     </div>
-
-    <!-- Modal para reportes -->
-    <div class="modal fade" id="reportesModal" tabindex="-1" aria-labelledby="reportesModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content" id="reportesModalContent">
-            <!-- Se cargará dinámicamente -->
-        </div>
-    </div>
-</div>
 
     <!-- Modal para asignar materias -->
     <div class="modal fade" id="asignarMateriasModal" tabindex="-1" aria-labelledby="asignarMateriasModalLabel" aria-hidden="true">
@@ -659,8 +654,6 @@ try {
 
         // NUEVA FUNCIÓN: Asignar event listeners a elementos dinámicos
         function asignarEventListenersDinamicos() {
-            
-
             document.querySelectorAll('.asignar-materias').forEach(button => {
                 button.removeEventListener('click', handleAsignarMaterias);
                 button.addEventListener('click', handleAsignarMaterias);
@@ -674,11 +667,6 @@ try {
             document.querySelectorAll('.gestionar-fichas').forEach(button => {
                 button.removeEventListener('click', handleGestionarFichas);
                 button.addEventListener('click', handleGestionarFichas);
-            });
-
-            document.querySelectorAll('.generar-reportes').forEach(button => {
-                button.removeEventListener('click', handleGenerarReportes);
-                button.addEventListener('click', handleGenerarReportes);
             });
         }
 
@@ -700,11 +688,11 @@ try {
             const idInstructor = button.getAttribute('data-id');
             const nombre = button.getAttribute('data-nombre');
             const estadoActual = button.getAttribute('data-estado');
-            
+
             document.getElementById('estado_id_instructor').value = idInstructor;
             document.getElementById('estado_instructor_nombre').textContent = nombre;
             document.getElementById('nuevo_estado').value = estadoActual == 1 ? '2' : '1';
-            
+
             const modal = new bootstrap.Modal(document.getElementById('cambiarEstadoModal'));
             modal.show();
         }
@@ -714,13 +702,6 @@ try {
             const idInstructor = button.getAttribute('data-id');
             const nombre = button.getAttribute('data-nombre');
             cargarGestionFichas(idInstructor, nombre);
-        }
-
-        function handleGenerarReportes(event) {
-            const button = event.currentTarget; // <-- Cambia aquí
-            const idInstructor = button.getAttribute('data-id');
-            const nombre = button.getAttribute('data-nombre');
-            cargarOpcionesReporte(idInstructor, nombre);
         }
 
         function cargarInstructoresData() {
@@ -795,10 +776,6 @@ try {
             if (event.target.closest('.gestionar-fichas')) {
                 handleGestionarFichas(event);
             }
-
-            if (event.target.closest('.generar-reportes')) {
-                handleGenerarReportes(event);
-            }
         });
 
         // Función para cargar detalles del instructor
@@ -812,7 +789,7 @@ try {
                     const modalEl = document.getElementById('detallesInstructorModal');
                     const modal = new bootstrap.Modal(modalEl);
                     modal.show();
-                    
+
                     // Asignar event listeners a los nuevos elementos
                     asignarEventListenersDinamicos();
                 } else {
@@ -828,7 +805,7 @@ try {
         async function cargarFormularioMaterias(idInstructor, nombre) {
             try {
                 const response = await fetch(`get_materias.php?id_instructor=${encodeURIComponent(idInstructor)}`);
-                
+
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
@@ -872,97 +849,14 @@ try {
             }
         }
 
-        // Cargar opciones de reporte
-        async function cargarOpcionesReporte(idInstructor, nombre) {
-            try {
-                const response = await fetch(`generar_reporte_instructor.php?id_instructor=${idInstructor}`);
-                const data = await response.json();
-
-                if (data.success) {
-                    document.getElementById('reportesModalContent').innerHTML = data.html;
-
-                    const modalEl = document.getElementById('reportesModal');
-                    const modal = new bootstrap.Modal(modalEl);
-                    modal.show();
-                } else {
-                    Swal.fire('Error', data.message, 'error');
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                Swal.fire('Error', 'Error al cargar opciones de reporte', 'error');
-            }
-        }
-
         function cambiarPaginaFichas(idInstructor, pagina) {
             cargarDetallesInstructor(idInstructor, pagina);
         }
-
-        // Función global para generar reportes (llamada desde el modal)
-        async function generarReporte(tipo, idInstructor, idFicha = null) {
-            try {
-                let url = `procesar_reporte_instructor.php?id_instructor=${idInstructor}&tipo_reporte=${tipo}`;
-                if (idFicha) {
-                    url += `&id_ficha=${idFicha}`;
-                }
-
-                // Mostrar loading
-                if (window.Swal) {
-                    window.Swal.fire({
-                        title: 'Generando reporte...',
-                        text: 'Por favor espera',
-                        allowOutsideClick: false,
-                        didOpen: () => {
-                            window.Swal.showLoading();
-                        }
-                    });
-                }
-
-                // Crear formulario temporal para forzar descarga
-                const form = document.createElement('form');
-                form.method = 'GET';
-                form.action = url;
-                form.target = '_blank';
-                form.style.display = 'none';
-                document.body.appendChild(form);
-                form.submit();
-                document.body.removeChild(form);
-
-                // Cerrar loading después de un momento
-                setTimeout(() => {
-                    if (window.Swal) {
-                        window.Swal.fire('Éxito', 'Reporte generado correctamente', 'success');
-                    }
-                }, 1000);
-            } catch (error) {
-                console.error('Error:', error);
-                if (window.Swal) {
-                    window.Swal.fire('Error', 'No se pudo generar el reporte', 'error');
-                }
-            }
-        }
-
-        // Función para generar reporte de ficha seleccionada
-        function generarReporteFichaSeleccionada(idInstructor) {
-            const selectFicha = document.getElementById('selectFichaIndividual');
-            if (!selectFicha) {
-                console.error('Select de ficha no encontrado');
-                return;
-            }
-            
-            const idFicha = selectFicha.value;
-            
-            if (!idFicha) {
-                if (window.Swal) {
-                    window.Swal.fire('Atención', 'Por favor selecciona una ficha', 'warning');
-                } else {
-                    alert('Por favor selecciona una ficha');
-                }
-                return;
-            }
-            
-            generarReporte('ficha_individual', idInstructor, idFicha);
-        }
     </script>
+
+    <!-- Incluir modal de reportes y su manejador -->
+    <?php include 'modal_reportes.html'; ?>
+    <script src="reportes-handler.js"></script>
 
 </body>
 </html>

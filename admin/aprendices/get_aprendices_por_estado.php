@@ -57,6 +57,7 @@ try {
             e.estado,
             uf.id_ficha,
             f.id_ficha as ficha_numero,
+            f.id_formacion as id_formacion,
             fo.nombre as programa_formacion,
             tf.tipo_formacion,
             j.jornada,
@@ -201,6 +202,14 @@ try {
                                     </button>
                                 </div>
                             </div>
+                            <!-- BOTÓN CAMBIAR FICHA - AGREGADO -->
+                            <button class="btn btn-secondary cambiar-ficha"
+                                data-id="<?php echo $aprendiz['id']; ?>"
+                                data-nombre="<?php echo htmlspecialchars($aprendiz['nombres'] . ' ' . $aprendiz['apellidos']); ?>"
+                                data-ficha="<?php echo $aprendiz['ficha_numero'] ?? ''; ?>"
+                                data-formacion="<?php echo $aprendiz['id_formacion'] ?? ''; ?>">
+                                <i class="bi bi-folder-symlink"></i> Cambiar Ficha
+                            </button>
                         </div>
                     </div>
                 </div>

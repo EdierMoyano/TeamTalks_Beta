@@ -101,10 +101,10 @@ try {
               WHERE uf2.id_ficha = f.id_ficha AND uf2.id_estado = 1
             ) as aprendices_asignados,
             (
-              SELECT COALESCE(SUM(TIMESTAMPDIFF(MINUTE, h2.hora_inicio, h2.hora_fin)), 0)
-              FROM materia_ficha mf3
-              LEFT JOIN horario h2 ON mf3.id_materia_ficha = h2.id_materia_ficha AND h2.id_estado = 1
-              WHERE mf3.id_ficha = f.id_ficha AND mf3.id_instructor = ?
+            SELECT COALESCE(SUM(TIMESTAMPDIFF(MINUTE, h2.hora_inicio, h2.hora_fin)), 0)
+            FROM materia_ficha mf3
+            LEFT JOIN horario h2 ON mf3.id_materia_ficha = h2.id_materia_ficha AND h2.id_estado = 1
+            WHERE mf3.id_ficha = f.id_ficha AND mf3.id_instructor = ?
             ) / 60 as horas_semanales
         FROM fichas f
         INNER JOIN materia_ficha mf ON f.id_ficha = mf.id_ficha AND mf.id_instructor = ?
@@ -202,11 +202,7 @@ try {
                     </button>
                     <?php endif; ?>
                     
-                    <button class="btn btn-success generar-reportes" 
-                            data-id="<?php echo $instructor['id']; ?>"
-                            data-nombre="<?php echo htmlspecialchars($instructor['nombres'] . ' ' . $instructor['apellidos']); ?>">
-                        <i class="bi bi-file-earmark-text"></i> Reportes
-                    </button>
+                    
                 </div>
             </div>
         </div>
