@@ -1,7 +1,9 @@
 <?php
 session_start();
+
 require_once 'config.php';
 require_once 'functions.php';
+require_once 'functions-validacion.php';
 
 // Verificar si el usuario ha iniciado sesión
 if (!isset($_SESSION['documento'])) {
@@ -154,12 +156,10 @@ function obtenerIniciales($nombre_completo)
 
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
     <meta charset="UTF-8">
     <title>Clases - <?php echo htmlspecialchars($materiaActual['materia']); ?></title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <!-- Bootstrap y fuentes -->
     <link rel="stylesheet" href="../../styles/header.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -170,8 +170,8 @@ function obtenerIniciales($nombre_completo)
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0">
-
     <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="../css/validacion-notas.css">
 
     <style>
         /* Ajusta el margen izquierdo del contenido principal según el estado del sidebar */
@@ -385,11 +385,9 @@ function obtenerIniciales($nombre_completo)
             0% {
                 transform: scale(1);
             }
-
             50% {
                 transform: scale(1.1);
             }
-
             100% {
                 transform: scale(1);
             }
@@ -467,6 +465,20 @@ function obtenerIniciales($nombre_completo)
             /* Oculta el texto que sobrepase el ancho */
         }
 
+        .btn-volver-azul {
+            background-color: #fff !important;
+            color: #111 !important;
+            border: 1.5px solid #111 !important;
+            transition: background 0.2s, color 0.2s, border 0.2s;
+        }
+
+        .btn-volver-azul:hover,
+        .btn-volver-azul:focus {
+            background-color: #f3f3f3 !important;
+            color: #111 !important;
+            border: 1.5px solid #111 !important;
+        }
+
         .actividad-entregada:hover {
             background-color: #f3fcf3;
             transform: translateY(-1px);
@@ -477,7 +489,6 @@ function obtenerIniciales($nombre_completo)
 </head>
 
 <body class="sidebar-collapsed">
-
     <!-- Header -->
     <?php include '../../includes/design/header.php'; ?>
 
@@ -496,8 +507,9 @@ function obtenerIniciales($nombre_completo)
                             Ficha: <?php echo htmlspecialchars($ficha['id_ficha']); ?> •
                             Instructor: <?php echo !empty($instructores) ? htmlspecialchars($instructores[0]['nombres'] . ' ' . $instructores[0]['apellidos']) : 'No asignado'; ?>
                         </p>
-                        <button class="btn btn-outline-black btn-sm btn-volver-xs mt-2" onclick="volverAClase()">
-                            <i class="bi bi-arrow-return-left"></i> Volver a clases
+                        <!-- Botón corregido -->
+                        <button class="btn-volver-azul btn-volver-xs mt-2" onclick="volverAClase()">
+                            <i class="bi bi-arrow-left"></i> Volver a clases
                         </button>
                     </div>
 
@@ -751,7 +763,11 @@ function obtenerIniciales($nombre_completo)
                                     <?php if (count($actividadesEntregadas) > 0): ?>
                                         <ul class="task-list">
                                             <?php foreach ($actividadesEntregadas as $actividad): ?>
-                                                <li class="task-item actividad-entregada" onclick="window.location.href='detalle_actividad.php?id=<?php echo $actividad['id_actividad']; ?>'">
+                                                <?php
+                                                // Determinar la clase según la nota
+                                                $claseNota = obtenerClaseNotaActividad($actividad['nota']);
+                                                ?>
+                                                <li class="task-item actividad-entregada <?php echo $claseNota; ?>" onclick="window.location.href='detalle_actividad.php?id=<?php echo $actividad['id_actividad']; ?>'">
                                                     <div class="task-icon status-completed"><i class="bi bi-patch-check"></i></div>
                                                     <div class="task-info">
                                                         <div class="task-header">
@@ -763,7 +779,6 @@ function obtenerIniciales($nombre_completo)
                                                             <?php echo htmlspecialchars($actividad['nombres'] . ' ' . $actividad['apellidos']); ?> •
                                                             Entregado: <?php echo formatearFecha($actividad['fecha_entregada']); ?>
                                                         </p>
-
                                                         <!-- Mostrar nota y comentario del instructor -->
                                                         <?php if ($actividad['nota'] || $actividad['comentario_inst']): ?>
                                                             <div class="nota-comentario">
@@ -803,7 +818,6 @@ function obtenerIniciales($nombre_completo)
                                 <div class="mb-4">
                                     <p>Participa en los foros de discusión para resolver dudas y compartir conocimientos con tus compañeros e instructores.</p>
                                 </div>
-
                                 <!-- Temas recientes -->
                                 <h4 class="mb-3">Temas recientes</h4>
                                 <?php if (count($temasRecientes) > 0): ?>
@@ -836,7 +850,7 @@ function obtenerIniciales($nombre_completo)
     </main>
 
     <script src="../js/script.js"></script>
-
+    <script src="../js/validacion-notas.js"></script>
     <script>
         // Función para manejar la alerta de actividades vencidas
         function cerrarAlertaVencidas() {
@@ -845,11 +859,9 @@ function obtenerIniciales($nombre_completo)
                 alerta.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
                 alerta.style.opacity = '0';
                 alerta.style.transform = 'translateY(-10px)';
-
                 setTimeout(() => {
                     alerta.classList.add('hidden');
                 }, 300);
-
                 const fechaCierre = new Date().getTime();
                 const claveAlerta = 'alertaVencidas_' + <?php echo $id_usuario_actual; ?> + '_' + <?php echo $idMateriaFicha; ?>;
                 localStorage.setItem(claveAlerta, fechaCierre.toString());
@@ -858,7 +870,7 @@ function obtenerIniciales($nombre_completo)
 
         // Función corregida para volver a la clase
         function volverAClase() {
-            window.location.href = '../index.php';
+            window.location.href = '../tarjeta_clase/clases.php';
         }
 
         // Verificar si la alerta debe mostrarse al cargar la página
@@ -867,12 +879,10 @@ function obtenerIniciales($nombre_completo)
             if (alerta) {
                 const claveAlerta = 'alertaVencidas_' + <?php echo $id_usuario_actual; ?> + '_' + <?php echo $idMateriaFicha; ?>;
                 const fechaCierre = localStorage.getItem(claveAlerta);
-
                 if (fechaCierre) {
                     const fechaCierreMs = parseInt(fechaCierre);
                     const fechaActual = new Date().getTime();
                     const dosDiasEnMs = 2 * 24 * 60 * 60 * 1000;
-
                     if (fechaActual - fechaCierreMs < dosDiasEnMs) {
                         alerta.classList.add('hidden');
                     } else {
@@ -883,5 +893,4 @@ function obtenerIniciales($nombre_completo)
         });
     </script>
 </body>
-
 </html>
