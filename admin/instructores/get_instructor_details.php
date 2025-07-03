@@ -54,10 +54,13 @@ try {
             u.telefono,
             u.id_rol,
             r.rol,
-            u.fecha_registro
+            u.fecha_registro,
+            u.id_estado,
+            e.estado as estado_nombre
         FROM usuarios u
         LEFT JOIN roles r ON u.id_rol = r.id_rol
-        WHERE u.id = ? AND u.id_rol IN (3, 5) AND u.id_estado = 1 AND u.nit = ?
+        LEFT JOIN estado e ON u.id_estado = e.id_estado
+        WHERE u.id = ? AND u.id_rol IN (3, 5) AND u.nit = ?
     ");
     $stmt->execute([$id_instructor, $nit_usuario]);
     $instructor = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -83,30 +86,53 @@ try {
     $total_fichas = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
     $total_paginas_fichas = ceil($total_fichas / $fichas_por_pagina);
 
-    // Obtener fichas con paginación
+    // Obtener fichas con paginación y cálculo de horas del instructor en cada ficha (corregido)
     $stmt = $conexion->prepare("
-        SELECT DISTINCT
+        SELECT
             f.id_ficha,
             fo.nombre as programa,
             tf.tipo_formacion,
             j.jornada,
             f.fecha_creac,
             COUNT(DISTINCT mf2.id_materia) as materias_asignadas,
-            COUNT(DISTINCT uf.id_user) as aprendices_asignados
+            (
+              SELECT COUNT(DISTINCT uf2.id_user)
+              FROM user_ficha uf2
+              WHERE uf2.id_ficha = f.id_ficha AND uf2.id_estado = 1
+            ) as aprendices_asignados,
+            (
+            SELECT COALESCE(SUM(TIMESTAMPDIFF(MINUTE, h2.hora_inicio, h2.hora_fin)), 0)
+            FROM materia_ficha mf3
+            LEFT JOIN horario h2 ON mf3.id_materia_ficha = h2.id_materia_ficha AND h2.id_estado = 1
+            WHERE mf3.id_ficha = f.id_ficha AND mf3.id_instructor = ?
+            ) / 60 as horas_semanales
         FROM fichas f
-        INNER JOIN materia_ficha mf ON f.id_ficha = mf.id_ficha
+        INNER JOIN materia_ficha mf ON f.id_ficha = mf.id_ficha AND mf.id_instructor = ?
         LEFT JOIN formacion fo ON f.id_formacion = fo.id_formacion
         LEFT JOIN tipo_formacion tf ON fo.id_tipo_formacion = tf.id_tipo_formacion
         LEFT JOIN jornada j ON f.id_jornada = j.id_jornada
         LEFT JOIN materia_ficha mf2 ON f.id_ficha = mf2.id_ficha AND mf2.id_instructor = ?
-        LEFT JOIN user_ficha uf ON f.id_ficha = uf.id_ficha AND uf.id_estado = 1
-        WHERE mf.id_instructor = ? AND f.id_estado = 1
+        WHERE f.id_estado = 1
         GROUP BY f.id_ficha, fo.nombre, tf.tipo_formacion, j.jornada, f.fecha_creac
         ORDER BY f.id_ficha DESC
         LIMIT $fichas_por_pagina OFFSET $offset
     ");
-    $stmt->execute([$id_instructor, $id_instructor]);
+    $stmt->execute([$id_instructor, $id_instructor, $id_instructor]);
     $fichas = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Calcular total de horas del trimestre actual
+    $stmt = $conexion->prepare("
+        SELECT 
+            COALESCE(SUM(TIMESTAMPDIFF(MINUTE, h.hora_inicio, h.hora_fin)), 0) / 60 as total_horas_trimestre
+        FROM horario h
+        INNER JOIN materia_ficha mf ON h.id_materia_ficha = mf.id_materia_ficha
+        INNER JOIN trimestre t ON h.id_trimestre = t.id_trimestre
+        WHERE mf.id_instructor = ? 
+        AND h.id_estado = 1
+        AND MONTH(CURDATE()) BETWEEN t.mes_inicio AND t.mes_fin
+    ");
+    $stmt->execute([$id_instructor]);
+    $horas_trimestre = $stmt->fetch(PDO::FETCH_ASSOC)['total_horas_trimestre'] ?? 0;
 
     // Obtener materias especializadas
     $stmt = $conexion->prepare("
@@ -138,6 +164,10 @@ try {
                     <span class="badge bg-primary">
                         <?php echo ($instructor['id_rol'] == 3) ? 'Instructor Normal' : 'Instructor Transversal'; ?>
                     </span>
+                    <br>
+                    <span class="badge bg-<?php echo ($instructor['id_estado'] == 1) ? 'success' : 'danger'; ?> mt-2">
+                        <?php echo $instructor['estado_nombre']; ?>
+                    </span>
                 </div>
                 
                 <hr>
@@ -146,8 +176,9 @@ try {
                 <p><strong><i class="bi bi-envelope"></i> Correo:</strong><br><?php echo htmlspecialchars($instructor['correo']); ?></p>
                 <p><strong><i class="bi bi-telephone"></i> Teléfono:</strong><br><?php echo htmlspecialchars($instructor['telefono'] ?? 'No registrado'); ?></p>
                 <p><strong><i class="bi bi-calendar"></i> Fecha de registro:</strong><br><?php echo date('d/m/Y', strtotime($instructor['fecha_registro'])); ?></p>
+                <p><strong><i class="bi bi-clock"></i> Horas trimestre actual:</strong><br><span class="badge bg-info"><?php echo number_format($horas_trimestre, 1); ?> horas</span></p>
                 
-                <div class="d-grid mt-3">
+                <div class="d-grid gap-2 mt-3">
                     <button class="btn btn-warning editar-instructor" 
                             data-id="<?php echo $instructor['id']; ?>"
                             data-nombre="<?php echo htmlspecialchars($instructor['nombres'] . ' ' . $instructor['apellidos']); ?>"
@@ -155,6 +186,23 @@ try {
                             data-telefono="<?php echo htmlspecialchars($instructor['telefono'] ?? ''); ?>">
                         <i class="bi bi-pencil"></i> Editar Datos
                     </button>
+                    
+                    <button class="btn btn-info cambiar-estado-instructor" 
+                            data-id="<?php echo $instructor['id']; ?>"
+                            data-nombre="<?php echo htmlspecialchars($instructor['nombres'] . ' ' . $instructor['apellidos']); ?>"
+                            data-estado="<?php echo $instructor['id_estado']; ?>">
+                        <i class="bi bi-toggle-on"></i> Cambiar Estado
+                    </button>
+                    
+                    <?php if ($instructor['id_rol'] == 3 && $total_fichas > 0): ?>
+                    <button class="btn btn-secondary gestionar-fichas" 
+                            data-id="<?php echo $instructor['id']; ?>"
+                            data-nombre="<?php echo htmlspecialchars($instructor['nombres'] . ' ' . $instructor['apellidos']); ?>">
+                        <i class="bi bi-folder-symlink"></i> Gestionar Fichas
+                    </button>
+                    <?php endif; ?>
+                    
+                    
                 </div>
             </div>
         </div>
@@ -198,6 +246,7 @@ try {
                                     <th>Jornada</th>
                                     <th>Materias</th>
                                     <th>Aprendices</th>
+                                    <th>Horas/Sem</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -216,6 +265,9 @@ try {
                                         </td>
                                         <td>
                                             <span class="badge bg-primary"><?php echo $ficha['aprendices_asignados']; ?></span>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-info"><?php echo number_format($ficha['horas_semanales'], 1); ?>h</span>
                                         </td>
                                     </tr>
                                 <?php endforeach; ?>

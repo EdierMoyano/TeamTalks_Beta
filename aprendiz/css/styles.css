@@ -853,6 +853,24 @@ body.sidebar-collapsed .main-content {
             border: 1px solid #0E4A86;
         }
 
+        .btn-entregar-azul {
+            background-color: #0E4A86 !important;
+            border: none !important;
+            color: #fff !important;
+            padding: 10px 24px;
+            font-size: 1.1rem;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: background 0.2s, color 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-entregar-azul:hover, .btn-entregar-azul:focus {
+            background-color: #08325a !important;
+            color: #fff !important;
+        }
+
         @media (max-width: 768px) {
             .archivo-instructor-compact {
                 padding: 10px 12px;

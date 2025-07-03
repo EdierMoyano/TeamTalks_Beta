@@ -128,22 +128,12 @@ $baseUrl = "/teamtalks/admin/"; // Asegúrate de que esta ruta sea correcta
                 </a>
                 <span class="nav-tooltip">Instructores</span>
             </li>
-            <li class="nav-item dropdown">
-                <a href="#" onclick="toggleDropdown(event)" class="<?php echo (strpos($currentPage, 'aprendices') !== false) ? 'active' : ''; ?>">
-                    <i class="bi bi-mortarboard"></i>
+            <li class="nav-item <?php echo ($currentPage == 'gestion_aprendices.php') ? 'active' : ''; ?>">
+                <a href="<?php echo $baseUrl; ?>aprendices/gestion_aprendices.php" class="nav-link">
+                    <span class="nav-icon"><i class="bi bi-person-workspace"></i></span>
                     <span class="nav-label">Aprendices</span>
-                    <i class="bi bi-chevron-down" style="margin-left: auto;"></i>
                 </a>
-                <div class="dropdown-container">
-                    <a href="<?php echo $baseUrl; ?>aprendiz/aprendices-activos.php" class="<?php echo ($currentPage == 'aprendices-activos.php') ? 'active' : ''; ?>">
-                        <i class="bi bi-check-circle"></i>
-                        <span class="nav-label">Aprendices Activos</span>
-                    </a>
-                    <a href="<?php echo $baseUrl; ?>aprendiz/aprendices-inactivos.php" class="<?php echo ($currentPage == 'aprendices-inactivos.php') ? 'active' : ''; ?>">
-                        <i class="bi bi-x-circle"></i>
-                        <span class="nav-label">Aprendices Inactivos</span>
-                    </a>
-                </div>
+                <span class="nav-tooltip">Aprendices</span>
             </li>
             <li class="nav-item">
                 <a href="<?php echo $baseUrl; ?>../includes/exit.php" class="nav-link">

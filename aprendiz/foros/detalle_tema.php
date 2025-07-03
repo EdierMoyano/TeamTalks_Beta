@@ -91,6 +91,7 @@ $idMateriaFicha = $materiaPrincipalData ? $materiaPrincipalData['id_materia_fich
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <!-- Bootstrap y fuentes -->
+    <link rel="stylesheet" href="../../styles/header.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
@@ -220,19 +221,71 @@ $idMateriaFicha = $materiaPrincipalData ? $materiaPrincipalData['id_materia_fich
         }
 
         .btn-responder {
-            background: none;
-            border: none;
-            color: #0E4A86;
-            font-size: 0.9rem;
-            padding: 5px 10px;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: all 0.2s ease;
+            background-color: #0E4A86 !important;
+            color: #fff !important;
+            border: none !important;
+            border-radius: 6px !important;
+            font-size: 0.97rem;
+            padding: 7px 18px;
+            font-weight: 500;
+            box-shadow: 0 2px 8px rgba(14,74,134,0.08);
+            transition: background 0.2s, box-shadow 0.2s;
+            margin-right: 8px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn-responder:hover, .btn-responder:focus {
+            background-color: #1565c0 !important;
+            color: #fff !important;
+            box-shadow: 0 4px 16px rgba(21,101,192,0.12);
         }
 
-        .btn-responder:hover {
-            background-color: #e3f2fd;
-            color: #1565c0;
+        .btn-link, .btn.btn-link {
+            color: #0E4A86 !important;
+            background: none !important;
+            border: none !important;
+            text-decoration: underline !important;
+            font-weight: 500;
+            font-size: 0.97rem;
+            border-radius: 6px;
+            padding: 7px 12px;
+            transition: background 0.2s, color 0.2s;
+            margin-left: 0;
+            margin-right: 8px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn-link:hover, .btn-link:focus, .btn.btn-link:hover, .btn.btn-link:focus {
+            background-color: #e3f2fd !important;
+            color: #1565c0 !important;
+            text-decoration: underline !important;
+        }
+
+        .btn.btn-primary, .btn.btn-primary:focus, .btn.btn-primary:active {
+            background-color: #0E4A86 !important;
+            border-color: #0E4A86 !important;
+            color: #fff !important;
+        }
+        .btn.btn-primary:hover {
+            background-color: #1565c0 !important;
+            border-color: #1565c0 !important;
+            color: #fff !important;
+        }
+
+        .btn.btn-secondary, .btn.btn-secondary:focus {
+            border-radius: 6px !important;
+            font-weight: 500;
+            color: #0E4A86 !important;
+            background: #e3f2fd !important;
+            border: 1px solid #b6d4fe !important;
+            transition: background 0.2s, color 0.2s;
+        }
+        .btn.btn-secondary:hover {
+            background: #bbdefb !important;
+            color: #1565c0 !important;
+            border-color: #90caf9 !important;
         }
 
         .respuesta-hija {
@@ -319,6 +372,37 @@ $idMateriaFicha = $materiaPrincipalData ? $materiaPrincipalData['id_materia_fich
             font-size: 0.97rem;
             min-height: 60px;
             max-height: 180px;
+        }
+
+        .btn-responder,
+        .btn.btn-primary,
+        .breadcrumb-custom .breadcrumb-item a,
+        .btn-link {
+            color: #0E4A86 !important;
+            border-color: #0E4A86 !important;
+        }
+
+        .btn-responder,
+        .btn.btn-primary {
+            background-color: #0E4A86 !important;
+        }
+
+        .btn-responder:hover,
+        .btn.btn-primary:hover,
+        .btn-link:hover {
+            background-color: #1565c0 !important;
+            color: #fff !important;
+        }
+
+        .btn-link {
+            background: none !important;
+            border: none !important;
+            text-decoration: underline;
+            padding: 0;
+        }
+
+        .breadcrumb-custom .breadcrumb-item a:hover {
+            color: #1565c0 !important;
         }
     </style>
 </head>
@@ -415,7 +499,8 @@ $idMateriaFicha = $materiaPrincipalData ? $materiaPrincipalData['id_materia_fich
 
                         <?php if ($puedeParticipar): ?>
                             <div class="respuesta-actions">
-                                <button class="btn-responder" onclick="mostrarFormularioRespuesta(<?php echo $respuesta['id_respuesta_foro']; ?>)">
+                                <button class="btn btn-link btn-sm px-0" type="button"
+                                    onclick="mostrarFormularioRespuesta(<?php echo $respuesta['id_respuesta_foro']; ?>)">
                                     <i class="bi bi-reply"></i> Responder
                                 </button>
                                 <?php if (isset($respuestasHijas[$respuesta['id_respuesta_foro']]) && count($respuestasHijas[$respuesta['id_respuesta_foro']]) > 0): ?>
@@ -439,6 +524,32 @@ $idMateriaFicha = $materiaPrincipalData ? $materiaPrincipalData['id_materia_fich
                                                 </div>
                                                 <div class="respuesta-content">
                                                     <p><?php echo nl2br(htmlspecialchars($respuestaHija['descripcion'])); ?></p>
+                                                </div>
+                                                <?php if ($puedeParticipar): ?>
+                                                    <div class="respuesta-actions">
+                                                        <button class="btn btn-link btn-sm px-0" type="button"
+                                                            onclick="mostrarFormularioRespuesta(<?php echo $respuestaHija['id_respuesta_foro']; ?>)">
+                                                            <i class="bi bi-reply"></i> Responder
+                                                        </button>
+                                                    </div>
+                                                <?php endif; ?>
+                                                <!-- Formulario de respuesta inline para respuesta hija -->
+                                                <div class="form-respuesta-inline" id="form-respuesta-<?php echo $respuestaHija['id_respuesta_foro']; ?>">
+                                                    <form method="POST" action="">
+                                                        <input type="hidden" name="id_respuesta_padre" value="<?php echo $respuestaHija['id_respuesta_foro']; ?>">
+                                                        <div class="mb-3">
+                                                            <label class="form-label">Responder a <?php echo htmlspecialchars($respuestaHija['nombres']); ?></label>
+                                                            <textarea class="form-control" name="descripcion" rows="3" required placeholder="Escribe tu respuesta..."></textarea>
+                                                        </div>
+                                                        <div class="d-flex gap-2">
+                                                            <button type="submit" name="crear_respuesta" class="btn btn-primary btn-sm">
+                                                                <i class="bi bi-send"></i> Responder
+                                                            </button>
+                                                            <button type="button" class="btn btn-secondary btn-sm" onclick="ocultarFormularioRespuesta(<?php echo $respuestaHija['id_respuesta_foro']; ?>)">
+                                                                Cancelar
+                                                            </button>
+                                                        </div>
+                                                    </form>
                                                 </div>
                                             </div>
                                         <?php endforeach; ?>
@@ -538,7 +649,11 @@ $idMateriaFicha = $materiaPrincipalData ? $materiaPrincipalData['id_materia_fich
 
         // Cerrar formularios al hacer clic fuera
         document.addEventListener('click', function(e) {
-            if (!e.target.closest('.form-respuesta-inline') && !e.target.closest('.btn-responder')) {
+            // Si NO se hizo clic dentro del formulario NI en un botón/link de responder
+            if (
+                !e.target.closest('.form-respuesta-inline') &&
+                !e.target.closest('.btn-link')
+            ) {
                 document.querySelectorAll('.form-respuesta-inline.show').forEach(form => {
                     form.classList.remove('show');
                 });
@@ -555,4 +670,4 @@ $idMateriaFicha = $materiaPrincipalData ? $materiaPrincipalData['id_materia_fich
     </script>
 </body>
 
-</html>
+</html>   

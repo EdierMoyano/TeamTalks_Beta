@@ -351,4 +351,5 @@ ventanaImpresion.document.close();
 </script>
 </body>
 
-</html>
+</html> <?php
+// Cerrar conexión

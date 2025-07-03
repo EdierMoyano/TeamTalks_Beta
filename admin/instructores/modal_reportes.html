@@ -1,0 +1,238 @@
+<!-- Modal para generar reportes -->
+<div class="modal fade" id="reportesModal" tabindex="-1" aria-labelledby="reportesModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="reportesModalLabel">
+                    <i class="bi bi-file-earmark-excel"></i> Generar Reportes
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formGenerarReporte">
+                    <input type="hidden" id="tipoReporte" name="tipo_reporte" value="">
+                    <input type="hidden" name="id_instructor" id="instructorIdReporte" value="">
+
+                    <!-- Información del instructor -->
+                    <div class="alert alert-primary border-primary mb-4">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-info-circle text-primary me-2"></i>
+                            <div>
+                                <strong>Instructor:</strong> <span id="nombreInstructorReporte"></span><br>
+                                <small class="text-muted">Selecciona el tipo de reporte que deseas generar</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Opciones de reportes -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold text-primary">
+                            <i class="bi bi-list-check"></i> Tipos de Reportes Disponibles:
+                        </label>
+                        
+                        <div class="row g-3">
+                            <!-- Reporte General Completo -->
+                            <div class="col-md-6">
+                                <button type="button" class="btn btn-outline-primary w-100 h-100 opcion-reporte" 
+                                        data-tipo="general_completo">
+                                    <div class="d-flex flex-column align-items-center p-3">
+                                        <i class="bi bi-file-earmark-text display-6 mb-2"></i>
+                                        <strong>Reporte General Completo</strong>
+                                        <small class="text-muted mt-1">
+                                            Datos personales, fichas, horarios y cálculo de horas por trimestre
+                                        </small>
+                                    </div>
+                                </button>
+                            </div>
+
+                            <!-- Reporte de Datos Personales -->
+                            <div class="col-md-6">
+                                <button type="button" class="btn btn-outline-primary w-100 h-100 opcion-reporte" 
+                                        data-tipo="datos_personales">
+                                    <div class="d-flex flex-column align-items-center p-3">
+                                        <i class="bi bi-person-vcard display-6 mb-2"></i>
+                                        <strong>Datos Personales</strong>
+                                        <small class="text-muted mt-1">
+                                            Información personal y de contacto del instructor
+                                        </small>
+                                    </div>
+                                </button>
+                            </div>
+
+                            <!-- Reporte de Fichas Asignadas -->
+                            <div class="col-md-6">
+                                <button type="button" class="btn btn-outline-primary w-100 h-100 opcion-reporte" 
+                                        data-tipo="fichas_asignadas">
+                                    <div class="d-flex flex-column align-items-center p-3">
+                                        <i class="bi bi-folder-check display-6 mb-2"></i>
+                                        <strong>Fichas Asignadas</strong>
+                                        <small class="text-muted mt-1">
+                                            Todas las fichas, aprendices, materias y horarios
+                                        </small>
+                                    </div>
+                                </button>
+                            </div>
+
+                            <!-- Reporte por Ficha Individual -->
+                            <div class="col-md-6">
+                                <button type="button" class="btn btn-outline-primary w-100 h-100 opcion-reporte" 
+                                        data-tipo="ficha_individual">
+                                    <div class="d-flex flex-column align-items-center p-3">
+                                        <i class="bi bi-folder display-6 mb-2"></i>
+                                        <strong>Por Ficha Individual</strong>
+                                        <small class="text-muted mt-1">
+                                            Reporte detallado de una ficha específica
+                                        </small>
+                                    </div>
+                                </button>
+                            </div>
+
+                            <!-- NUEVO: Reporte de Horarios -->
+                            <div class="col-md-6">
+                                <button type="button" class="btn btn-outline-primary w-100 h-100 opcion-reporte" 
+                                        data-tipo="horarios_trimestre">
+                                    <div class="d-flex flex-column align-items-center p-3">
+                                        <i class="bi bi-calendar-week display-6 mb-2"></i>
+                                        <strong>Horarios por Trimestre</strong>
+                                        <small class="text-muted mt-1">
+                                            Horario semanal detallado por trimestre
+                                        </small>
+                                    </div>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sección para seleccionar ficha (oculta por defecto) -->
+                    <div id="seccionFichas" style="display: none;">
+                        <div class="card border-primary">
+                            <div class="card-header bg-primary text-white">
+                                <h6 class="mb-0">
+                                    <i class="bi bi-folder"></i> Seleccionar Ficha
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label for="selectFichaReporte" class="form-label">
+                                        Ficha a reportar:
+                                    </label>
+                                    <select class="form-select" id="selectFichaReporte" name="id_ficha">
+                                        <option value="">Seleccionar ficha...</option>
+                                    </select>
+                                    <div class="form-text">
+                                        <i class="bi bi-info-circle"></i>
+                                        Solo se muestran las fichas que el instructor tiene asignadas
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- NUEVA: Sección para seleccionar trimestre -->
+                    <div id="seccionTrimestre" style="display: none;">
+                        <div class="card border-success">
+                            <div class="card-header bg-success text-white">
+                                <h6 class="mb-0">
+                                    <i class="bi bi-calendar3"></i> Seleccionar Trimestre
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label for="selectTrimestreReporte" class="form-label">
+                                        Trimestre a reportar:
+                                    </label>
+                                    <select class="form-select" id="selectTrimestreReporte" name="id_trimestre">
+                                        <option value="">Seleccionar trimestre...</option>
+                                    </select>
+                                    <div class="form-text">
+                                        <i class="bi bi-info-circle"></i>
+                                        Se mostrarán todos los horarios del instructor en el trimestre seleccionado
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Información adicional -->
+                    <div class="alert alert-info border-info mt-4">
+                        <div class="d-flex">
+                            <i class="bi bi-lightbulb text-info me-2"></i>
+                            <div>
+                                <strong>Información importante:</strong>
+                                <ul class="mb-0 mt-2">
+                                    <li>Los reportes se generan en formato Excel (.xlsx)</li>
+                                    <li>El cálculo de horas incluye todas las materias del instructor</li>
+                                    <li>Los datos se obtienen en tiempo real de la base de datos</li>
+                                    <li>El archivo se descargará automáticamente una vez generado</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle"></i> Cancelar
+                </button>
+                <button type="submit" form="formGenerarReporte" class="btn btn-primary" id="btnGenerarReporte" disabled>
+                    <i class="bi bi-file-earmark-excel"></i> Generar Reporte
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.opcion-reporte {
+    transition: all 0.3s ease;
+    min-height: 150px;
+}
+
+.opcion-reporte:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.opcion-reporte.active {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(14, 74, 134, 0.3);
+}
+
+.btn-primary {
+    background-color: #0e4a86;
+    border-color: #0e4a86;
+}
+
+.btn-primary:hover {
+    background-color: #1765b4;
+    border-color: #1765b4;
+}
+
+.btn-outline-primary {
+    color: #0e4a86;
+    border-color: #0e4a86;
+}
+
+.btn-outline-primary:hover {
+    background-color: #0e4a86;
+    border-color: #0e4a86;
+}
+
+.text-primary {
+    color: #0e4a86 !important;
+}
+
+.bg-primary {
+    background-color: #0e4a86 !important;
+}
+
+.border-primary {
+    border-color: #0e4a86 !important;
+}
+
+.alert-primary {
+    background-color: rgba(14, 74, 134, 0.1);
+    border-color: #0e4a86;
+    color: #0e4a86;
+}
+</style>

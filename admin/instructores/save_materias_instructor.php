@@ -8,159 +8,113 @@ if (!isset($_SESSION['documento']) || $_SESSION['rol'] !== 2) {
     exit;
 }
 
+// Establecer encabezados para respuesta JSON
+header('Content-Type: application/json');
+
+// Verificar si la solicitud es POST
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    echo json_encode(['success' => false, 'message' => 'Método no permitido']);
+    exit;
+}
+
 require_once '../../conexion/conexion.php';
 
 $db = new Database();
 $conexion = $db->connect();
 
 if (!$conexion || !($conexion instanceof PDO)) {
-    echo json_encode(['success' => false, 'message' => 'Error de conexión']);
+    echo json_encode(['success' => false, 'message' => 'Error de conexión a la base de datos']);
     exit;
 }
 
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    echo json_encode(['success' => false, 'message' => 'Método no permitido']);
-    exit;
-}
-
+// Obtener datos del formulario
 $id_instructor = $_POST['id_instructor'] ?? '';
-$materias_seleccionadas = $_POST['materias'] ?? [];
+$materia_seleccionada = $_POST['materia_seleccionada'] ?? '';
 
-// Debug: Log de datos recibidos
-error_log("ID Instructor: " . $id_instructor);
-error_log("Materias seleccionadas: " . print_r($materias_seleccionadas, true));
-
-if (empty($id_instructor)) {
-    echo json_encode(['success' => false, 'message' => 'ID de instructor requerido']);
-    exit;
-}
-
-// Validar que el ID del instructor sea numérico
-if (!is_numeric($id_instructor)) {
+// Validar datos
+if (empty($id_instructor) || !is_numeric($id_instructor)) {
     echo json_encode(['success' => false, 'message' => 'ID de instructor inválido']);
     exit;
 }
 
+if (empty($materia_seleccionada) || !is_numeric($materia_seleccionada)) {
+    echo json_encode(['success' => false, 'message' => 'Debe seleccionar una materia']);
+    exit;
+}
+
+// Iniciar transacción
+$conexion->beginTransaction();
+
 try {
-    // Verificar que el instructor existe y obtener su NIT
-    $stmt = $conexion->prepare("
-        SELECT u.id, u.nit 
-        FROM usuarios u 
-        WHERE u.id = ? AND u.id_rol IN (3, 5) AND u.id_estado = 1
-    ");
-    $stmt->execute([$id_instructor]);
-    $instructor = $stmt->fetch(PDO::FETCH_ASSOC);
-    
+    // Verificar que el instructor existe
+    $stmt_instructor = $conexion->prepare("SELECT id, nombres, apellidos FROM usuarios WHERE id = ? AND id_rol IN (3, 5) AND id_estado = 1");
+    $stmt_instructor->execute([$id_instructor]);
+    $instructor = $stmt_instructor->fetch(PDO::FETCH_ASSOC);
+
     if (!$instructor) {
-        echo json_encode(['success' => false, 'message' => 'Instructor no encontrado o inactivo']);
-        exit;
+        throw new Exception('Instructor no encontrado');
     }
 
-    // Verificar que el usuario logueado tiene acceso a este instructor (mismo NIT)
-    $stmt = $conexion->prepare("SELECT nit FROM usuarios WHERE id = ? AND id_estado = 1");
-    $stmt->execute([$_SESSION['documento']]);
-    $usuario_data = $stmt->fetch(PDO::FETCH_ASSOC);
-    
-    if (!$usuario_data || $usuario_data['nit'] != $instructor['nit']) {
-        echo json_encode(['success' => false, 'message' => 'No tienes permisos para modificar este instructor']);
-        exit;
+    // Verificar que la materia existe
+    $stmt_materia = $conexion->prepare("SELECT id_materia, materia FROM materias WHERE id_materia = ?");
+    $stmt_materia->execute([$materia_seleccionada]);
+    $materia = $stmt_materia->fetch(PDO::FETCH_ASSOC);
+
+    if (!$materia) {
+        throw new Exception('La materia seleccionada no existe');
     }
 
-    // Iniciar transacción
-    $conexion->beginTransaction();
+    // Verificar si el instructor ya tiene una materia asignada
+    $stmt_check = $conexion->prepare("SELECT id_detalles_instructor FROM materia_instructor WHERE id_instructor = ?");
+    $stmt_check->execute([$id_instructor]);
+    $asignacion_existente = $stmt_check->fetch(PDO::FETCH_ASSOC);
 
-    // Eliminar asignaciones existentes
-    $stmt = $conexion->prepare("DELETE FROM materia_instructor WHERE id_instructor = ?");
-    $result = $stmt->execute([$id_instructor]);
-    
-    error_log("Eliminación de materias existentes: " . ($result ? 'exitosa' : 'falló'));
-
-    // Insertar nuevas asignaciones
-    $materias_insertadas = 0;
-    $materias_validas = [];
-    
-    if (!empty($materias_seleccionadas) && is_array($materias_seleccionadas)) {
-        // Preparar statement para inserción
-        $stmt_insert = $conexion->prepare("INSERT INTO materia_instructor (id_instructor, id_materia) VALUES (?, ?)");
+    if ($asignacion_existente) {
+        // Actualizar la materia existente
+        $stmt_update = $conexion->prepare("UPDATE materia_instructor SET id_materia = ? WHERE id_instructor = ?");
+        $result = $stmt_update->execute([$materia_seleccionada, $id_instructor]);
         
-        // Preparar statement para verificar materias
-        $stmt_check = $conexion->prepare("SELECT id_materia, materia FROM materias WHERE id_materia = ?");
-
-        foreach ($materias_seleccionadas as $id_materia) {
-            // Validar que el ID de materia sea numérico
-            if (!is_numeric($id_materia)) {
-                error_log("ID de materia inválido: $id_materia");
-                continue;
-            }
-
-            // Verificar que la materia existe
-            $stmt_check->execute([$id_materia]);
-            $materia = $stmt_check->fetch(PDO::FETCH_ASSOC);
-            
-            if ($materia) {
-                $result = $stmt_insert->execute([$id_instructor, $id_materia]);
-                if ($result) {
-                    $materias_insertadas++;
-                    $materias_validas[] = $materia['materia'];
-                    error_log("Materia {$materia['materia']} (ID: $id_materia) insertada correctamente");
-                } else {
-                    error_log("Error al insertar materia $id_materia");
-                }
-            } else {
-                error_log("Materia $id_materia no existe en la base de datos");
-            }
+        if (!$result) {
+            throw new Exception('Error al actualizar la materia del instructor');
         }
+        
+        $accion = 'actualizada';
+    } else {
+        // Insertar nueva asignación
+        $stmt_insert = $conexion->prepare("INSERT INTO materia_instructor (id_instructor, id_materia) VALUES (?, ?)");
+        $result = $stmt_insert->execute([$id_instructor, $materia_seleccionada]);
+        
+        if (!$result) {
+            throw new Exception('Error al asignar la materia al instructor');
+        }
+        
+        $accion = 'asignada';
     }
 
     // Confirmar transacción
     $conexion->commit();
 
-    // Obtener información del instructor para el mensaje
-    $stmt = $conexion->prepare("SELECT nombres, apellidos FROM usuarios WHERE id = ?");
-    $stmt->execute([$id_instructor]);
-    $instructor_info = $stmt->fetch(PDO::FETCH_ASSOC);
-    $nombre_instructor = $instructor_info ? $instructor_info['nombres'] . ' ' . $instructor_info['apellidos'] : 'Instructor';
-
+    // Respuesta exitosa
+    $nombre_instructor = $instructor['nombres'] . ' ' . $instructor['apellidos'];
+    
     echo json_encode([
         'success' => true,
-        'message' => "Materias asignadas correctamente a $nombre_instructor",
-        'total_materias' => $materias_insertadas,
-        'materias_asignadas' => $materias_validas,
-        'debug' => [
-            'id_instructor' => $id_instructor,
-            'materias_recibidas' => count($materias_seleccionadas ?? []),
-            'materias_insertadas' => $materias_insertadas,
-            'instructor' => $nombre_instructor
-        ]
+        'message' => "Materia {$accion} correctamente a {$nombre_instructor}",
+        'materia_asignada' => $materia['materia'],
+        'accion' => $accion,
+        'instructor' => $nombre_instructor
     ]);
 
-} catch (PDOException $e) {
-    // Revertir transacción en caso de error
-    if ($conexion->inTransaction()) {
-        $conexion->rollBack();
-    }
-    
-    error_log("Error PDO: " . $e->getMessage());
-
-    echo json_encode([
-        'success' => false,
-        'message' => 'Error de base de datos: ' . $e->getMessage(),
-        'debug' => [
-            'id_instructor' => $id_instructor,
-            'materias_recibidas' => count($materias_seleccionadas ?? [])
-        ]
-    ]);
 } catch (Exception $e) {
-    // Revertir transacción en caso de error
-    if ($conexion->inTransaction()) {
-        $conexion->rollBack();
-    }
+    // En caso de error, realizar rollback
+    $conexion->rollBack();
     
-    error_log("Error general: " . $e->getMessage());
-
     echo json_encode([
         'success' => false,
-        'message' => 'Error inesperado: ' . $e->getMessage()
+        'message' => $e->getMessage()
     ]);
+} finally {
+    // Cerrar la conexión
+    $conexion = null;
 }
 ?>

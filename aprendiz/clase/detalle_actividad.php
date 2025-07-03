@@ -73,6 +73,7 @@ function formatFileSize($bytes)
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <!-- Bootstrap y fuentes -->
+    <link rel="stylesheet" href="../../styles/header.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
@@ -310,7 +311,7 @@ function formatFileSize($bytes)
                         <div id="preview-archivos"></div>
 
                         <div class="btn-group-custom">
-                            <button type="button" class="btn btn-success" id="btn-entregar" style="display: none;">
+                            <button type="button" class="btn-entregar-azul" id="btn-entregar" style="display: none;">
                                 <i class="fas fa-paper-plane"></i> Entregar Actividad
                             </button>
                             <button type="button" class="btn btn-secondary btn-azul-custom" onclick="volverAClase()">
