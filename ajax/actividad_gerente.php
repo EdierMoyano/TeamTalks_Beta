@@ -5,16 +5,20 @@ include 'session.php';
 $id_instructor = (int)$_SESSION['documento'];
 
 $sql = "
-    SELECT DISTINCT f.id_ficha, fo.nombre AS nombre_formacion
+    SELECT f.id_ficha, fo.nombre AS nombre_formacion, m.materia
     FROM materia_ficha mf
     JOIN fichas f ON mf.id_ficha = f.id_ficha
     JOIN formacion fo ON f.id_formacion = fo.id_formacion
+    JOIN usuarios u ON mf.id_instructor = u.id
+    JOIN materias m ON mf.id_materia = m.id_materia
     WHERE mf.id_instructor = :id
     ORDER BY f.id_ficha ASC
 ";
 
 $stmt = $conex->prepare($sql);
-$stmt->execute(['id' => $id_instructor]);
+$stmt->execute([
+    'id' => $id_instructor
+]);
 $fichas = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
@@ -196,7 +200,7 @@ $fichas = $stmt->fetchAll(PDO::FETCH_ASSOC);
       <div class="col-12">
         <div class="card shadow-sm ficha-item" data-id="<?= $f['id_ficha'] ?>">
           <div class="card-body">
-            <h5 class="ficha-title">Formación técnica</h5>
+            <h5 class="ficha-title"><?= htmlspecialchars($f['materia']) ?></h5>
             <p class="ficha-info"><strong>Ficha:</strong> <?= htmlspecialchars($f['id_ficha']) ?></p>
             <p class="ficha-meta">Formación: <?= htmlspecialchars($f['nombre_formacion']) ?></p>
           </div>
