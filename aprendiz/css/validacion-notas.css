@@ -1,0 +1,128 @@
+/* Estilos para la validación visual de notas */
+
+/* Actividades con nota roja (1.0 - 2.9) */
+.actividad-entregada.nota-roja {
+  background-color: #fff5f5 !important;
+  border-left-color: #dc3545 !important;
+  border: 1px solid #fecaca !important;
+}
+
+.actividad-entregada.nota-roja:hover {
+  background-color: #fef2f2 !important;
+  box-shadow: 0 2px 8px rgba(220, 53, 69, 0.15) !important;
+}
+
+.actividad-entregada.nota-roja .nota-comentario {
+  background-color: #fef2f2 !important;
+  border-left-color: #dc3545 !important;
+}
+
+.actividad-entregada.nota-roja .nota-valor {
+  color: #991b1b !important;
+}
+
+.actividad-entregada.nota-roja .comentario-instructor {
+  color: #991b1b !important;
+}
+
+/* Actividades con nota amarilla (3.0 - 3.9) */
+.actividad-entregada.nota-amarilla {
+  background-color: #fffbeb !important;
+  border-left-color: #fbbf24 !important;
+  border: 1px solid #fed7aa !important;
+}
+
+.actividad-entregada.nota-amarilla:hover {
+  background-color: #fef3c7 !important;
+  box-shadow: 0 2px 8px rgba(251, 191, 36, 0.15) !important;
+}
+
+.actividad-entregada.nota-amarilla .nota-comentario {
+  background-color: #fef3c7 !important;
+  border-left-color: #fbbf24 !important;
+}
+
+.actividad-entregada.nota-amarilla .nota-valor {
+  color: #92400e !important;
+}
+
+.actividad-entregada.nota-amarilla .comentario-instructor {
+  color: #92400e !important;
+}
+
+/* Actividades con nota verde (4.0 - 5.0) */
+.actividad-entregada.nota-verde {
+  background-color: #f0fdf4 !important;
+  border-left-color: #10b981 !important;
+  border: 1px solid #bbf7d0 !important;
+}
+
+.actividad-entregada.nota-verde:hover {
+  background-color: #ecfdf5 !important;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.15) !important;
+}
+
+.actividad-entregada.nota-verde .nota-comentario {
+  background-color: #ecfdf5 !important;
+  border-left-color: #10b981 !important;
+}
+
+.actividad-entregada.nota-verde .nota-valor {
+  color: #065f46 !important;
+}
+
+.actividad-entregada.nota-verde .comentario-instructor {
+  color: #065f46 !important;
+}
+
+/* Actividades sin nota (mantener estilo original) */
+.actividad-entregada.sin-nota {
+  background-color: #f8fff8 !important;
+  border-left-color: #28a745 !important;
+  border: 1px solid #e6f4ea !important;
+}
+
+.actividad-entregada.sin-nota:hover {
+  background-color: #f3fcf3 !important;
+  box-shadow: 0 2px 8px rgba(40, 167, 69, 0.1) !important;
+}
+
+/* Indicador visual adicional para las notas */
+.nota-indicador {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+.nota-indicador.roja {
+  background-color: #dc3545;
+}
+
+.nota-indicador.amarilla {
+  background-color: #fbbf24;
+}
+
+.nota-indicador.verde {
+  background-color: #10b981;
+}
+
+.nota-indicador.sin-nota {
+  background-color: #6b7280;
+}
+
+/* Animación suave para los cambios de color */
+.actividad-entregada {
+  transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease !important;
+}
+
+.nota-comentario {
+  transition: background-color 0.3s ease, border-left-color 0.3s ease !important;
+}
+
+.nota-valor,
+.comentario-instructor {
+  transition: color 0.3s ease !important;
+}

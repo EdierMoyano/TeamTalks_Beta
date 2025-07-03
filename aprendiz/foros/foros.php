@@ -59,19 +59,6 @@ $materiaPrincipal = $materiaPrincipalData ? $materiaPrincipalData['materia'] : '
 
     <main class="main-content">
         <div class="container-fluid">
-            <!-- Breadcrumb corregido -->
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb breadcrumb-custom">
-                    <li class="breadcrumb-item">
-                        <a href="javascript:void(0)" onclick="volverAClase()">
-                            <i class="fas fa-home"></i> <?php echo htmlspecialchars($materiaPrincipal); ?>
-                        </a>
-                    </li>
-                    <li class="breadcrumb-item active" aria-current="page">
-                        Foros de discusión
-                    </li>
-                </ol>
-            </nav>
 
             <!-- Encabezado de página -->
             <div class="page-header">

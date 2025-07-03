@@ -34,7 +34,7 @@ $formaciones = $stmt->fetchAll(PDO::FETCH_ASSOC);
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <!-- Bootstrap y fuentes -->
-  <link rel="stylesheet" href="../../styles/header.css">  
+  <link rel="stylesheet" href="../../styles/header.css">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
@@ -140,7 +140,7 @@ $formaciones = $stmt->fetchAll(PDO::FETCH_ASSOC);
   <main class="main-content">
     <div class="container-fluid">
       <form class="d-flex mb-4" role="search" style="max-width: 1000px; margin: 0 auto;">
-        <input class="form-control me-2" type="search" placeholder="Buscar" aria-label="Search" style="font-size: 0.9rem; height: 40px;" />
+        <input id="input-busqueda" class="form-control me-2" type="search" placeholder="Buscar" aria-label="Buscar" style="font-size: 0.9rem; height: 40px;" />
         <button class="btn btn-blue-dark" type="submit" style="height: 40px; padding: 0 12px;">
           <i class="bi bi-search"></i>
         </button>
@@ -168,6 +168,53 @@ $formaciones = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     </div>
   </main>
+
+
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      const inputBusqueda = document.getElementById("input-busqueda");
+      const tarjetas = document.querySelectorAll("#contenedor-formaciones .card-clase");
+
+      // Función para limpiar texto: quitar tildes, pasar a minúsculas
+      function normalizarTexto(texto) {
+        return texto
+          .normalize("NFD") // separa letras y tildes
+          .replace(/[\u0300-\u036f]/g, '') // elimina los signos diacríticos (tildes)
+          .toLowerCase(); // convierte todo a minúsculas
+      }
+
+      inputBusqueda.addEventListener("input", function() {
+        const texto = normalizarTexto(this.value);
+
+        let coincidencias = 0;
+
+        tarjetas.forEach(card => {
+          const titulo = normalizarTexto(card.querySelector(".card-title").textContent);
+          const descripcion = normalizarTexto(card.querySelector(".card-text").textContent);
+
+          const coincide = titulo.includes(texto) || descripcion.includes(texto);
+
+          card.closest(".col-md-4").style.display = coincide ? "block" : "none";
+
+          if (coincide) coincidencias++;
+        });
+
+        // (Opcional) mostrar mensaje si no hay coincidencias
+        if (document.getElementById("sin-resultados")) {
+          document.getElementById("sin-resultados").remove();
+        }
+
+        if (coincidencias === 0) {
+          const mensaje = document.createElement("p");
+          mensaje.id = "sin-resultados";
+          mensaje.className = "text-center mt-3";
+          mensaje.textContent = "No se encontraron resultados.";
+          document.getElementById("contenedor-formaciones").appendChild(mensaje);
+        }
+      });
+    });
+  </script>
 
 
 

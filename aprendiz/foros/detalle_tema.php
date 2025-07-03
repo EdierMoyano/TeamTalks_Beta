@@ -1,5 +1,6 @@
 <?php
 session_start();
+
 require_once '../clase/functions.php';
 
 // Verificar si el usuario ha iniciado sesión
@@ -10,6 +11,7 @@ if (!isset($_SESSION['documento'])) {
 
 // Obtener datos de sesión del usuario
 $datosSesion = obtenerDatosSesion();
+
 if (!$datosSesion) {
     die("Error: No se pudieron obtener los datos del usuario.");
 }
@@ -26,6 +28,7 @@ if (!$id_tema) {
 
 // Obtener información del tema
 $tema = obtenerDetalleTema($id_tema);
+
 if (!$tema) {
     header('Location: foros.php');
     exit;
@@ -78,6 +81,7 @@ $stmt = $pdo->prepare("
 ");
 $stmt->execute([$tema['id_ficha']]);
 $materiaPrincipalData = $stmt->fetch();
+
 $materiaPrincipal = $materiaPrincipalData ? $materiaPrincipalData['materia'] : 'Sin materia asignada';
 $idMateriaFicha = $materiaPrincipalData ? $materiaPrincipalData['id_materia_ficha'] : null;
 ?>
@@ -89,7 +93,6 @@ $idMateriaFicha = $materiaPrincipalData ? $materiaPrincipalData['id_materia_fich
     <meta charset="UTF-8">
     <title><?php echo htmlspecialchars($tema['titulo']); ?> - TeamTalks</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <!-- Bootstrap y fuentes -->
     <link rel="stylesheet" href="../../styles/header.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -100,7 +103,6 @@ $idMateriaFicha = $materiaPrincipalData ? $materiaPrincipalData['id_materia_fich
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0">
-
     <link rel="stylesheet" href="../css/styles.css">
 
     <style>
@@ -228,20 +230,23 @@ $idMateriaFicha = $materiaPrincipalData ? $materiaPrincipalData['id_materia_fich
             font-size: 0.97rem;
             padding: 7px 18px;
             font-weight: 500;
-            box-shadow: 0 2px 8px rgba(14,74,134,0.08);
+            box-shadow: 0 2px 8px rgba(14, 74, 134, 0.08);
             transition: background 0.2s, box-shadow 0.2s;
             margin-right: 8px;
             display: inline-flex;
             align-items: center;
             gap: 6px;
         }
-        .btn-responder:hover, .btn-responder:focus {
+
+        .btn-responder:hover,
+        .btn-responder:focus {
             background-color: #1565c0 !important;
             color: #fff !important;
-            box-shadow: 0 4px 16px rgba(21,101,192,0.12);
+            box-shadow: 0 4px 16px rgba(21, 101, 192, 0.12);
         }
 
-        .btn-link, .btn.btn-link {
+        .btn-link,
+        .btn.btn-link {
             color: #0E4A86 !important;
             background: none !important;
             border: none !important;
@@ -257,24 +262,34 @@ $idMateriaFicha = $materiaPrincipalData ? $materiaPrincipalData['id_materia_fich
             align-items: center;
             gap: 6px;
         }
-        .btn-link:hover, .btn-link:focus, .btn.btn-link:hover, .btn.btn-link:focus {
+
+        .btn-link:hover,
+        .btn-link:focus,
+        .btn.btn-link:hover,
+        .btn.btn-link:focus {
             background-color: #e3f2fd !important;
             color: #1565c0 !important;
             text-decoration: underline !important;
         }
 
-        .btn.btn-primary, .btn.btn-primary:focus, .btn.btn-primary:active {
-            background-color: #0E4A86 !important;
-            border-color: #0E4A86 !important;
-            color: #fff !important;
-        }
-        .btn.btn-primary:hover {
-            background-color: #1565c0 !important;
-            border-color: #1565c0 !important;
-            color: #fff !important;
+        .btn.btn-primary,
+        .btn.btn-primary:focus,
+        .btn.btn-primary:active {
+            background-color: #fff !important;
+            color: #0E4A86 !important;
+            border: 1.5px solid #0E4A86 !important;
+            box-shadow: none !important;
+            transition: background 0.2s, color 0.2s, border 0.2s;
         }
 
-        .btn.btn-secondary, .btn.btn-secondary:focus {
+        .btn.btn-primary:hover {
+            background-color: #0E4A86 !important;
+            color: #fff !important;
+            border: 1.5px solid #0E4A86 !important;
+        }
+
+        .btn.btn-secondary,
+        .btn.btn-secondary:focus {
             border-radius: 6px !important;
             font-weight: 500;
             color: #0E4A86 !important;
@@ -282,6 +297,7 @@ $idMateriaFicha = $materiaPrincipalData ? $materiaPrincipalData['id_materia_fich
             border: 1px solid #b6d4fe !important;
             transition: background 0.2s, color 0.2s;
         }
+
         .btn.btn-secondary:hover {
             background: #bbdefb !important;
             color: #1565c0 !important;
@@ -404,11 +420,32 @@ $idMateriaFicha = $materiaPrincipalData ? $materiaPrincipalData['id_materia_fich
         .breadcrumb-custom .breadcrumb-item a:hover {
             color: #1565c0 !important;
         }
+
+        .btn-enviar-respuesta {
+            background: #fff;
+            color: #0E4A86;
+            border: 1.5px solid #0E4A86;
+            border-radius: 6px;
+            padding: 8px 22px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s, color 0.2s, border 0.2s;
+            outline: none;
+            box-shadow: none;
+            display: inline-block;
+        }
+
+        .btn-enviar-respuesta:hover,
+        .btn-enviar-respuesta:focus {
+            background: #0E4A86;
+            color: #fff;
+            border: 1.5px solid #0E4A86;
+        }
     </style>
 </head>
 
 <body class="sidebar-collapsed">
-
     <!-- Header -->
     <?php include '../../includes/design/header.php'; ?>
 
@@ -418,28 +455,6 @@ $idMateriaFicha = $materiaPrincipalData ? $materiaPrincipalData['id_materia_fich
     <!-- Contenido principal -->
     <main class="main-content">
         <div class="container-fluid">
-            <!-- Breadcrumb -->
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb breadcrumb-custom">
-                    <li class="breadcrumb-item">
-                        <a href="javascript:void(0)" onclick="volverAClase()">
-                            <i class="fas fa-home"></i> <?php echo htmlspecialchars($materiaPrincipal); ?>
-                        </a>
-                    </li>
-                    <li class="breadcrumb-item">
-                        <a href="foros.php">Foros de discusión</a>
-                    </li>
-                    <li class="breadcrumb-item">
-                        <a href="temas_foro.php?id=<?php echo $tema['id_foro']; ?>">
-                            <?php echo htmlspecialchars($tema['materia']); ?>
-                        </a>
-                    </li>
-                    <li class="breadcrumb-item active" aria-current="page">
-                        <?php echo htmlspecialchars($tema['titulo']); ?>
-                    </li>
-                </ol>
-            </nav>
-
             <!-- Mensaje de resultado -->
             <?php if ($mensaje): ?>
                 <div class="alert alert-<?php echo $tipoMensaje; ?> alert-dismissible fade show" role="alert">
@@ -454,6 +469,7 @@ $idMateriaFicha = $materiaPrincipalData ? $materiaPrincipalData['id_materia_fich
                 <?php if ($tema['descripcion']): ?>
                     <p class="mb-3"><?php echo nl2br(htmlspecialchars($tema['descripcion'])); ?></p>
                 <?php endif; ?>
+
                 <div class="tema-meta">
                     <div class="tema-avatar">
                         <?php echo obtenerIniciales($tema['nombres'] . ' ' . $tema['apellidos']); ?>
@@ -463,6 +479,10 @@ $idMateriaFicha = $materiaPrincipalData ? $materiaPrincipalData['id_materia_fich
                         <p class="tema-fecha"><?php echo formatearFecha($tema['fecha_creacion']); ?></p>
                     </div>
                 </div>
+
+                <button type="button" class="btn btn-secondary btn-azul-custom" onclick="volverAClase()">
+                    <i class="fas fa-arrow-left"></i> Volver
+                </button>
             </div>
 
             <!-- Respuestas -->
@@ -493,6 +513,7 @@ $idMateriaFicha = $materiaPrincipalData ? $materiaPrincipalData['id_materia_fich
                                 <p class="respuesta-fecha"><?php echo formatearFecha($respuesta['fecha_respuesta']); ?></p>
                             </div>
                         </div>
+
                         <div class="respuesta-content">
                             <p><?php echo nl2br(htmlspecialchars($respuesta['descripcion'])); ?></p>
                         </div>
@@ -503,6 +524,7 @@ $idMateriaFicha = $materiaPrincipalData ? $materiaPrincipalData['id_materia_fich
                                     onclick="mostrarFormularioRespuesta(<?php echo $respuesta['id_respuesta_foro']; ?>)">
                                     <i class="bi bi-reply"></i> Responder
                                 </button>
+
                                 <?php if (isset($respuestasHijas[$respuesta['id_respuesta_foro']]) && count($respuestasHijas[$respuesta['id_respuesta_foro']]) > 0): ?>
                                     <button class="btn btn-link btn-sm px-0" type="button"
                                         onclick="toggleRespuestasHijas(<?php echo $respuesta['id_respuesta_foro']; ?>)">
@@ -510,6 +532,7 @@ $idMateriaFicha = $materiaPrincipalData ? $materiaPrincipalData['id_materia_fich
                                         Ver respuesta<?php echo count($respuestasHijas[$respuesta['id_respuesta_foro']]) > 1 ? 's' : ''; ?>
                                         (<?php echo count($respuestasHijas[$respuesta['id_respuesta_foro']]); ?>)
                                     </button>
+
                                     <div class="respuesta-hija" id="respuestas-hija-<?php echo $respuesta['id_respuesta_foro']; ?>" style="display:none;">
                                         <?php foreach ($respuestasHijas[$respuesta['id_respuesta_foro']] as $respuestaHija): ?>
                                             <div class="card respuesta-card respuesta-card-hija">
@@ -522,9 +545,11 @@ $idMateriaFicha = $materiaPrincipalData ? $materiaPrincipalData['id_materia_fich
                                                         <p class="respuesta-fecha"><?php echo formatearFecha($respuestaHija['fecha_respuesta']); ?></p>
                                                     </div>
                                                 </div>
+
                                                 <div class="respuesta-content">
                                                     <p><?php echo nl2br(htmlspecialchars($respuestaHija['descripcion'])); ?></p>
                                                 </div>
+
                                                 <?php if ($puedeParticipar): ?>
                                                     <div class="respuesta-actions">
                                                         <button class="btn btn-link btn-sm px-0" type="button"
@@ -533,6 +558,7 @@ $idMateriaFicha = $materiaPrincipalData ? $materiaPrincipalData['id_materia_fich
                                                         </button>
                                                     </div>
                                                 <?php endif; ?>
+
                                                 <!-- Formulario de respuesta inline para respuesta hija -->
                                                 <div class="form-respuesta-inline" id="form-respuesta-<?php echo $respuestaHija['id_respuesta_foro']; ?>">
                                                     <form method="POST" action="">
@@ -542,7 +568,7 @@ $idMateriaFicha = $materiaPrincipalData ? $materiaPrincipalData['id_materia_fich
                                                             <textarea class="form-control" name="descripcion" rows="3" required placeholder="Escribe tu respuesta..."></textarea>
                                                         </div>
                                                         <div class="d-flex gap-2">
-                                                            <button type="submit" name="crear_respuesta" class="btn btn-primary btn-sm">
+                                                            <button type="submit" name="crear_respuesta" class="btn-enviar-respuesta">
                                                                 <i class="bi bi-send"></i> Responder
                                                             </button>
                                                             <button type="button" class="btn btn-secondary btn-sm" onclick="ocultarFormularioRespuesta(<?php echo $respuestaHija['id_respuesta_foro']; ?>)">
@@ -567,7 +593,7 @@ $idMateriaFicha = $materiaPrincipalData ? $materiaPrincipalData['id_materia_fich
                                     <textarea class="form-control" name="descripcion" rows="3" required placeholder="Escribe tu respuesta..."></textarea>
                                 </div>
                                 <div class="d-flex gap-2">
-                                    <button type="submit" name="crear_respuesta" class="btn btn-primary btn-sm">
+                                    <button type="submit" name="crear_respuesta" class="btn-enviar-respuesta">
                                         <i class="bi bi-send"></i> Responder
                                     </button>
                                     <button type="button" class="btn btn-secondary btn-sm" onclick="ocultarFormularioRespuesta(<?php echo $respuesta['id_respuesta_foro']; ?>)">
@@ -594,9 +620,7 @@ $idMateriaFicha = $materiaPrincipalData ? $materiaPrincipalData['id_materia_fich
                             <label for="descripcion" class="form-label">Tu respuesta *</label>
                             <textarea class="form-control" id="descripcion" name="descripcion" rows="5" required></textarea>
                         </div>
-                        <button type="submit" name="crear_respuesta" class="btn btn-primary">
-                            Enviar respuesta
-                        </button>
+                        <button type="submit" class="btn-enviar-respuesta">Enviar respuesta</button>
                     </form>
                 </div>
             <?php endif; ?>
@@ -604,7 +628,6 @@ $idMateriaFicha = $materiaPrincipalData ? $materiaPrincipalData['id_materia_fich
     </main>
 
     <script src="../js/script.js"></script>
-
     <script>
         // Función para mostrar formulario de respuesta
         function mostrarFormularioRespuesta(idRespuesta) {
@@ -638,13 +661,20 @@ $idMateriaFicha = $materiaPrincipalData ? $materiaPrincipalData['id_materia_fich
             }
         }
 
-        // Función corregida para volver a la clase
-        function volverAClase() {
-            <?php if ($idMateriaFicha): ?>
-                window.location.href = `index.php?id_clase=<?php echo $idMateriaFicha; ?>`;
-            <?php else: ?>
-                window.location.href = '../index.php';
-            <?php endif; ?>
+        // Función CORREGIDA para volver a la clase
+        window.volverAClase = () => {
+            // Obtener el ID de la clase desde la URL actual
+            const urlParams = new URLSearchParams(window.location.search);
+            const idClase = urlParams.get('id_clase') ||
+                document.querySelector("[data-id-clase]")?.getAttribute("data-id-clase") ||
+                <?php echo json_encode($idMateriaFicha); ?>;
+
+            if (idClase) {
+                window.location.href = `../clase/index.php?id_clase=${idClase}`;
+            } else {
+                // Fallback: ir a la página de clases general
+                window.location.href = "../clase/index.php";
+            }
         }
 
         // Cerrar formularios al hacer clic fuera
@@ -670,4 +700,4 @@ $idMateriaFicha = $materiaPrincipalData ? $materiaPrincipalData['id_materia_fich
     </script>
 </body>
 
-</html>   
+</html>

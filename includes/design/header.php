@@ -1,7 +1,5 @@
 <?php
-
-require_once $_SERVER['DOCUMENT_ROOT'] . '/conexion/init.php';
-
+require_once $_SERVER['DOCUMENT_ROOT'] . '/teamtalks/conexion/init.php';
 $usuario_logueado = isset($_SESSION['documento']);
 $id_usuario = $_SESSION['documento'] ?? null;
 $username = $_SESSION['nombres'] ?? 'Nombres';
@@ -42,9 +40,7 @@ if ($id_usuario) {
 
 $notificaciones = [];
 if ($id_usuario) {
-
     $stmt = $conex->prepare("
-
         SELECT
         n.id_notificacion,
         n.mensaje,
@@ -67,7 +63,6 @@ if ($id_usuario) {
     $stmt->execute([$id_usuario]);
     $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
     foreach ($rows as $row) {
-
         $notificaciones[] = [
             'id_notificacion' => $row['id_notificacion'],
             'mensaje' => $row['mensaje'],
@@ -76,15 +71,12 @@ if ($id_usuario) {
             'fecha' => $row['fecha'],
             'autor' => trim(($row['autor_nombres'] ?? 'Usuario') . ' ' . ($row['autor_apellidos'] ?? 'Anónimo')),
             'contenido' => $row['contenido'] ? mb_strimwidth($row['contenido'], 0, 100, '...') : 'Sin contenido disponible'
-
         ];
     }
 }
 
 // Contar notificaciones no leídas
-
 $notificaciones_no_leidas = 0;
-
 if ($id_usuario) {
     $stmt_count = $conex->prepare("SELECT COUNT(*) FROM notificaciones WHERE id_usuario = ? AND leido = 0");
     $stmt_count->execute([$id_usuario]);
@@ -92,32 +84,28 @@ if ($id_usuario) {
 }
 
 ?>
-
 <style>
     .btn-primary-modern {
-        width: 100%;
-        padding: var(--space-3) var(--space-4);
-        background: var(--primary);
-        color: var(--white);
+        background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
         border: none;
-        border-radius: var(--border-radius);
-        font-size: var(--font-size-sm);
-        font-weight: 500;
-        cursor: pointer;
-        transition: var(--transition);
+        border-radius: 12px;
+        padding: 1rem 2rem;
+        font-weight: 600;
+        font-size: 0.875rem;
+        transition: all 0.3s ease;
+        color: white;
+        min-width: 140px;
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: var(--space-2);
-        position: relative;
-        overflow: hidden;
+        gap: 0.5rem;
     }
 
     .btn-primary-modern:hover {
         transform: translateY(-2px);
         color: white;
         box-shadow: 0 8px 25px rgba(37, 99, 235, 0.3);
-        background: var(--primary);
+        background: linear-gradient(135deg, #1e40af 0%, #1d4ed8 100%);
     }
 </style>
 
@@ -136,12 +124,14 @@ if ($id_usuario) {
                     <i class="fas fa-times"></i>
                 </button>
             </div>
+
             <?php if (!empty($notificaciones)): ?>
-                <div class="header-actions" id="notification-actions">
+                <div class="header-actions">
                     <button type="button" id="marcar-todas-leidas" class="btn-mark-all">
                         <i class="fas fa-check-double"></i>
                         Marcar todas como leídas
                     </button>
+
                     <button type="button" id="eliminar-todas" class="btn-delete-all">
                         <i class="fas fa-trash-alt"></i>
                         Eliminar todas
@@ -149,6 +139,7 @@ if ($id_usuario) {
                 </div>
             <?php endif; ?>
         </div>
+
         <div class="offcanvas-body notification-body">
             <?php if (empty($notificaciones)): ?>
                 <div class="empty-state">
@@ -159,6 +150,7 @@ if ($id_usuario) {
                     <p class="empty-text">No tienes notificaciones recientes</p>
                 </div>
             <?php else: ?>
+
                 <div class="notifications-list">
                     <?php foreach ($notificaciones as $index => $noti): ?>
                         <div class="notification-item <?= $noti['leido'] ? 'read' : 'unread' ?>"
@@ -168,28 +160,33 @@ if ($id_usuario) {
                                 <div class="notification-avatar">
                                     <i class="fas fa-comment-dots"></i>
                                 </div>
+
                                 <a href="<?= htmlspecialchars($noti['url_destino']) . '&id_notificacion=' . $noti['id_notificacion'] ?>"
                                     class="notification-body" style="text-decoration: none; color: inherit;">
                                     <div class="notification-message">
                                         <strong><?= htmlspecialchars($noti['autor']) ?></strong>
                                         <span class="action-text">respondió a tu comentario</span>
                                     </div>
+
                                     <?php if (!empty($noti['contenido']) && $noti['contenido'] !== 'Sin contenido disponible'): ?>
                                         <div class="notification-preview">
                                             <i class="fas fa-quote-left quote-icon"></i>
                                             <span class="preview-text"><?= htmlspecialchars($noti['contenido']) ?></span>
                                         </div>
                                     <?php endif; ?>
+
                                     <div class="notification-meta">
                                         <span class="notification-time">
                                             <i class="fas fa-clock"></i>
                                             <?= $noti['fecha'] ?>
                                         </span>
+
                                         <?php if (!$noti['leido']): ?>
                                             <span class="notification-badge">Nuevo</span>
                                         <?php endif; ?>
                                     </div>
                                 </a>
+
                                 <div class="notification-actions">
                                     <button type="button"
                                         class="btn-delete-individual"
@@ -197,6 +194,7 @@ if ($id_usuario) {
                                         title="Eliminar notificación">
                                         <i class="fas fa-times"></i>
                                     </button>
+
                                     <?php if (!$noti['leido']): ?>
                                         <div class="unread-indicator"></div>
                                     <?php endif; ?>
@@ -232,11 +230,13 @@ if ($id_usuario) {
                     <i class="fas fa-sign-in-alt"></i>
                     Iniciar Sesión
                 </a>
+
                 <!-- Mobile Menu Toggle -->
                 <button class="mobile-toggle" onclick="toggleMobileMenu()">
                     <i class="fas fa-bars mobile-toggle-icon"></i>
                 </button>
             </div>
+
         <?php else: ?>
             <!-- User Section - Para usuarios logueados -->
             <div class="user-section-logged">
@@ -245,6 +245,7 @@ if ($id_usuario) {
                     <i class="fas fa-home"></i>
                     <span class="header-home-text">Inicio</span>
                 </a>
+
                 <!-- Notifications -->
                 <button class="notification-btn" data-bs-toggle="offcanvas" data-bs-target="#offcanvasWithBothOptions" aria-controls="offcanvasWithBothOptions">
                     <i class="fas fa-bell notification-icon" style="position: relative; top: 11px; font-size: 20px;"></i>
@@ -254,6 +255,7 @@ if ($id_usuario) {
                         </span>
                     <?php endif; ?>
                 </button>
+
                 <!-- User Profile Dropdown -->
                 <div class="user-profile dropdown">
                     <a class="profile-trigger dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -272,6 +274,18 @@ if ($id_usuario) {
                                 Editar perfil
                             </a>
                         </li>
+
+                        <!-- Nueva opción de Certificados solo para aprendices -->
+                        <?php if ($rol == 4): // Solo para aprendices 
+                        ?>
+                            <li>
+                                <a class="dropdown-item" href="<?= BASE_URL ?>/aprendiz/certificados/index.php">
+                                    <i class="bi bi-file-break-fill"></i>
+                                    Certificados y Boletines
+                                </a>
+                            </li>
+                        <?php endif; ?>
+
                         <li>
                             <hr class="dropdown-divider">
                         </li>
@@ -302,6 +316,7 @@ if ($id_usuario) {
                     <li><a href="about_we.php" class="header-mobile-nav-link">Sobre nosotros</a></li>
                     <li><a href="contact_us.php" class="header-mobile-nav-link">Contáctanos</a></li>
                 </ul>
+
             <?php else: ?>
                 <!-- Para usuarios logueados, el menú móvil estará oculto por CSS -->
                 <ul class="mobile-nav-links">
@@ -313,6 +328,7 @@ if ($id_usuario) {
 </header>
 
 <?php if ($usuario_logueado): ?>
+
     <script>
         (function() {
             const timeoutInSeconds = <?= $timeout ?? 500000000000 ?>; // Tiempo de inactividad en segundos
@@ -325,7 +341,9 @@ if ($id_usuario) {
                         alert('Tu sesión ha expirado por inactividad.');
                         window.location.href = '<?= BASE_URL ?>/login/login.php';
                     })
+
                     .catch(() => {
+
                         // Si no logra salir, al menos redirige
                         window.location.href = '<?= BASE_URL ?>/login/login.php';
                     });
@@ -335,15 +353,18 @@ if ($id_usuario) {
                 clearTimeout(timeoutId);
                 timeoutId = setTimeout(cerrarSesion, timeoutMillis);
             }
+
             // Escuchar cualquier actividad del usuario
             ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'].forEach(evt => {
                 window.addEventListener(evt, resetTimer, true);
             });
+
             // Iniciar el temporizador
             resetTimer();
         })();
     </script>
 <?php endif; ?>
+
 <!-- Modal Editar Perfil -->
 <div class="modal fade modal-editar-perfil" id="modalEditarPerfil" tabindex="-1" aria-labelledby="modalEditarPerfilLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-md">
@@ -355,35 +376,41 @@ if ($id_usuario) {
                 </button>
             </div>
             <div class="modal-body">
+
                 <!-- Avatar Section -->
                 <div class="avatar-section">
                     <img id="imgPreview" src="<?= BASE_URL ?>/<?= $user['avatar'] ?? 'uploads/avatar/user.webp' ?>" alt="Avatar actual" class="avatar-preview">
                     <p class="avatar-label">Foto de perfil actual</p>
                 </div>
+
                 <!-- Email -->
                 <div class="form-group">
                     <label for="email" class="form-label-modern">Correo electrónico</label>
-                    <input type="email" class="form-control form-control-modern" name="email" id="email" placeholder="ejemplo@correo.com" value="<?= htmlspecialchars($user['correo'] ?? '') ?>" style="min-height: 44px;">
+                    <input type="email" class="form-control form-control-modern" name="email" id="email" placeholder="ejemplo@correo.com" value="<?= htmlspecialchars($user['correo'] ?? '') ?>">
                 </div>
+
                 <!-- Teléfono -->
                 <div class="form-group">
                     <label for="telefono" class="form-label-modern">Número de teléfono</label>
-                    <input type="text" class="form-control form-control-modern" name="telefono" id="telefono" placeholder="+57 300 123 4567" value="<?= htmlspecialchars($user['telefono'] ?? '') ?>" style="min-height: 44px;">
+                    <input type="text" class="form-control form-control-modern" name="telefono" id="telefono" placeholder="+57 300 123 4567" value="<?= htmlspecialchars($user['telefono'] ?? '') ?>">
                 </div>
+
                 <!-- Contraseña -->
                 <div class="form-group">
                     <label for="password" class="form-label-modern">Nueva contraseña</label>
                     <div class="password-group">
-                        <input type="password" class="form-control form-control-modern" name="password" id="password" placeholder="Mínimo 8 caracteres" style="min-height: 44px;">
+                        <input type="password" class="form-control form-control-modern" name="password" id="password" placeholder="Mínimo 8 caracteres">
                     </div>
                 </div>
+
                 <!-- Confirmar Contraseña -->
                 <div class="form-group">
                     <label for="confirmar_password" class="form-label-modern">Confirmar nueva contraseña</label>
                     <div class="password-group">
-                        <input type="password" class="form-control form-control-modern" name="confirmar_password" id="confirmar_password" placeholder="Repite la contraseña" style="min-height: 44px;">
+                        <input type="password" class="form-control form-control-modern" name="confirmar_password" id="confirmar_password" placeholder="Repite la contraseña">
                     </div>
                 </div>
+
                 <!-- Avatar Upload -->
                 <div class="form-group">
                     <label for="avatar" class="form-label-modern">Cambiar foto de perfil</label>
@@ -409,6 +436,7 @@ if ($id_usuario) {
         </form>
     </div>
 </div>
+
 <!-- Modal Configuración -->
 <div class="modal fade" id="modalConfiguracion" tabindex="-1" aria-labelledby="modalConfiguracionLabel" aria-hidden="true">
     <div class="modal-dialog">
@@ -418,6 +446,7 @@ if ($id_usuario) {
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
             </div>
             <div class="modal-body">
+
                 <!-- Puedes agregar aquí más opciones configurables -->
                 <div class="mb-3">
                     <label for="tema" class="form-label">Tema de interfaz</label>
@@ -426,6 +455,7 @@ if ($id_usuario) {
                         <option value="oscuro">Oscuro</option>
                     </select>
                 </div>
+
                 <div class="mb-3">
                     <label for="notificaciones" class="form-label">Notificaciones</label>
                     <select name="notificaciones" id="notificaciones" class="form-select">
@@ -445,18 +475,22 @@ if ($id_usuario) {
 <script>
     // Mobile menu toggle - MODIFICADO PARA USUARIOS LOGUEADOS
     function toggleMobileMenu() {
+
         // Solo funciona si NO hay usuario logueado
         const userSectionLogged = document.querySelector('.user-section-logged');
+
         if (!userSectionLogged) {
             document.body.classList.toggle('mobile-nav-active');
         }
     }
+
     // Close mobile menu when clicking on links
     document.querySelectorAll('.header-mobile-nav-link').forEach(link => {
         link.addEventListener('click', () => {
             document.body.classList.remove('mobile-nav-active');
         });
     });
+
     // Close mobile menu on window resize
     window.addEventListener('resize', () => {
         if (window.innerWidth > 768) {
@@ -484,6 +518,7 @@ if ($id_usuario) {
     function validarFormularioEditarPerfil() {
         return validarTodo();
     }
+
     document.addEventListener('DOMContentLoaded', function() {
         const email = document.getElementById("email");
         const telefono = document.getElementById("telefono");
@@ -494,6 +529,7 @@ if ($id_usuario) {
         function validarCorreo() {
             const correo = email.value.trim();
             eliminarError(email);
+
             if (correo !== "") {
                 const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
                 if (!regex.test(correo)) {
@@ -505,492 +541,292 @@ if ($id_usuario) {
         }
 
         // NUEVA FUNCIÓN: Validación de teléfono - solo números y caracteres permitidos
-
         function validarTelefono() {
-
             const valor = telefono.value.trim();
-
             eliminarError(telefono);
-
             if (valor !== "") {
 
                 // Solo permitir números, espacios, guiones, paréntesis y signo +
-
                 const regex = /^[\d\s\-()+ ]*$/;
-
                 if (!regex.test(valor)) {
-
                     mostrarError(telefono, "Solo se permiten números y caracteres: + - ( ) espacios");
-
                     return false;
-
                 }
 
                 // Verificar que tenga al menos 7 dígitos si se ingresa algo
-
                 const soloNumeros = valor.replace(/[\s\-()+ ]/g, '');
-
                 if (soloNumeros.length > 0 && soloNumeros.length < 7) {
-
                     mostrarError(telefono, "El teléfono debe tener al menos 7 dígitos");
-
                     return false;
-
                 }
 
                 // Verificar que no sea solo caracteres especiales
-
                 if (soloNumeros.length === 0 && valor.length > 0) {
-
                     mostrarError(telefono, "Debe contener al menos un número");
-
                     return false;
-
                 }
-
             }
-
             return true;
-
         }
 
         function validarPassword() {
-
             const pass = password.value;
-
             eliminarError(password);
 
             if (pass !== "") {
-
                 const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
-
                 if (!regex.test(pass)) {
-
                     mostrarError(password, "Mínimo 8 caracteres, una mayúscula, una minúscula y un número.");
-
                     return false;
-
                 }
-
             }
-
             return true;
-
         }
 
         function validarConfirmacion() {
-
             eliminarError(confirmar);
-
             if (password.value !== "" && password.value !== confirmar.value) {
-
                 mostrarError(confirmar, "Las contraseñas no coinciden.");
-
                 return false;
-
             }
-
             return true;
-
         }
 
         // FUNCIÓN ACTUALIZADA: Incluye validación de teléfono
-
         window.validarTodo = function() {
-
             const esValido = validarCorreo() && validarTelefono() && validarPassword() && validarConfirmacion() && validarAvatarActual();
-
             btnGuardar.disabled = !esValido;
-
             return esValido;
-
         };
 
         // Event listeners para validación en tiempo real
-
         email.addEventListener("input", validarTodo);
-
         telefono.addEventListener("input", validarTodo);
-
         password.addEventListener("input", validarTodo);
-
         confirmar.addEventListener("input", validarTodo);
 
         // NUEVO: Filtro de entrada para teléfono - previene escritura de caracteres no válidos
-
         telefono.addEventListener("keypress", function(e) {
 
             // Permitir: números (0-9), espacio, guión, paréntesis, signo +, backspace, delete, tab, escape, enter
-
             const allowedKeys = [8, 9, 27, 13, 46]; // backspace, tab, escape, enter, delete
-
             const allowedChars = /[\d\s\-()+ ]/;
 
             // Si es una tecla especial, permitir
-
             if (allowedKeys.indexOf(e.keyCode) !== -1 ||
 
                 // Permitir Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X
-
                 (e.keyCode === 65 && e.ctrlKey === true) ||
-
                 (e.keyCode === 67 && e.ctrlKey === true) ||
-
                 (e.keyCode === 86 && e.ctrlKey === true) ||
-
                 (e.keyCode === 88 && e.ctrlKey === true)) {
-
                 return;
-
             }
 
             // Si el carácter no está permitido, prevenir la entrada
-
             if (!allowedChars.test(e.key)) {
-
                 e.preventDefault();
-
             }
-
         });
 
         // NUEVO: Validación adicional en paste para teléfono
-
         telefono.addEventListener("paste", function(e) {
 
             // Permitir el paste pero validar después
-
             setTimeout(() => {
-
                 const valor = telefono.value;
-
                 const regex = /^[\d\s\-()+ ]*$/;
-
                 if (!regex.test(valor)) {
 
                     // Limpiar caracteres no válidos
-
                     telefono.value = valor.replace(/[^\d\s\-()+ ]/g, '');
-
                     validarTodo();
-
                 }
-
             }, 10);
-
         });
-
     });
 
     document.addEventListener("DOMContentLoaded", function() {
-
         const avatarInput = document.getElementById("avatar");
-
         const vistaPrevia = document.getElementById("vistaPreviaAvatar");
-
         const btnGuardar = document.querySelector('#modalEditarPerfil .btn.btn-primary-modern');
 
         window.validarAvatarActual = function() {
-
             const file = avatarInput.files[0];
 
             if (!file) {
-
                 eliminarError(avatarInput);
-
                 vistaPrevia.innerHTML = "";
-
                 return true;
-
             }
 
             if (!file.type.startsWith('image/')) {
-
                 mostrarError(avatarInput, "Solo se permiten archivos de imagen.");
-
                 vistaPrevia.innerHTML = "";
-
                 return false;
-
             }
 
             if (file.size > 1024 * 1024) {
-
                 mostrarError(avatarInput, "El archivo no debe superar 1MB.");
-
                 vistaPrevia.innerHTML = "";
-
                 return false;
-
             }
-
             return true;
-
         };
 
         avatarInput.addEventListener("change", function() {
-
             const file = avatarInput.files[0];
-
             if (!file) return;
-
             const reader = new FileReader();
-
             reader.onload = function(e) {
-
                 const img = new Image();
-
                 img.onload = function() {
 
                     if (img.width > 800 || img.height > 800) {
-
                         mostrarError(avatarInput, "El avatar no debe superar 800x800 píxeles.");
-
                         vistaPrevia.innerHTML = "";
-
                         btnGuardar.disabled = true;
 
                     } else {
-
                         eliminarError(avatarInput);
-
                         vistaPrevia.innerHTML = `<img src="${e.target.result}" alt="Vista previa" style="max-width:100px; max-height:100px; border-radius:50%;">`;
-
                         validarTodo();
-
                     }
-
                 };
 
                 img.src = e.target.result;
-
             };
-
             reader.readAsDataURL(file);
-
         });
-
     });
 
     // Función para actualizar el contador del badge
-
     function actualizarBadgeNotificaciones() {
-
         const badgeElement = document.getElementById('notification-count');
-
         const unreadItems = document.querySelectorAll('.notification-panel .notification-item.unread');
-
         const count = unreadItems.length;
 
         if (badgeElement) {
-
             if (count === 0) {
-
                 badgeElement.classList.add('hidden');
 
             } else {
-
                 badgeElement.textContent = count > 99 ? '99+' : count;
-
                 badgeElement.classList.remove('hidden');
-
-            }
-
-        }
-
-    }
-
-    // Función para verificar si deben mostrarse los botones de acción
-    function verificarBotonesAccion() {
-        const notificationActions = document.getElementById('notification-actions');
-        const remainingNotifications = document.querySelectorAll('.notification-item');
-
-        if (notificationActions) {
-            if (remainingNotifications.length === 0) {
-                notificationActions.style.display = 'none';
-            } else {
-                notificationActions.style.display = 'flex';
             }
         }
     }
 
     // JavaScript para las notificaciones
-
     document.addEventListener('DOMContentLoaded', function() {
 
         // Marcar notificación individual como leída
-
         document.querySelectorAll('.notification-panel .notification-item').forEach(item => {
-
             item.addEventListener('click', function(e) {
-
                 const notificationId = this.dataset.notificationId;
 
                 // Marcar visualmente como leída
-
                 this.classList.remove('unread');
-
                 this.classList.add('read');
 
                 // Remover indicador de no leída
-
                 const indicator = this.querySelector('.unread-indicator');
 
                 if (indicator) {
-
                     indicator.style.animation = 'fadeOut 0.3s ease forwards';
-
                     setTimeout(() => indicator.remove(), 300);
-
                 }
 
                 // Remover badge "Nuevo"
-
                 const badge = this.querySelector('.notification-badge');
-
                 if (badge) {
-
                     badge.style.animation = 'fadeOut 0.3s ease forwards';
-
                     setTimeout(() => badge.remove(), 300);
-
                 }
 
                 // Actualizar badge del icono
-
                 setTimeout(() => {
-
                     actualizarBadgeNotificaciones();
-
                 }, 100);
-
             });
-
         });
 
         // AJAX para marcar todas las notificaciones como leídas
-
         const markAllBtn = document.getElementById('marcar-todas-leidas');
-
         if (markAllBtn) {
-
             markAllBtn.addEventListener('click', function(e) {
-
                 e.preventDefault();
-
                 const originalContent = this.innerHTML;
-
                 this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Marcando...';
-
                 this.disabled = true;
-
                 fetch('<?= BASE_URL ?>/ajax/marcar_todas_leidas.php', {
-
                         method: 'POST',
-
                         headers: {
-
                             'X-Requested-With': 'XMLHttpRequest',
-
                             'Content-Type': 'application/x-www-form-urlencoded'
-
                         }
-
                     })
 
                     .then(response => response.json())
-
                     .then(data => {
-
                         if (data.success) {
-
                             this.innerHTML = '<i class="fas fa-check-double"></i> ¡Marcadas!';
 
                             // Actualizar notificaciones en el panel
-
                             document.querySelectorAll('.notification-panel .notification-item.unread').forEach(item => {
-
                                 item.classList.remove('unread');
-
                                 item.classList.add('read');
-
                                 const badge = item.querySelector('.notification-badge');
-
                                 const indicator = item.querySelector('.unread-indicator');
-
                                 if (badge) badge.remove();
-
                                 if (indicator) indicator.remove();
-
                             });
 
                             // Actualizar badge del icono
-
                             actualizarBadgeNotificaciones();
-
                             setTimeout(() => {
-
                                 this.innerHTML = originalContent;
-
                                 this.disabled = false;
-
-                                // NO ocultar los botones aquí, solo verificar si hay notificaciones
-                                verificarBotonesAccion();
-
+                                const hasUnread = document.querySelector('.notification-panel .notification-item.unread');
+                                if (!hasUnread) {
+                                    this.parentElement.style.display = 'none';
+                                }
                             }, 2000);
 
                         } else {
-
                             this.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error';
-
                             setTimeout(() => {
-
                                 this.innerHTML = originalContent;
-
                                 this.disabled = false;
-
                             }, 2000);
-
                         }
-
                     })
 
                     .catch(error => {
-
                         console.error('Error:', error);
-
                         this.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error';
-
                         setTimeout(() => {
-
                             this.innerHTML = originalContent;
-
                             this.disabled = false;
-
                         }, 2000);
-
                         alert('Error de conexión. Inténtalo de nuevo.');
-
                     });
-
             });
-
         }
 
-        // AJAX para eliminar TODAS las notificaciones
+        // AJAX para eliminar todas las notificaciones
         const deleteAllBtn = document.getElementById('eliminar-todas');
         if (deleteAllBtn) {
             deleteAllBtn.addEventListener('click', function(e) {
                 e.preventDefault();
 
-                if (!confirm('¿Estás seguro de que quieres eliminar todas las notificaciones? Esta acción no se puede deshacer.')) {
+                if (!confirm('¿Estás seguro de que quieres eliminar todas las notificaciones?')) {
                     return;
                 }
 
                 const originalContent = this.innerHTML;
                 this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Eliminando...';
                 this.disabled = true;
-
                 fetch('<?= BASE_URL ?>/ajax/eliminar_todas_notificaciones.php', {
                         method: 'POST',
                         headers: {
@@ -998,12 +834,13 @@ if ($id_usuario) {
                             'Content-Type': 'application/x-www-form-urlencoded'
                         }
                     })
+
                     .then(response => response.json())
                     .then(data => {
                         if (data.success) {
                             this.innerHTML = '<i class="fas fa-check"></i> ¡Eliminadas!';
 
-                            // Eliminar todas las notificaciones del DOM
+                            // Limpiar el panel de notificaciones
                             const notificationsList = document.querySelector('.notifications-list');
                             if (notificationsList) {
                                 notificationsList.innerHTML = `
@@ -1017,12 +854,14 @@ if ($id_usuario) {
                             `;
                             }
 
+                            // Ocultar botones de acción
+                            const headerActions = document.querySelector('.header-actions');
+                            if (headerActions) {
+                                headerActions.style.display = 'none';
+                            }
+
                             // Actualizar badge del icono
                             actualizarBadgeNotificaciones();
-
-                            // Ocultar botones de acción
-                            verificarBotonesAccion();
-
                             setTimeout(() => {
                                 this.innerHTML = originalContent;
                                 this.disabled = false;
@@ -1037,6 +876,7 @@ if ($id_usuario) {
                             alert(data.message || 'Error al eliminar las notificaciones');
                         }
                     })
+
                     .catch(error => {
                         console.error('Error:', error);
                         this.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error';
@@ -1050,127 +890,157 @@ if ($id_usuario) {
         }
 
         // JavaScript para eliminar notificaciones individuales
-
         document.addEventListener('click', function(e) {
-
             if (e.target.closest('.btn-delete-individual')) {
-
                 e.preventDefault();
-
                 e.stopPropagation();
-
                 const btn = e.target.closest('.btn-delete-individual');
-
                 const notificationId = btn.dataset.notificationId;
-
                 const notificationItem = btn.closest('.notification-item');
-
                 if (!confirm('¿Eliminar esta notificación?')) {
-
                     return;
-
                 }
 
                 const originalContent = btn.innerHTML;
-
                 btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-
                 btn.disabled = true;
-
                 fetch('<?= BASE_URL ?>/ajax/eliminar_notificacion_individual.php', {
-
                         method: 'POST',
-
                         headers: {
-
                             'X-Requested-With': 'XMLHttpRequest',
-
                             'Content-Type': 'application/x-www-form-urlencoded'
-
                         },
-
                         body: `id_notificacion=${notificationId}`
-
                     })
 
                     .then(response => response.json())
-
                     .then(data => {
-
                         if (data.success) {
-
                             notificationItem.style.animation = 'slideOutNotification 0.3s ease forwards';
-
                             setTimeout(() => {
-
                                 notificationItem.remove();
-
                                 actualizarBadgeNotificaciones();
 
                                 // Verificar si quedan notificaciones
-
                                 const remainingNotifications = document.querySelectorAll('.notification-item');
-
                                 if (remainingNotifications.length === 0) {
-
                                     const notificationsList = document.querySelector('.notifications-list');
-
                                     if (notificationsList) {
-
                                         notificationsList.innerHTML = `
-
                                     <div class="empty-state">
-
                                         <div class="empty-icon">
-
                                             <i class="fas fa-bell-slash"></i>
-
                                         </div>
-
                                         <h6 class="empty-title">Sin notificaciones</h6>
-
                                         <p class="empty-text">No tienes notificaciones recientes</p>
-
                                     </div>
-
                                 `;
-
                                     }
 
+                                    // Ocultar botones de acción
+                                    const headerActions = document.querySelector('.header-actions');
+                                    if (headerActions) {
+                                        headerActions.style.display = 'none';
+                                    }
                                 }
-
-                                // Verificar botones de acción
-                                verificarBotonesAccion();
-
                             }, 300);
 
                         } else {
-
                             btn.innerHTML = originalContent;
-
                             btn.disabled = false;
-
                             alert(data.message || 'Error al eliminar la notificación');
-
                         }
-
                     })
 
                     .catch(error => {
-
                         console.error('Error:', error);
-
                         btn.innerHTML = originalContent;
-
                         btn.disabled = false;
-
                         alert('Error de conexión. Inténtalo de nuevo.');
-
                     });
-
             }
-
         });
 
+        // Sistema de notificaciones en tiempo real
+        let notificationInterval;
+
+        function iniciarSistemaNotificaciones() {
+            // Verificar nuevas notificaciones cada 30 segundos
+            notificationInterval = setInterval(verificarNuevasNotificaciones, 30000);
+
+            // También verificar al enfocar la ventana
+            window.addEventListener('focus', verificarNuevasNotificaciones);
+        }
+
+        function verificarNuevasNotificaciones() {
+            fetch('<?= BASE_URL ?>/ajax/verificar_notificaciones.php', {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.nuevas_notificaciones > 0) {
+                        actualizarBadgeNotificaciones(data.total_no_leidas);
+
+                        // Mostrar notificación del navegador si está permitido
+                        if (Notification.permission === 'granted' && data.ultima_notificacion) {
+                            new Notification('Nueva respuesta en el foro', {
+                                body: data.ultima_notificacion.mensaje,
+                                icon: '<?= BASE_URL ?>/assets/img/logo.png'
+                            });
+                        }
+                    }
+                })
+                .catch(error => console.error('Error verificando notificaciones:', error));
+        }
+
+        function actualizarContadorNotificaciones(total) {
+            const badge = document.getElementById('notification-count');
+            if (badge) {
+                if (total > 0) {
+                    badge.textContent = total > 99 ? '99+' : total;
+                    badge.style.display = 'block';
+
+                } else {
+                    badge.style.display = 'none';
+                }
+            }
+        }
+
+        // Solicitar permisos de notificación
+        function solicitarPermisosNotificacion() {
+            if ('Notification' in window && Notification.permission === 'default') {
+                Notification.requestPermission();
+            }
+        }
+
+        // Inicializar sistema de notificaciones si hay usuario logueado
+        <?php if ($usuario_logueado): ?>
+            iniciarSistemaNotificaciones();
+            solicitarPermisosNotificacion();
+        <?php endif; ?>
     });
+
+    // Agregar estilos CSS para animaciones
+    const style = document.createElement('style');
+    style.textContent = `
+
+        @keyframes slideOutNotification {
+            from { opacity: 1; transform: translateX(0); }
+            to { opacity: 0; transform: translateX(100%); }
+        }
+
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+
+        .notification-badge.hidden {
+            display: none !important;
+        }
+    `;
+    document.head.appendChild(style);
 </script>

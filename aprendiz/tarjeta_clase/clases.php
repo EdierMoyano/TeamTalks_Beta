@@ -21,6 +21,7 @@
 
 
 
+  <!-- Estilos personalizados -->
   <style>
     body {
       background-color: #f4f4f9;
@@ -29,38 +30,32 @@
 
     .main-content {
       margin-left: 250px;
+      margin-top: 20px;
       transition: margin-left 0.4s ease;
     }
 
-
     body.sidebar-collapsed .main-content {
       margin-left: 100px;
-      /* ajusta según el ancho del sidebar colapsado */
     }
 
     .card-clase {
       width: 90%;
-      /* Reduce el ancho de las tarjetas */
       margin: 0 auto;
-      /* Centra las tarjetas */
       transition: transform 0.2s, box-shadow 0.2s;
     }
 
     .card-clase img {
       height: 150px;
-      /* Ajusta la altura de las imágenes */
       object-fit: cover;
-      /* Asegura que las imágenes se ajusten al espacio */
     }
 
     .card-clase .card-body {
       font-size: 0.9rem;
-      /* Reduce el tamaño del texto */
     }
 
     .card-clase .card-title {
       font-size: 1rem;
-      /* Reduce el tamaño del título */
+      color: #0E4A86;
     }
 
     .card-clase:hover {
@@ -68,22 +63,37 @@
       box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
     }
 
-    .card-title {
-      color: #0E4A86;
-    }
-
     .btn-blue-dark {
       background-color: rgb(14, 74, 134);
-      /* Azul oscuro */
       border-color: rgb(14, 74, 134);
       color: white;
     }
 
     .btn-blue-dark:hover {
       background-color: rgb(23, 101, 180);
-      /* Azul aún más oscuro al pasar el mouse */
       border-color: rgb(23, 101, 180);
       color: white;
+    }
+
+    .boton-volver {
+      background-color: #0E4A86;
+      color: white;
+      border: none;
+    }
+
+    .boton-volver:hover {
+      background-color: #145baf;
+      color: white;
+    }
+
+    .top-controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+      max-width: 1000px;
+      margin: 0 auto 1rem auto;
     }
 
     @media (max-width: 768px) {
@@ -98,6 +108,8 @@
       }
     }
   </style>
+
+
 </head>
 
 <body class="sidebar-collapsed">
@@ -108,18 +120,35 @@
   <!-- Sidebar -->
   <?php include '../../includes/design/sidebar.php'; ?>
 
+  <script>
+    // Función para volver a la clase anterior
+    function volverAClase() {
+      const idClase = document.querySelector("[data-id-clase]")?.getAttribute("data-id-clase");
+      if (idClase) {
+        window.location.href = `../index.php?id_clase=${idClase}`;
+      } else {
+        window.location.href = "../tarjeta_formacion/index.php";
+      }
+    }
+  </script>
+
   <!-- Contenido principal -->
   <main class="main-content">
     <div class="container-fluid">
-      <form class="d-flex mb-4" role="search" style="max-width: 1000px; margin: 0 auto;">
-        <input id="input-busqueda" class="form-control me-2" type="search" placeholder="Buscar" aria-label="Buscar" style="font-size: 0.9rem; height: 40px;" />
-        <button class="btn btn-blue-dark" type="submit" style="height: 40px; padding: 0 12px;">
-          <i class="bi bi-search"></i>
+
+      <div class="d-flex justify-content-between align-items-center gap-3" style="max-width: 1000px; margin: -25px auto 50px auto;">
+        <button type="button" class="btn boton-volver" onclick="volverAClase()" style="height: 40px; padding: 0 16px;">
+          <i class="fas fa-arrow-left"></i> Volver
         </button>
-      </form>
 
-      <br>
-
+        <form class="d-flex flex-grow-1" role="search">
+          <input id="input-busqueda" class="form-control me-2" type="search" placeholder="Buscar" aria-label="Buscar"
+            style="font-size: 0.9rem; height: 40px; flex: 1;" />
+          <button class="btn btn-blue-dark" type="submit" style="height: 40px; padding: 0 12px;">
+            <i class="bi bi-search"></i>
+          </button>
+        </form>
+      </div>
       <div class="row" id="contenedor-clases">
         <!-- Aquí irán las tarjetas -->
       </div>

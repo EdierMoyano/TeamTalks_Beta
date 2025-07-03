@@ -61,16 +61,15 @@ if (!$trimestre_actual) {
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
     <link rel="stylesheet" href="../css/styles.css">
+
     <style>
         /* Estilos existentes más nuevos estilos */
         body.sidebar-collapsed .main-content {
             margin-left: 100px;
         }
-        
         .main-content {
             padding: 20px;
         }
-        
         .certificados-header {
             background: linear-gradient(135deg, #0E4A86 0%, #1a5490 100%);
             color: white;
@@ -78,14 +77,12 @@ if (!$trimestre_actual) {
             border-radius: 12px;
             margin-bottom: 30px;
         }
-        
         .certificados-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
             gap: 20px;
             margin-bottom: 30px;
         }
-        
         .certificado-card {
             background: white;
             border-radius: 12px;
@@ -97,12 +94,10 @@ if (!$trimestre_actual) {
             flex-direction: column;
             height: 100%;
         }
-        
         .certificado-card:hover {
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         }
-        
         .certificado-icon {
             width: 60px;
             height: 60px;
@@ -115,30 +110,25 @@ if (!$trimestre_actual) {
             font-size: 1.5rem;
             margin-bottom: 20px;
         }
-        
         .certificado-card h3 {
             color: #0E4A86;
             font-size: 1.25rem;
             font-weight: 600;
             margin-bottom: 10px;
         }
-        
         .certificado-card p {
             color: #666;
             margin-bottom: 20px;
         }
-        
         .certificado-content {
             flex: 1;
             display: flex;
             flex-direction: column;
         }
-        
         .certificado-info {
             flex: 1;
             margin-bottom: 20px;
         }
-        
         .info-item {
             display: flex;
             align-items: center;
@@ -147,12 +137,10 @@ if (!$trimestre_actual) {
             font-size: 0.9rem;
             margin-bottom: 8px;
         }
-        
         .info-item i {
             color: #0E4A86;
             width: 16px;
         }
-        
         .promedio-display {
             background: #f8f9fa;
             border: 1px solid #dee2e6;
@@ -161,30 +149,24 @@ if (!$trimestre_actual) {
             text-align: center;
             margin-bottom: 20px;
         }
-        
         .promedio-valor {
             font-size: 2rem;
             font-weight: 700;
             margin-bottom: 5px;
         }
-        
         .promedio-valor.alto {
             color: #28a745;
         }
-        
         .promedio-valor.medio {
             color: #ffc107;
         }
-        
         .promedio-valor.bajo {
             color: #dc3545;
         }
-        
         .promedio-label {
             color: #666;
             font-size: 0.9rem;
         }
-        
         .btn-certificado {
             background-color: #0E4A86;
             color: white;
@@ -202,49 +184,60 @@ if (!$trimestre_actual) {
             justify-content: center;
             margin-top: auto;
         }
-        
         .btn-certificado:hover {
             background-color: #08325a;
             color: white;
             text-decoration: none;
         }
-        
         .btn-certificado:disabled {
             background-color: #6c757d;
             cursor: not-allowed;
         }
-        
+        .btn-volver-azul {
+            background: #fff !important;
+            color: #0E4A86 !important;
+            border: 1.5px solid #0E4A86 !important;
+            border-radius: 8px;
+            padding: 10px 24px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s, color 0.2s, border 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-volver-azul:hover,
+        .btn-volver-azul:focus {
+            background: #0E4A86 !important;
+            color: #fff !important;
+            border: 1.5px solid #fff !important;
+        }
         .breadcrumb-custom {
             background: none;
             padding: 0;
             margin-bottom: 20px;
         }
-        
         .breadcrumb-custom .breadcrumb-item a {
             color: #0E4A86;
             text-decoration: none;
         }
-        
         .breadcrumb-custom .breadcrumb-item a:hover {
             text-decoration: underline;
         }
-        
         /* Modal styles */
         .modal-header {
             background-color: #0E4A86;
             color: white;
         }
-        
         .modal-title {
             display: flex;
             align-items: center;
             gap: 10px;
         }
-        
         .btn-close {
             filter: invert(1);
         }
-        
         .materia-item {
             background: white;
             border: 1px solid #dee2e6;
@@ -255,34 +248,28 @@ if (!$trimestre_actual) {
             justify-content: space-between;
             align-items: center;
         }
-        
         .materia-nombre {
             font-weight: 500;
             color: #333;
         }
-        
         .materia-promedio {
             font-weight: 600;
             padding: 4px 12px;
             border-radius: 4px;
             font-size: 0.9rem;
         }
-        
         .materia-promedio.alto {
             background-color: #d4edda;
             color: #155724;
         }
-        
         .materia-promedio.medio {
             background-color: #fff3cd;
             color: #856404;
         }
-        
         .materia-promedio.bajo {
             background-color: #f8d7da;
             color: #721c24;
         }
-        
         .trimestre-badge {
             background-color: #0E4A86;
             color: white;
@@ -293,33 +280,27 @@ if (!$trimestre_actual) {
             margin-bottom: 15px;
             display: inline-block;
         }
-        
         .trimestre-selector {
             margin-bottom: 20px;
         }
-        
         .form-select {
             border: 2px solid #0E4A86;
             border-radius: 8px;
         }
-        
         .form-select:focus {
             border-color: #0E4A86;
             box-shadow: 0 0 0 0.2rem rgba(14, 74, 134, 0.25);
         }
-        
         .alert-warning {
             background-color: #fff3cd;
             border-color: #ffeaa7;
             color: #856404;
         }
-        
         .alert-info {
             background-color: #d1ecf1;
             border-color: #bee5eb;
             color: #0c5460;
         }
-        
         .debug-info {
             background: #f8f9fa;
             border: 1px solid #dee2e6;
@@ -329,7 +310,6 @@ if (!$trimestre_actual) {
             font-family: monospace;
             font-size: 0.9rem;
         }
-        
         /* Alerta para trimestre actual */
         .trimestre-actual-warning {
             background-color: #fff3cd;
@@ -346,26 +326,13 @@ if (!$trimestre_actual) {
 <body class="sidebar-collapsed">
     <!-- Header -->
     <?php include '../../includes/design/header.php'; ?>
+
     <!-- Sidebar -->
     <?php include '../../includes/design/sidebar.php'; ?>
 
     <!-- Contenido principal -->
     <main class="main-content">
         <div class="container-fluid">
-            <!-- Breadcrumb -->
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb breadcrumb-custom">
-                    <li class="breadcrumb-item">
-                        <a href="../tarjeta_formacion/index.php">
-                            <i class="fas fa-home"></i> Inicio
-                        </a>
-                    </li>
-                    <li class="breadcrumb-item active" aria-current="page">
-                        Certificados y Boletines
-                    </li>
-                </ol>
-            </nav>
-
             <!-- Debug Info (temporal) -->
             <div class="debug-info" id="debugInfo" style="display: none;">
                 <h6>Debug Information:</h6>
@@ -380,16 +347,14 @@ if (!$trimestre_actual) {
                     Certificados y Boletines
                 </h1>
                 <p class="mb-0">Consulta y descarga tus certificados de estudio y boletines de calificaciones</p>
+                <button type="button" class="btn-volver-azul" onclick="volverAClase()">
+                    <i class="fas fa-arrow-left"></i> Volver
+                </button>
                 <?php if ($trimestre_actual): ?>
                     <div class="trimestre-badge mt-3">
                         <i class="fas fa-calendar-alt"></i> <?= htmlspecialchars($trimestre_actual['trimestre']) ?> Trimestre (Actual)
                     </div>
                 <?php endif; ?>
-                
-                <!-- Botón de debug temporal -->
-                <button class="btn btn-outline-light btn-sm mt-2" onclick="mostrarDebugInfo()">
-                    <i class="fas fa-bug"></i> Mostrar Debug Info
-                </button>
             </div>
 
             <!-- Grid de certificados -->
@@ -427,14 +392,12 @@ if (!$trimestre_actual) {
                         </div>
                         <h3>Boletín General</h3>
                         <p>Boletín de calificaciones por trimestre</p>
-                        
                         <!-- Alerta sobre trimestre actual -->
                         <div class="trimestre-actual-warning">
                             <i class="fas fa-info-circle"></i>
-                            <strong>Nota:</strong> Solo puedes consultar boletines de trimestres completados. 
+                            <strong>Nota:</strong> Solo puedes consultar boletines de trimestres completados.
                             El trimestre actual (<?= htmlspecialchars($trimestre_actual['trimestre']) ?>) no está disponible.
                         </div>
-                        
                         <!-- Selector de trimestre -->
                         <div class="trimestre-selector">
                             <label for="trimestreBoletinSelect" class="form-label">Seleccionar Trimestre:</label>
@@ -442,12 +405,10 @@ if (!$trimestre_actual) {
                                 <option value="">Cargando trimestres...</option>
                             </select>
                         </div>
-                        
                         <div class="promedio-display" id="promedioGeneral" style="display: none;">
                             <div class="promedio-valor">-</div>
                             <div class="promedio-label">Promedio General</div>
                         </div>
-                        
                         <div class="d-grid gap-2">
                             <button class="btn-certificado" onclick="verBoletinGeneral()" id="btnVerBoletin" disabled>
                                 <i class="fas fa-eye"></i>
@@ -469,13 +430,11 @@ if (!$trimestre_actual) {
                         </div>
                         <h3>Calificaciones por Materia</h3>
                         <p>Consulta el detalle de calificaciones por materia</p>
-                        
                         <!-- Alerta sobre trimestre actual -->
                         <div class="trimestre-actual-warning">
                             <i class="fas fa-info-circle"></i>
                             <strong>Nota:</strong> Solo puedes consultar calificaciones de trimestres completados.
                         </div>
-                        
                         <!-- Selector de trimestre -->
                         <div class="trimestre-selector">
                             <label for="trimestreMateriaSelect" class="form-label">Seleccionar Trimestre:</label>
@@ -483,7 +442,6 @@ if (!$trimestre_actual) {
                                 <option value="">Cargando trimestres...</option>
                             </select>
                         </div>
-                        
                         <div class="certificado-info">
                             <div class="materias-preview" id="materiasPreview">
                                 <div class="info-item">
@@ -558,20 +516,25 @@ if (!$trimestre_actual) {
             cargarTrimestresDisponibles();
         });
 
+        // Función CORREGIDA para volver a la clase
+        function volverAClase() {
+            // Intentar ir a la página de clases del aprendiz
+            window.location.href = '../tarjeta_clase/clases.php';
+        }
+
         function mostrarDebugInfo() {
             fetch('debug_trimestres.php', {
-                method: 'GET',
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                const debugDiv = document.getElementById('debugInfo');
-                const debugContent = document.getElementById('debugContent');
-                
-                if (data.success) {
-                    debugContent.innerHTML = `
+                    method: 'GET',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    const debugDiv = document.getElementById('debugInfo');
+                    const debugContent = document.getElementById('debugContent');
+                    if (data.success) {
+                        debugContent.innerHTML = `
                         <strong>Usuario ID:</strong> ${data.debug_info.id_usuario}<br>
                         <strong>Ficha ID:</strong> ${data.debug_info.id_ficha}<br>
                         <strong>Mes Actual:</strong> ${data.debug_info.mes_actual}<br>
@@ -592,74 +555,70 @@ if (!$trimestre_actual) {
                             `- ${a.trimestre}: ${a.total_actividades} actividades, ${a.actividades_calificadas} calificadas`
                         ).join('<br>')}
                     `;
-                } else {
-                    debugContent.innerHTML = `Error: ${data.message}`;
-                }
-                
-                debugDiv.style.display = 'block';
-            })
-            .catch(error => {
-                console.error('Error en debug:', error);
-            });
+                    } else {
+                        debugContent.innerHTML = `Error: ${data.message}`;
+                    }
+                    debugDiv.style.display = 'block';
+                })
+                .catch(error => {
+                    console.error('Error en debug:', error);
+                });
         }
 
         function cargarTrimestresDisponibles() {
             fetch('obtener_trimestres_cursados.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: `id_usuario=${idUsuario}&id_ficha=${idFicha}`
-            })
-            .then(response => response.json())
-            .then(data => {
-                console.log('Respuesta de trimestres:', data); // Debug
-                
-                if (data.success) {
-                    trimestresDisponibles = data.trimestres;
-                    llenarSelectoresTrimestre();
-                    
-                    // Mostrar debug info en consola
-                    if (data.debug) {
-                        console.log('Debug info:', data.debug);
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `id_usuario=${idUsuario}&id_ficha=${idFicha}`
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Respuesta de trimestres:', data); // Debug
+                    if (data.success) {
+                        trimestresDisponibles = data.trimestres;
+                        llenarSelectoresTrimestre();
+                        // Mostrar debug info en consola
+                        if (data.debug) {
+                            console.log('Debug info:', data.debug);
+                        }
+                    } else {
+                        console.error('Error al cargar trimestres:', data.message);
                     }
-                } else {
-                    console.error('Error al cargar trimestres:', data.message);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-            });
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
         }
 
         function llenarSelectoresTrimestre() {
             const selectBoletin = document.getElementById('trimestreBoletinSelect');
             const selectMateria = document.getElementById('trimestreMateriaSelect');
-            
             console.log('Llenando selectores con:', trimestresDisponibles); // Debug
-            
+
             // Limpiar opciones
             selectBoletin.innerHTML = '<option value="">Seleccionar trimestre...</option>';
             selectMateria.innerHTML = '<option value="">Seleccionar trimestre...</option>';
-            
+
             if (trimestresDisponibles.length === 0) {
                 selectBoletin.innerHTML = '<option value="">No hay trimestres completados disponibles</option>';
                 selectMateria.innerHTML = '<option value="">No hay trimestres completados disponibles</option>';
                 return;
             }
-            
+
             trimestresDisponibles.forEach(trimestre => {
                 const optionBoletin = document.createElement('option');
                 optionBoletin.value = trimestre.id_trimestre;
                 optionBoletin.textContent = trimestre.nombre;
                 selectBoletin.appendChild(optionBoletin);
-                
+
                 const optionMateria = document.createElement('option');
                 optionMateria.value = trimestre.id_trimestre;
                 optionMateria.textContent = trimestre.nombre;
                 selectMateria.appendChild(optionMateria);
             });
-            
+
             // Event listeners
             selectBoletin.addEventListener('change', function() {
                 trimestreSeleccionadoBoletin = this.value;
@@ -674,7 +633,7 @@ if (!$trimestre_actual) {
                     document.getElementById('btnDescargarBoletin').disabled = true;
                 }
             });
-            
+
             selectMateria.addEventListener('change', function() {
                 trimestreSeleccionadoMateria = this.value;
                 if (this.value) {
@@ -689,97 +648,93 @@ if (!$trimestre_actual) {
 
         function cargarPromedioTrimestre(idTrimestre) {
             fetch('obtener_boletin_por_trimestre.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: `id_usuario=${idUsuario}&id_ficha=${idFicha}&id_trimestre=${idTrimestre}`
-            })
-            .then(response => response.json())
-            .then(data => {
-                console.log('Respuesta del boletín:', data); // Debug
-                
-                const promedioElement = document.getElementById('promedioGeneral');
-                if (data.success && data.materias.length > 0) {
-                    // Calcular promedio general
-                    let sumaPromedios = 0;
-                    let materiasConNota = 0;
-                    
-                    data.materias.forEach(materia => {
-                        if (materia.promedio_final) {
-                            sumaPromedios += parseFloat(materia.promedio_final);
-                            materiasConNota++;
-                        }
-                    });
-                    
-                    if (materiasConNota > 0) {
-                        const promedio = sumaPromedios / materiasConNota;
-                        let claseColor = 'bajo';
-                        if (promedio >= 4.0) claseColor = 'alto';
-                        else if (promedio >= 3.0) claseColor = 'medio';
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `id_usuario=${idUsuario}&id_ficha=${idFicha}&id_trimestre=${idTrimestre}`
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Respuesta del boletín:', data); // Debug
+                    const promedioElement = document.getElementById('promedioGeneral');
+                    if (data.success && data.materias.length > 0) {
+                        // Calcular promedio general
+                        let sumaPromedios = 0;
+                        let materiasConNota = 0;
+                        data.materias.forEach(materia => {
+                            if (materia.promedio_final) {
+                                sumaPromedios += parseFloat(materia.promedio_final);
+                                materiasConNota++;
+                            }
+                        });
 
-                        promedioElement.innerHTML = `
+                        if (materiasConNota > 0) {
+                            const promedio = sumaPromedios / materiasConNota;
+                            let claseColor = 'bajo';
+                            if (promedio >= 4.0) claseColor = 'alto';
+                            else if (promedio >= 3.0) claseColor = 'medio';
+
+                            promedioElement.innerHTML = `
                             <div class="promedio-valor ${claseColor}">${promedio.toFixed(2)}</div>
                             <div class="promedio-label">${data.trimestre_nombre}</div>
                         `;
-                        promedioElement.style.display = 'block';
-                    } else {
-                        promedioElement.innerHTML = `
+                            promedioElement.style.display = 'block';
+                        } else {
+                            promedioElement.innerHTML = `
                             <div class="promedio-valor">N/A</div>
                             <div class="promedio-label">Sin calificaciones</div>
                         `;
-                        promedioElement.style.display = 'block';
+                            promedioElement.style.display = 'block';
+                        }
+                    } else {
+                        promedioElement.style.display = 'none';
                     }
-                } else {
-                    promedioElement.style.display = 'none';
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-            });
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
         }
 
         function cargarPreviewMateriasTrimestre(idTrimestre) {
             fetch('obtener_materias_por_trimestre.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: `id_usuario=${idUsuario}&id_ficha=${idFicha}&id_trimestre=${idTrimestre}`
-            })
-            .then(response => response.json())
-            .then(data => {
-                const previewElement = document.getElementById('materiasPreview');
-                if (data.success && data.materias.length > 0) {
-                    const preview = data.materias.slice(0, 3).map(materia => {
-                        return `
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `id_usuario=${idUsuario}&id_ficha=${idFicha}&id_trimestre=${idTrimestre}`
+                })
+                .then(response => response.json())
+                .then(data => {
+                    const previewElement = document.getElementById('materiasPreview');
+                    if (data.success && data.materias.length > 0) {
+                        const preview = data.materias.slice(0, 3).map(materia => {
+                            return `
                             <div class="info-item">
                                 <i class="fas fa-book"></i>
                                 <span>${materia.nombre}: ${materia.promedio_final ? materia.promedio_final.toFixed(2) : 'N/A'}</span>
                             </div>
                         `;
-                    }).join('');
-                    
-                    previewElement.innerHTML = preview;
-                } else {
-                    previewElement.innerHTML = '<div class="info-item"><i class="fas fa-info-circle"></i><span>No hay materias calificadas</span></div>';
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-            });
+                        }).join('');
+                        previewElement.innerHTML = preview;
+                    } else {
+                        previewElement.innerHTML = '<div class="info-item"><i class="fas fa-info-circle"></i><span>No hay materias calificadas</span></div>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
         }
 
         function descargarCertificado(tipo) {
             const btn = event.target;
             const originalText = btn.innerHTML;
-
             btn.disabled = true;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generando...';
 
             // Abrir en nueva ventana para descarga automática
             window.open(`generar_certificado.php?tipo=${tipo}`, '_blank');
-            
+
             setTimeout(() => {
                 btn.disabled = false;
                 btn.innerHTML = originalText;
@@ -794,29 +749,28 @@ if (!$trimestre_actual) {
 
             const modal = new bootstrap.Modal(document.getElementById('modalBoletinGeneral'));
             const contenido = document.getElementById('contenidoBoletinGeneral');
-
             contenido.innerHTML = '<div class="text-center"><i class="fas fa-spinner fa-spin"></i> Cargando boletín...</div>';
             modal.show();
 
             fetch('obtener_boletin_por_trimestre.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: `id_usuario=${idUsuario}&id_ficha=${idFicha}&id_trimestre=${trimestreSeleccionadoBoletin}`
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    contenido.innerHTML = generarHTMLBoletinGeneral(data);
-                } else {
-                    contenido.innerHTML = `<div class="alert alert-danger">Error: ${data.message}</div>`;
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                contenido.innerHTML = '<div class="alert alert-danger">Error al cargar el boletín</div>';
-            });
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `id_usuario=${idUsuario}&id_ficha=${idFicha}&id_trimestre=${trimestreSeleccionadoBoletin}`
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        contenido.innerHTML = generarHTMLBoletinGeneral(data);
+                    } else {
+                        contenido.innerHTML = `<div class="alert alert-danger">Error: ${data.message}</div>`;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    contenido.innerHTML = '<div class="alert alert-danger">Error al cargar el boletín</div>';
+                });
         }
 
         function verDetalleMateria() {
@@ -827,35 +781,34 @@ if (!$trimestre_actual) {
 
             const modal = new bootstrap.Modal(document.getElementById('modalDetalleMaterias'));
             const contenido = document.getElementById('contenidoDetalleMaterias');
-
             contenido.innerHTML = '<div class="text-center"><i class="fas fa-spinner fa-spin"></i> Cargando materias...</div>';
             modal.show();
 
             fetch('obtener_materias_por_trimestre.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: `id_usuario=${idUsuario}&id_ficha=${idFicha}&id_trimestre=${trimestreSeleccionadoMateria}`
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    contenido.innerHTML = generarHTMLMaterias(data.materias, data.trimestre_nombre);
-                } else {
-                    contenido.innerHTML = `<div class="alert alert-danger">Error: ${data.message}</div>`;
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                contenido.innerHTML = '<div class="alert alert-danger">Error al cargar las materias</div>';
-            });
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `id_usuario=${idUsuario}&id_ficha=${idFicha}&id_trimestre=${trimestreSeleccionadoMateria}`
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        contenido.innerHTML = generarHTMLMaterias(data.materias, data.trimestre_nombre);
+                    } else {
+                        contenido.innerHTML = `<div class="alert alert-danger">Error: ${data.message}</div>`;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    contenido.innerHTML = '<div class="alert alert-danger">Error al cargar las materias</div>';
+                });
         }
 
         function generarHTMLBoletinGeneral(data) {
             const trimestre = trimestresDisponibles.find(t => t.id_trimestre == trimestreSeleccionadoBoletin);
             let alertaDescarga = '';
-            
+
             if (!trimestre.puede_descargar) {
                 if (!trimestre.completado) {
                     alertaDescarga = '<div class="alert alert-warning"><i class="fas fa-exclamation-triangle"></i> Este trimestre aún está en curso. No se puede descargar el boletín hasta que termine.</div>';
@@ -863,7 +816,7 @@ if (!$trimestre_actual) {
                     alertaDescarga = '<div class="alert alert-warning"><i class="fas fa-exclamation-triangle"></i> No todas las materias están calificadas. Complete todas las calificaciones para descargar el boletín.</div>';
                 }
             }
-            
+
             return `
                 ${alertaDescarga}
                 <div class="row mb-4">
@@ -956,7 +909,7 @@ if (!$trimestre_actual) {
                 alert('Por favor selecciona un trimestre');
                 return;
             }
-            
+
             const trimestre = trimestresDisponibles.find(t => t.id_trimestre == trimestreSeleccionadoBoletin);
             if (!trimestre.puede_descargar) {
                 if (!trimestre.completado) {
@@ -969,13 +922,12 @@ if (!$trimestre_actual) {
 
             const btn = event.target;
             const originalText = btn.innerHTML;
-
             btn.disabled = true;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generando PDF...';
 
             // Abrir en nueva ventana para descarga automática
             window.open(`generar_boletin_pdf.php?trimestre=${trimestreSeleccionadoBoletin}`, '_blank');
-            
+
             setTimeout(() => {
                 btn.disabled = false;
                 btn.innerHTML = originalText;

@@ -871,6 +871,19 @@ body.sidebar-collapsed .main-content {
             color: #fff !important;
         }
 
+        .btn-volver-azul {
+            background-color: #fff !important;
+            color: #111 !important;
+            border: 1.5px solid #111 !important;
+            transition: background 0.2s, color 0.2s, border 0.2s;
+        }
+        .btn-volver-azul:hover,
+        .btn-volver-azul:focus {
+            background-color: #f3f3f3 !important;
+            color: #111 !important;
+            border: 1.5px solid #111 !important;
+        }
+
         @media (max-width: 768px) {
             .archivo-instructor-compact {
                 padding: 10px 12px;

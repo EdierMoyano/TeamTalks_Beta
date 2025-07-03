@@ -103,22 +103,6 @@ function formatFileSize($bytes)
             data-id-clase="<?php echo $actividad['id_materia_ficha']; ?>"
             data-id-actividad="<?php echo $id_actividad; ?>"
             data-id-usuario="<?php echo $id_usuario_actual; ?>">
-            <!-- Breadcrumb -->
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb breadcrumb-custom">
-                    <li class="breadcrumb-item">
-                        <a href="javascript:void(0)" onclick="volverAClase()">
-                            <i class="fas fa-home"></i> <?php echo htmlspecialchars($materiaPrincipal); ?>
-                        </a>
-                    </li>
-                    <li class="breadcrumb-item">
-                        <a href="index.php?id_clase=<?php echo $actividad['id_materia_ficha']; ?>">Trabajo en clase</a>
-                    </li>
-                    <li class="breadcrumb-item active" aria-current="page">
-                        <?php echo htmlspecialchars($actividad['titulo']); ?>
-                    </li>
-                </ol>
-            </nav>
 
             <!-- Encabezado de la actividad -->
             <div class="actividad-header">
@@ -263,8 +247,11 @@ function formatFileSize($bytes)
 
                     <?php if (!$actividadVencida): ?>
                         <div class="btn-group-custom">
-                            <button type="button" class="btn btn-warning" id="btn-cancelar">
+                            <button type="button" class="btn btn-danger" id="btn-cancelar">
                                 <i class="fas fa-times"></i> Cancelar entrega
+                            </button>
+                            <button type="button" class="btn btn-secondary btn-azul-custom" onclick="volverAClase()">
+                                <i class="fas fa-arrow-left"></i> Volver
                             </button>
                         </div>
                     <?php endif; ?>
@@ -274,6 +261,9 @@ function formatFileSize($bytes)
                 <div class="actividad-vencida">
                     <h3><i class="fas fa-exclamation-triangle"></i> Actividad vencida</h3>
                     <p>Esta actividad ya ha vencido y no se pueden realizar entregas.</p>
+                    <button type="button" class="btn btn-secondary btn-azul-custom" onclick="volverAClase()">
+                        <i class="fas fa-arrow-left"></i> Volver
+                    </button>
                 </div>
             <?php else: ?>
                 <!-- Formulario de entrega -->

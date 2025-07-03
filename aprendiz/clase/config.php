@@ -3,7 +3,7 @@
 define('DB_HOST', 'localhost');
 define('DB_NAME', 'u148394603_teamtalks');
 define('DB_USER', 'u148394603_teamtalks');
-define('DB_PASS', 'TeamTalks2901879');
+define('DB_PASS', 'teamtalks2901879');
 
 // Conexión a la base de datos
 try {
