@@ -1,5 +1,9 @@
 <?php
-require_once $_SERVER['DOCUMENT_ROOT'] . '/conexion/init.php';
+if (strpos($_SERVER['HTTP_HOST'], 'localhost') !== false || strpos($_SERVER['DOCUMENT_ROOT'], 'htdocs') !== false) {
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/teamtalks/conexion/init.php';
+} else {
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/conexion/init.php';
+}
 include 'session.php';
 
 if ($_SESSION['rol'] !== 3 && $_SESSION['rol'] !== 5) {
@@ -14,7 +18,8 @@ $sql_aprendiz = "
   SELECT 
     u.nombres, 
     u.apellidos, 
-    u.id, 
+    u.id,
+    u.avatar, 
     f.id_ficha, 
     fo.nombre AS nombre_formacion
   FROM usuarios u
@@ -129,14 +134,14 @@ function mapEstadoToClass($estado)
         <div class="student-header">
             <div class="student-info">
                 <div class="student-avatar">
-                    <img class="user-default" src="<?= BASE_URL ?>/<?= empty($data['avatar']) ? 'uploads/avatar/user.webp' : htmlspecialchars($user['avatar']) ?>" alt="Avatar" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 3px solid #ffffff; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);">
+                    <img class="user-default" src="<?= BASE_URL ?>/<?= empty($aprendiz['avatar']) ? 'uploads/avatar/user.webp' : htmlspecialchars($aprendiz['avatar']) ?>" alt="Avatar" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 3px solid #ffffff; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);">
                 </div>
                 <div class="student-details">
                     <h1><?= htmlspecialchars($aprendiz['nombres'] . ' ' . $aprendiz['apellidos']) ?></h1>
                     <div class="student-meta">
                         <div class="meta-item">
                             <i class="fas fa-id-card"></i>
-                            <span>CC: <?= htmlspecialchars($aprendiz['id']) ?></span>
+                            <span>ID: <?= htmlspecialchars($aprendiz['id']) ?></span>
                         </div>
                         <div class="meta-item">
                             <i class="fas fa-users"></i>

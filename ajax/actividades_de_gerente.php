@@ -1,6 +1,9 @@
 <?php
-require_once $_SERVER['DOCUMENT_ROOT'] . '/conexion/init.php';
-include 'session.php';
+if (strpos($_SERVER['HTTP_HOST'], 'localhost') !== false || strpos($_SERVER['DOCUMENT_ROOT'], 'htdocs') !== false) {
+  require_once $_SERVER['DOCUMENT_ROOT'] . '/teamtalks/conexion/init.php';
+} else {
+  require_once $_SERVER['DOCUMENT_ROOT'] . '/conexion/init.php';
+}include 'session.php';
 
 $id_ficha = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 $id_instructor = (int) $_SESSION['documento'];

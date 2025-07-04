@@ -1,5 +1,12 @@
 <?php
-require_once $_SERVER['DOCUMENT_ROOT'] . '/conexion/init.php';
+// ... (mantener todo el código PHP anterior hasta la línea del <style>)
+
+if (strpos($_SERVER['HTTP_HOST'], 'localhost') !== false || strpos($_SERVER['DOCUMENT_ROOT'], 'htdocs') !== false) {
+  require_once $_SERVER['DOCUMENT_ROOT'] . '/teamtalks/conexion/init.php';
+} else {
+  require_once $_SERVER['DOCUMENT_ROOT'] . '/conexion/init.php';
+}
+
 include 'session.php';
 
 if ($_SESSION['rol'] !== 3 && $_SESSION['rol'] !== 5) {
@@ -14,7 +21,6 @@ $redirecciones = [
   5 => '/transversal/index.php'
 ];
 $destino = BASE_URL . ($redirecciones[$rol] ?? '/index.php');
-
 $id_ficha = isset($_GET['id_ficha']) ? (int)$_GET['id_ficha'] : 0;
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $limit = 6;
@@ -39,13 +45,13 @@ $sql = "
     WHERE uf.id_ficha = :id_ficha
     LIMIT $limit OFFSET $offset
 ";
+
 $stmt = $conex->prepare($sql);
 $stmt->execute(['id_ficha' => $id_ficha]);
 $aprendices = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Obtener materias de acuerdo al rol
 if ($rol == 3) {
-  // Instructor común: puede ver todas las materias de la ficha
   $sql_materias = "
         SELECT DISTINCT m.id_materia, m.materia 
         FROM materia_ficha mf 
@@ -55,7 +61,6 @@ if ($rol == 3) {
   $stmt_materias = $conex->prepare($sql_materias);
   $stmt_materias->execute(['id_ficha' => $id_ficha]);
 } elseif ($rol == 5) {
-  // Instructor transversal: solo puede ver su materia en esta ficha
   $sql_materias = "
         SELECT DISTINCT m.id_materia, m.materia 
         FROM materia_ficha mf 
@@ -68,16 +73,16 @@ if ($rol == 3) {
     'id_user' => $id_instructor
   ]);
 }
-$materias = $stmt_materias->fetchAll(PDO::FETCH_ASSOC);
 
+$materias = $stmt_materias->fetchAll(PDO::FETCH_ASSOC);
 
 // Estados de actividades
 $estados_actividades = [
-  3 => 'En Proceso',
-  4 => 'Completada',
-  8 => 'Retrasada',
+  3 => 'Aprobado',
+  4 => 'Desaprobado',
+  8 => 'Entregado',
   9 => 'Pendiente',
-  10 => 'Cancelada'
+  10 => 'No entregado'
 ];
 ?>
 
@@ -102,398 +107,37 @@ $estados_actividades = [
   <link rel="stylesheet" href="<?= BASE_URL ?>/styles/aprendices.css" />
 
   <style>
-    /* Botón para mostrar/ocultar exportar reportes */
-    .export-toggle-btn {
-      background: linear-gradient(135deg, #0E4A86 0%, #1a5490 100%);
-      border: none;
-      color: white;
-      padding: 12px 20px;
-      border-radius: 25px;
-      font-size: 0.9rem;
-      font-weight: 500;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      transition: all 0.3s ease;
-      cursor: pointer;
-      box-shadow: 0 3px 10px rgba(14, 74, 134, 0.3);
-      margin-left: auto;
+    /* Variables CSS para consistencia */
+    :root {
+      --primary-color: #0E4A86;
+      --primary-light: #1a5a9e;
+      --primary-dark: #0a3a6b;
+      --success-color: #10b981;
+      --warning-color: #f59e0b;
+      --danger-color: #ef4444;
+      --info-color: #3b82f6;
+      --gray-50: #f9fafb;
+      --gray-100: #f3f4f6;
+      --gray-200: #e5e7eb;
+      --gray-300: #d1d5db;
+      --gray-400: #9ca3af;
+      --gray-500: #6b7280;
+      --gray-600: #4b5563;
+      --gray-700: #374151;
+      --gray-800: #1f2937;
+      --gray-900: #111827;
+      --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+      --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+      --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+      --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+      --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+      --border-radius: 12px;
+      --border-radius-lg: 16px;
+      --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    .export-toggle-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 5px 15px rgba(14, 74, 134, 0.4);
-      background: linear-gradient(135deg, #1a5490 0%, #2563a8 100%);
-    }
-
-    .export-toggle-btn i {
-      transition: transform 0.3s ease;
-    }
-
-    .export-toggle-btn.active i {
-      transform: rotate(180deg);
-    }
-
-    /* Modificar el header para incluir el botón */
-    .page-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      gap: 20px;
-    }
-
-    .header-actions {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      align-items: flex-end;
-      margin-top: 10px;
-    }
-
-    /* Sección de exportar reportes - inicialmente oculta */
-    .export-section {
-      background: linear-gradient(135deg, #0E4A86 0%, #1a5490 50%, #2563a8 100%);
-      border-radius: 16px;
-      padding: 20px;
-      margin: 20px 0;
-      box-shadow: 0 4px 20px rgba(14, 74, 134, 0.15);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      max-height: 0;
-      overflow: hidden;
-      opacity: 0;
-      transition: all 0.5s ease;
-      transform: translateY(-20px);
-    }
-
-    .export-section.show {
-      max-height: 2000px;
-      opacity: 1;
-      transform: translateY(0);
-      margin: 20px 0;
-    }
-
-    .export-header {
-      text-align: center;
-      margin-bottom: 20px;
-    }
-
-    .export-title {
-      color: white;
-      font-size: 1.4rem;
-      font-weight: 600;
-      margin-bottom: 5px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-    }
-
-    .export-subtitle {
-      color: rgba(255, 255, 255, 0.85);
-      font-size: 0.9rem;
-      margin: 0;
-    }
-
-    .filters-container {
-      background: rgba(255, 255, 255, 0.08);
-      backdrop-filter: blur(10px);
-      border-radius: 12px;
-      padding: 20px;
-      margin-bottom: 20px;
-      border: 1px solid rgba(255, 255, 255, 0.15);
-    }
-
-    .filters-title {
-      color: white;
-      font-size: 1.1rem;
-      font-weight: 500;
-      margin-bottom: 15px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      justify-content: space-between;
-    }
-
-    .filter-group {
-      margin-bottom: 15px;
-    }
-
-    .filter-label {
-      color: white;
-      font-weight: 500;
-      margin-bottom: 6px;
-      display: block;
-      font-size: 0.85rem;
-    }
-
-    .form-control,
-    .form-select {
-      background: rgba(255, 255, 255, 0.95);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      border-radius: 8px;
-      padding: 10px 12px;
-      font-size: 0.85rem;
-      transition: all 0.3s ease;
-      height: auto;
-    }
-
-    .form-control:focus,
-    .form-select:focus {
-      background: white;
-      border-color: #4CAF50;
-      box-shadow: 0 0 0 0.15rem rgba(76, 175, 80, 0.2);
-    }
-
-    .checkbox-group {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 8px;
-      margin-top: 8px;
-    }
-
-    .checkbox-item {
-      background: rgba(255, 255, 255, 0.08);
-      border-radius: 6px;
-      padding: 8px 12px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      transition: all 0.2s ease;
-      cursor: pointer;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-    }
-
-    .checkbox-item:hover {
-      background: rgba(255, 255, 255, 0.15);
-      transform: translateY(-1px);
-    }
-
-    .checkbox-item input[type="checkbox"] {
-      margin: 0;
-      transform: scale(1.1);
-    }
-
-    .checkbox-item label {
-      color: white;
-      margin: 0;
-      cursor: pointer;
-      font-size: 0.8rem;
-    }
-
-    .export-buttons {
-      display: flex;
-      gap: 12px;
-      justify-content: center;
-      flex-wrap: wrap;
-    }
-
-    .export-btn {
-      background: linear-gradient(45deg, #4CAF50, #45a049);
-      border: none;
-      color: white;
-      padding: 12px 24px;
-      border-radius: 8px;
-      font-size: 0.9rem;
-      font-weight: 500;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      transition: all 0.3s ease;
-      text-decoration: none;
-      min-width: 150px;
-      justify-content: center;
-      box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
-    }
-
-    .export-btn.excel {
-      background: linear-gradient(45deg, #217346, #1e6b42);
-      box-shadow: 0 2px 8px rgba(33, 115, 70, 0.3);
-    }
-
-    .export-btn.pdf {
-      background: linear-gradient(45deg, #dc3545, #c82333);
-      box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
-    }
-
-    .export-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-      color: white;
-    }
-
-    .export-btn:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-      transform: none;
-    }
-
-    .filter-actions {
-      display: flex;
-      gap: 8px;
-      justify-content: center;
-      margin-top: 15px;
-      flex-wrap: wrap;
-    }
-
-    .filter-btn {
-      background: rgba(255, 255, 255, 0.15);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      color: white;
-      padding: 8px 16px;
-      border-radius: 20px;
-      font-size: 0.8rem;
-      transition: all 0.3s ease;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-
-    .filter-btn:hover {
-      background: rgba(255, 255, 255, 0.25);
-      transform: translateY(-1px);
-    }
-
-    .filter-btn.clear {
-      background: rgba(255, 107, 107, 0.2);
-      border-color: rgba(255, 107, 107, 0.4);
-    }
-
-    .loading-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.7);
-      display: none;
-      justify-content: center;
-      align-items: center;
-      z-index: 9999;
-    }
-
-    .loading-content {
-      background: white;
-      padding: 25px;
-      border-radius: 12px;
-      text-align: center;
-      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-    }
-
-    .loading-spinner {
-      width: 40px;
-      height: 40px;
-      border: 4px solid #f3f3f3;
-      border-top: 4px solid #0E4A86;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-      margin: 0 auto 15px;
-    }
-
-    @keyframes spin {
-      0% {
-        transform: rotate(0deg);
-      }
-
-      100% {
-        transform: rotate(360deg);
-      }
-    }
-
-    /* Collapse/Expand functionality para filtros internos */
-    .filters-toggle {
-      background: rgba(255, 255, 255, 0.1);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      color: white;
-      padding: 6px 12px;
-      border-radius: 6px;
-      font-size: 0.8rem;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      transition: all 0.3s ease;
-    }
-
-    .filters-toggle:hover {
-      background: rgba(255, 255, 255, 0.2);
-    }
-
-    .filters-content {
-      transition: all 0.3s ease;
-      overflow: hidden;
-    }
-
-    .filters-content.collapsed {
-      max-height: 0;
-      opacity: 0;
-      margin-bottom: 0;
-    }
-
-    /* Indicador de estado */
-    .export-status {
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 20px;
-      padding: 4px 12px;
-      font-size: 0.75rem;
-      color: rgba(255, 255, 255, 0.8);
-      margin-left: 10px;
-    }
-
-    @media (max-width: 768px) {
-      .page-header {
-        flex-direction: column;
-        align-items: stretch;
-      }
-
-      .header-actions {
-        align-items: stretch;
-        margin-top: 15px;
-      }
-
-      .export-toggle-btn {
-        justify-content: center;
-        margin-left: 0;
-      }
-
-      .export-section {
-        padding: 15px;
-        margin: 15px 0;
-      }
-
-      .filters-container {
-        padding: 15px;
-      }
-
-      .checkbox-group {
-        grid-template-columns: 1fr;
-      }
-
-      .export-buttons {
-        flex-direction: column;
-        align-items: center;
-      }
-
-      .export-btn {
-        width: 100%;
-        max-width: 280px;
-      }
-
-      .filter-actions {
-        justify-content: center;
-      }
-
-      .filter-btn {
-        font-size: 0.75rem;
-        padding: 6px 12px;
-      }
-
-      .filters-title {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 10px;
-      }
-    }
+    /* Sección de Reportes Moderna */
+    
   </style>
 </head>
 
@@ -522,168 +166,173 @@ $estados_actividades = [
               <i class="bi bi-person-check"></i>
               <span><?= $total_aprendices ?> Aprendices</span>
             </div>
-            <div class="stat-item">
-              <i class="bi bi-collection"></i>
-              <span>Página <?= $page ?> de <?= $total_pages ?></span>
-            </div>
           </div>
         </div>
       </div>
 
-      <!-- Botón para mostrar/ocultar exportar reportes -->
+      <!-- Botón para mostrar/ocultar reportes -->
       <div class="header-actions">
-        <button type="button" class="export-toggle-btn" onclick="toggleExportSection()" id="exportToggleBtn">
-          <i class="bi bi-download" id="exportToggleIcon"></i>
-          <span id="exportToggleText">Mostrar Exportar Reportes</span>
+        <button type="button" class="reports-toggle-btn" onclick="toggleReportsSection()" id="reportsToggleBtn">
+          <i class="bi bi-download" id="reportsToggleIcon"></i>
+          <span id="reportsToggleText">Exportar Reportes</span>
         </button>
       </div>
     </div>
 
-    <!-- Export Section - Inicialmente oculta -->
-    <div class="export-section" id="exportSection">
-      <div class="export-header">
-        <h2 class="export-title">
-          <i class="bi bi-download"></i>
-          Exportar Reportes
-        </h2>
-        <p class="export-subtitle">Genera reportes personalizados con filtros avanzados</p>
+    <!-- Sección de Reportes Moderna -->
+    <div class="reports-section" id="reportsSection">
+      <div class="reports-header">
+        <div class="reports-header-content">
+          <h2 class="reports-title">
+            <i class="bi bi-file-earmark-arrow-down"></i>
+            Centro de Reportes
+          </h2>
+          <p class="reports-subtitle">Configura y genera reportes personalizados con filtros avanzados</p>
+        </div>
       </div>
 
-      <form id="exportForm">
-        <input type="hidden" name="id_ficha" value="<?= $id_ficha ?>">
+      <div class="reports-content">
+        <form id="exportForm">
+          <input type="hidden" name="id_ficha" value="<?= $id_ficha ?>">
 
-        <div class="filters-container">
-          <h3 class="filters-title">
-            <div style="display: flex; align-items: center; gap: 6px;">
-              <i class="bi bi-funnel"></i>
-              Filtros de Exportación
-            </div>
-            <button type="button" class="filters-toggle" onclick="toggleFilters()">
-              <i class="bi bi-chevron-down" id="toggleIcon"></i>
-              <span id="toggleText">Ocultar</span>
-            </button>
-          </h3>
+          <div class="config-grid">
+            <!-- Configuración Principal -->
+            <div class="config-card">
+              <h4 class="config-card-title">
+                <i class="bi bi-gear-fill"></i>
+                Configuración General
+              </h4>
 
-          <div class="filters-content" id="filtersContent">
-            <div class="row">
-              <!-- Rango de Fechas -->
-              <div class="col-md-6">
-                <div class="filter-group">
-                  <label class="filter-label">
-                    <i class="bi bi-calendar-range"></i>
-                    Rango de Fechas de Actividades
-                  </label>
-                  <div class="row">
-                    <div class="col-6">
-                      <input type="date" class="form-control" name="fecha_desde" id="fecha_desde">
-                      <small class="text-white-50">Desde</small>
-                    </div>
-                    <div class="col-6">
-                      <input type="date" class="form-control" name="fecha_hasta" id="fecha_hasta">
-                      <small class="text-white-50">Hasta</small>
-                    </div>
-                  </div>
-                </div>
+              <div class="form-group">
+                <label class="form-label">
+                  Tipo de Reporte
+                  <div class="sync-indicator" id="syncIndicator"></div>
+                </label>
+                <select class="form-select" name="tipo_reporte" id="tipo_reporte">
+                  <option value="resumen">📊 Resumen Ejecutivo</option>
+                  <option value="solo_pendientes">⏳ Solo Pendientes</option>
+                  <option value="por_estado">📈 Por Estado</option>
+                  <option value="completo">📋 Reporte Completo</option>
+                </select>
               </div>
 
-              <!-- Tipo de Reporte -->
-              <div class="col-md-6">
-                <div class="filter-group">
-                  <label class="filter-label">
-                    <i class="bi bi-file-text"></i>
-                    Tipo de Reporte
-                  </label>
-                  <select class="form-select" name="tipo_reporte" id="tipo_reporte">
-                    <option value="completo">Reporte Completo</option>
-                    <option value="solo_pendientes">Solo Actividades Pendientes</option>
-                    <option value="por_estado">Por Estado de Actividades</option>
-                    <option value="resumen">Resumen Ejecutivo</option>
-                  </select>
-                </div>
+              <div class="form-group">
+                <label class="form-label">Competencias</label>
+                <select class="form-select" name="materia_filtro" id="materia_filtro">
+                  <option value="">🎯 Todas las competencias</option>
+                  <?php foreach ($materias as $materia): ?>
+                    <option value="<?= $materia['id_materia'] ?>">
+                      <?= htmlspecialchars($materia['materia']) ?>
+                    </option>
+                  <?php endforeach; ?>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Ordenar por</label>
+                <select class="form-select" name="orden" id="orden">
+                  <option value="apellidos">👤 Apellidos</option>
+                  <option value="nombres">📝 Nombres</option>
+                  <option value="documento">🆔 Documento</option>
+                  <option value="actividades_pendientes">⏰ Act. Pendientes</option>
+                </select>
               </div>
             </div>
 
-            <div class="row">
-              <!-- Materias -->
-              <div class="col-md-6">
-                <div class="filter-group">
-                  <label class="filter-label">
-                    <i class="bi bi-book"></i>
-                    Materias (Opcional)
-                  </label>
-                  <select class="form-select" name="materia_filtro" id="materia_filtro">
-                    <option value="">Todas las materias</option>
-                    <?php foreach ($materias as $materia): ?>
-                      <option value="<?= $materia['id_materia'] ?>">
-                        <?= htmlspecialchars($materia['materia']) ?>
-                      </option>
-                    <?php endforeach; ?>
-                  </select>
-                </div>
-              </div>
+            <!-- Filtros de Fecha -->
+            <div class="config-card">
+              <h4 class="config-card-title">
+                <i class="bi bi-calendar-range-fill"></i>
+                Rango de Fechas
+              </h4>
 
-              <!-- Ordenar por -->
-              <div class="col-md-6">
-                <div class="filter-group">
-                  <label class="filter-label">
-                    <i class="bi bi-sort-down"></i>
-                    Ordenar por
-                  </label>
-                  <select class="form-select" name="orden" id="orden">
-                    <option value="apellidos">Apellidos</option>
-                    <option value="nombres">Nombres</option>
-                    <option value="documento">Documento</option>
-                    <option value="actividades_pendientes">Actividades Pendientes</option>
-                  </select>
+              <div class="date-grid">
+                <div class="form-group">
+                  <label class="form-label">Fecha Inicio</label>
+                  <input type="date" class="form-control" name="fecha_desde" id="fecha_desde">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Fecha Final</label>
+                  <input type="date" class="form-control" name="fecha_hasta" id="fecha_hasta">
                 </div>
               </div>
             </div>
 
             <!-- Estados de Actividades -->
-            <div class="filter-group">
-              <label class="filter-label">
-                <i class="bi bi-check-circle"></i>
-                Estados de Actividades a Incluir
-              </label>
-              <div class="checkbox-group">
-                <?php foreach ($estados_actividades as $id_estado => $nombre_estado): ?>
-                  <div class="checkbox-item">
-                    <input type="checkbox" name="estados[]" value="<?= $id_estado ?>"
-                      id="estado_<?= $id_estado ?>" checked>
-                    <label for="estado_<?= $id_estado ?>"><?= $nombre_estado ?></label>
-                  </div>
+            <div class="config-card states-section">
+              <h4 class="config-card-title">
+                <i class="bi bi-check-circle-fill"></i>
+                Estados de Actividades
+              </h4>
+
+              <div class="states-grid">
+                <?php
+                $estado_classes = [
+                  3 => 'state-aprobado',
+                  4 => 'state-desaprobado',
+                  8 => 'state-entregado',
+                  9 => 'state-pendiente',
+                  10 => 'state-no-entregado'
+                ];
+
+                $estado_icons = [
+                  3 => '✅',
+                  4 => '❌',
+                  8 => '📤',
+                  9 => '⏳',
+                  10 => '📭'
+                ];
+
+                foreach ($estados_actividades as $id_estado => $nombre_estado):
+                ?>
+                  <label class="state-option <?= $estado_classes[$id_estado] ?>" for="estado_<?= $id_estado ?>">
+                    <input type="checkbox" name="estados[]" value="<?= $id_estado ?>" id="estado_<?= $id_estado ?>">
+                    <span><?= $estado_icons[$id_estado] ?> <?= $nombre_estado ?></span>
+                  </label>
                 <?php endforeach; ?>
               </div>
             </div>
+          </div>
 
-            <div class="filter-actions">
-              <button type="button" class="filter-btn" onclick="aplicarFiltrosRapidos('pendientes')">
-                <i class="bi bi-clock"></i> Solo Pendientes
+          <!-- Filtros Rápidos -->
+          <div class="quick-filters">
+            <h4 class="quick-filters-title">
+              <i class="bi bi-lightning-fill"></i>
+              Filtros Rápidos
+            </h4>
+            <div class="quick-filters-grid">
+              <button type="button" class="quick-filter-btn" onclick="aplicarFiltrosRapidos('pendientes')">
+                <i class="bi bi-clock-fill"></i>
+                Solo Pendientes
               </button>
-              <button type="button" class="filter-btn" onclick="aplicarFiltrosRapidos('completadas')">
-                <i class="bi bi-check-all"></i> Solo Completadas
+              <button type="button" class="quick-filter-btn" onclick="aplicarFiltrosRapidos('completadas')">
+                <i class="bi bi-check-all"></i>
+                Completadas
               </button>
-              <button type="button" class="filter-btn" onclick="aplicarFiltrosRapidos('mes_actual')">
-                <i class="bi bi-calendar-month"></i> Mes Actual
+              <button type="button" class="quick-filter-btn" onclick="aplicarFiltrosRapidos('mes_actual')">
+                <i class="bi bi-calendar-month-fill"></i>
+                Mes Actual
               </button>
-              <button type="button" class="filter-btn clear" onclick="limpiarFiltros()">
-                <i class="bi bi-x-circle"></i> Limpiar Filtros
+              <button type="button" class="quick-filter-btn" onclick="limpiarFiltros()">
+                <i class="bi bi-arrow-clockwise"></i>
+                Limpiar Todo
               </button>
             </div>
           </div>
-        </div>
 
-        <div class="export-buttons">
-          <button type="button" class="export-btn excel" onclick="exportar('excel')">
-            <i class="bi bi-file-earmark-excel"></i>
-            Exportar a Excel
-          </button>
-          <button type="button" class="export-btn pdf" onclick="exportar('pdf')">
-            <i class="bi bi-file-earmark-pdf"></i>
-            Exportar a PDF
-          </button>
-        </div>
-      </form>
+          <!-- Botones de Exportación -->
+          <div class="export-actions">
+            <button type="button" class="export-btn excel" onclick="exportar('excel')">
+              <i class="bi bi-file-earmark-excel-fill"></i>
+              Exportar Excel
+            </button>
+            <button type="button" class="export-btn pdf" onclick="exportar('pdf')">
+              <i class="bi bi-file-earmark-pdf-fill"></i>
+              Exportar PDF
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
 
     <!-- Search Section -->
@@ -710,7 +359,6 @@ $estados_actividades = [
           Cargando...
         </div>
       </div>
-
       <div class="students-grid" id="contenedor-aprendices">
         <!-- Loading state -->
         <div class="loading-container">
@@ -718,7 +366,6 @@ $estados_actividades = [
           <p class="loading-text">Cargando aprendices...</p>
         </div>
       </div>
-
       <!-- Pagination -->
       <div class="pagination-container">
         <div class="pagination" id="paginacion-aprendices">
@@ -728,12 +375,35 @@ $estados_actividades = [
     </div>
   </div>
 
-  <!-- Loading Overlay -->
-  <div class="loading-overlay" id="loadingOverlay">
+  <!-- Modal de Carga Moderno -->
+  <div class="loading-modal" id="loadingModal">
     <div class="loading-content">
       <div class="loading-spinner"></div>
-      <h4>Generando Reporte</h4>
-      <p>Por favor espera mientras procesamos tu solicitud...</p>
+      <h4 class="loading-title">Generando Reporte</h4>
+      <p class="loading-description">Estamos procesando tu solicitud, esto puede tomar unos momentos...</p>
+
+      <div class="loading-progress">
+        <div class="loading-progress-bar"></div>
+      </div>
+
+      <div class="loading-steps">
+        <div class="loading-step active" id="step1">
+          <div class="loading-step-icon">1</div>
+          <span>Validando filtros</span>
+        </div>
+        <div class="loading-step" id="step2">
+          <div class="loading-step-icon">2</div>
+          <span>Consultando base de datos</span>
+        </div>
+        <div class="loading-step" id="step3">
+          <div class="loading-step-icon">3</div>
+          <span>Generando documento</span>
+        </div>
+        <div class="loading-step" id="step4">
+          <div class="loading-step-icon">4</div>
+          <span>Preparando descarga</span>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -769,8 +439,10 @@ $estados_actividades = [
       // Establecer fecha actual como máximo
       const hoy = new Date().toISOString().split('T')[0];
       document.getElementById('fecha_hasta').value = hoy;
-      document.getElementById('fecha_hasta').max = hoy;
       document.getElementById('fecha_desde').max = hoy;
+
+      // Inicializar sincronización bidireccional
+      initializeBidirectionalSync();
 
       function cargarAprendices(query = '', page = 1) {
         // Loading state
@@ -851,49 +523,149 @@ $estados_actividades = [
       cargarAprendices();
     });
 
-    // Toggle Export Section
-    function toggleExportSection() {
-      const section = document.getElementById('exportSection');
-      const btn = document.getElementById('exportToggleBtn');
-      const icon = document.getElementById('exportToggleIcon');
-      const text = document.getElementById('exportToggleText');
-      const status = document.getElementById('exportStatus');
+    // Función para inicializar la sincronización bidireccional
+    function initializeBidirectionalSync() {
+      const tipoReporte = document.getElementById('tipo_reporte');
+      const checkboxes = document.querySelectorAll('input[name="estados[]"]');
+      const syncIndicator = document.getElementById('syncIndicator');
+
+      // Estados disponibles
+      const todosLosEstados = [3, 4, 8, 9, 10];
+      const estadoPendiente = [9];
+      const estadosCompletados = [3, 8];
+
+      // Función para mostrar indicador de sincronización
+      function showSyncIndicator() {
+        syncIndicator.classList.add('active');
+        setTimeout(() => {
+          syncIndicator.classList.remove('active');
+        }, 1500);
+      }
+
+      // Función para actualizar estilos de checkboxes
+      function updateCheckboxStyles() {
+        checkboxes.forEach(checkbox => {
+          const label = checkbox.closest('.state-option');
+          if (checkbox.checked) {
+            label.classList.add('checked');
+          } else {
+            label.classList.remove('checked');
+          }
+        });
+      }
+
+      // Función para actualizar el select basado en checkboxes
+      function updateSelectFromCheckboxes() {
+        const estadosSeleccionados = Array.from(checkboxes)
+          .filter(cb => cb.checked)
+          .map(cb => parseInt(cb.value));
+
+        showSyncIndicator();
+        updateCheckboxStyles();
+
+        if (estadosSeleccionados.length === 0) {
+          tipoReporte.value = 'resumen';
+        } else if (estadosSeleccionados.length === todosLosEstados.length &&
+          todosLosEstados.every(estado => estadosSeleccionados.includes(estado))) {
+          tipoReporte.value = 'completo';
+        } else if (estadosSeleccionados.length === 1 && estadosSeleccionados[0] === 9) {
+          tipoReporte.value = 'solo_pendientes';
+        } else {
+          tipoReporte.value = 'por_estado';
+        }
+      }
+
+      // Función para actualizar checkboxes basado en el select
+      function updateCheckboxesFromSelect() {
+        const tipoSeleccionado = tipoReporte.value;
+        showSyncIndicator();
+
+        // Desmarcar todos primero
+        checkboxes.forEach(cb => cb.checked = false);
+
+        switch (tipoSeleccionado) {
+          case 'completo':
+            todosLosEstados.forEach(estado => {
+              const checkbox = document.getElementById(`estado_${estado}`);
+              if (checkbox) checkbox.checked = true;
+            });
+            break;
+          case 'solo_pendientes':
+            const checkboxPendiente = document.getElementById('estado_9');
+            if (checkboxPendiente) checkboxPendiente.checked = true;
+            break;
+          case 'por_estado':
+            estadosCompletados.forEach(estado => {
+              const checkbox = document.getElementById(`estado_${estado}`);
+              if (checkbox) checkbox.checked = true;
+            });
+            break;
+          case 'resumen':
+            break;
+        }
+
+        updateCheckboxStyles();
+      }
+
+      // Event listeners para sincronización bidireccional
+      checkboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', updateSelectFromCheckboxes);
+      });
+
+      tipoReporte.addEventListener('change', updateCheckboxesFromSelect);
+
+      // Inicializar con estado por defecto
+      tipoReporte.value = 'resumen';
+      updateCheckboxStyles();
+    }
+
+    // Toggle Reports Section
+    function toggleReportsSection() {
+      const section = document.getElementById('reportsSection');
+      const btn = document.getElementById('reportsToggleBtn');
+      const icon = document.getElementById('reportsToggleIcon');
+      const text = document.getElementById('reportsToggleText');
 
       if (section.classList.contains('show')) {
         section.classList.remove('show');
         btn.classList.remove('active');
         icon.className = 'bi bi-download';
-        text.textContent = 'Mostrar Exportar Reportes';
+        text.textContent = 'Exportar Reportes';
       } else {
         section.classList.add('show');
         btn.classList.add('active');
-        icon.className = 'bi bi-x-circle';
-        text.textContent = 'Ocultar Exportar Reportes';
+        icon.className = 'bi bi-x-circle-fill';
+        text.textContent = 'Ocultar Reportes';
       }
     }
 
-    // Export functions - Mantiene las rutas originales
+    // Función de exportación mejorada con modal de carga
     function exportar(tipo) {
       const form = document.getElementById('exportForm');
       const formData = new FormData(form);
+      const tipoReporte = document.getElementById('tipo_reporte').value;
 
-      // Validar que al menos un estado esté seleccionado
-      const estadosSeleccionados = formData.getAll('estados[]');
-      if (estadosSeleccionados.length === 0) {
-        alert('Debes seleccionar al menos un estado de actividad.');
-        return;
+      // Validar estados solo si el tipo de reporte NO es "resumen"
+      if (tipoReporte !== 'resumen') {
+        const estadosSeleccionados = form.querySelectorAll('input[name="estados[]"]:checked');
+        if (estadosSeleccionados.length === 0) {
+          alert('⚠️ Debes seleccionar al menos un estado de actividad.');
+          return;
+        }
       }
 
-      // Mostrar loading
-      document.getElementById('loadingOverlay').style.display = 'flex';
+      // Mostrar modal de carga
+      showLoadingModal();
 
-      // Crear formulario temporal para envío
+      // Simular pasos de carga
+      simulateLoadingSteps();
+
+      // Crear formulario temporal
       const tempForm = document.createElement('form');
       tempForm.method = 'POST';
       tempForm.action = tipo === 'excel' ? 'excel_aprendices.php' : 'pdf_aprendices.php';
       tempForm.style.display = 'none';
 
-      // Copiar todos los datos del formulario
       for (let [key, value] of formData.entries()) {
         const input = document.createElement('input');
         input.type = 'hidden';
@@ -906,10 +678,51 @@ $estados_actividades = [
       tempForm.submit();
       document.body.removeChild(tempForm);
 
-      // Ocultar loading después de un tiempo
+      // Ocultar modal después de un tiempo
       setTimeout(() => {
-        document.getElementById('loadingOverlay').style.display = 'none';
-      }, 3000);
+        hideLoadingModal();
+      }, 1800);
+    }
+
+    // Funciones del modal de carga
+    function showLoadingModal() {
+      const modal = document.getElementById('loadingModal');
+      modal.classList.add('show');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function hideLoadingModal() {
+      const modal = document.getElementById('loadingModal');
+      modal.classList.remove('show');
+      document.body.style.overflow = '';
+
+      // Reset steps
+      document.querySelectorAll('.loading-step').forEach((step, index) => {
+        step.classList.remove('active', 'completed');
+        if (index === 0) step.classList.add('active');
+      });
+    }
+
+    function simulateLoadingSteps() {
+      const steps = ['step1', 'step2', 'step3', 'step4'];
+      let currentStep = 0;
+
+      const interval = setInterval(() => {
+        if (currentStep > 0) {
+          const prevStep = document.getElementById(steps[currentStep - 1]);
+          prevStep.classList.remove('active');
+          prevStep.classList.add('completed');
+          prevStep.querySelector('.loading-step-icon').innerHTML = '✓';
+        }
+
+        if (currentStep < steps.length) {
+          const currentStepEl = document.getElementById(steps[currentStep]);
+          currentStepEl.classList.add('active');
+          currentStep++;
+        } else {
+          clearInterval(interval);
+        }
+      }, 200);
     }
 
     // Filter functions
@@ -919,21 +732,13 @@ $estados_actividades = [
 
       switch (tipo) {
         case 'pendientes':
-          // Desmarcar todos los estados
-          document.querySelectorAll('input[name="estados[]"]').forEach(cb => cb.checked = false);
-          // Marcar solo pendientes
-          document.getElementById('estado_9').checked = true;
           document.getElementById('tipo_reporte').value = 'solo_pendientes';
+          document.getElementById('tipo_reporte').dispatchEvent(new Event('change'));
           break;
-
         case 'completadas':
-          // Desmarcar todos los estados
-          document.querySelectorAll('input[name="estados[]"]').forEach(cb => cb.checked = false);
-          // Marcar solo completadas
-          document.getElementById('estado_4').checked = true;
           document.getElementById('tipo_reporte').value = 'por_estado';
+          document.getElementById('tipo_reporte').dispatchEvent(new Event('change'));
           break;
-
         case 'mes_actual':
           document.getElementById('fecha_desde').value = primerDiaMes.toISOString().split('T')[0];
           document.getElementById('fecha_hasta').value = hoy.toISOString().split('T')[0];
@@ -943,28 +748,10 @@ $estados_actividades = [
 
     function limpiarFiltros() {
       document.getElementById('exportForm').reset();
-      // Marcar todos los estados por defecto
-      document.querySelectorAll('input[name="estados[]"]').forEach(cb => cb.checked = true);
-      // Establecer fecha actual como máximo
+      document.getElementById('tipo_reporte').value = 'resumen';
+      document.getElementById('tipo_reporte').dispatchEvent(new Event('change'));
       const hoy = new Date().toISOString().split('T')[0];
       document.getElementById('fecha_hasta').value = hoy;
-    }
-
-    // Toggle Filters (interno)
-    function toggleFilters() {
-      const content = document.getElementById('filtersContent');
-      const icon = document.getElementById('toggleIcon');
-      const text = document.getElementById('toggleText');
-
-      if (content.classList.contains('collapsed')) {
-        content.classList.remove('collapsed');
-        icon.className = 'bi bi-chevron-down';
-        text.textContent = 'Ocultar';
-      } else {
-        content.classList.add('collapsed');
-        icon.className = 'bi bi-chevron-up';
-        text.textContent = 'Mostrar';
-      }
     }
 
     // Handle student details modal
@@ -1012,16 +799,14 @@ $estados_actividades = [
       }
     });
 
-    // Handle orientation changes
-    window.addEventListener('orientationchange', () => {
-      setTimeout(() => {
-        window.scrollTo(0, 0);
-      }, 100);
-    });
-
-    // Keyboard navigation
+    // Cerrar modal con Escape
     document.addEventListener('keydown', function(e) {
       if (e.key === 'Escape') {
+        const loadingModal = document.getElementById('loadingModal');
+        if (loadingModal.classList.contains('show')) {
+          hideLoadingModal();
+        }
+
         const modal = bootstrap.Modal.getInstance(document.getElementById('modalAprendiz'));
         if (modal) {
           modal.hide();
@@ -1039,6 +824,13 @@ $estados_actividades = [
         if (fechaHasta.value && fechaHasta.value < fechaDesde) {
           fechaHasta.value = fechaDesde;
         }
+      }
+    });
+
+    // Cerrar modal al hacer clic fuera
+    document.getElementById('loadingModal').addEventListener('click', function(e) {
+      if (e.target === this) {
+        hideLoadingModal();
       }
     });
   </script>

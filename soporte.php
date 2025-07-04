@@ -15,7 +15,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Crear una instancia de PHPMailer
     $mail = new PHPMailer(true);
 
-   try {
+    try {
         // 3) Configuración SMTP de Hostinger/Titan
         $mail->isSMTP();
         $mail->Host       = 'smtp.hostinger.com';                // Host SMTP
@@ -156,7 +156,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $successMessage = "No se pudo enviar la solicitud.";
             echo '<script>var showModal = false;</script>';
         }
-
     } catch (Exception $e) {
         $successMessage = "Error al enviar la solicitud: {$mail->ErrorInfo}";
         echo '<script>var showModal = false;</script>';
@@ -166,6 +165,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -178,7 +178,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles/index.css">
+    <link rel="stylesheet" href="styles/header.css">
+
 </head>
+
 <body>
     <?php include 'includes/design/header.php'; ?>
 
@@ -192,13 +195,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                             <i class='bx bx-support me-2'></i>
                             <span>Estamos aquí para ayudarte</span>
                         </div>
-                        
+
                         <h1 class="support-hero-title mb-4">
                             <span class="text-gradient">Soporte Técnico</span> Especializado
                         </h1>
-                        
+
                         <p class="support-hero-description">
-                            Nuestro equipo de expertos está listo para resolver cualquier problema técnico. 
+                            Nuestro equipo de expertos está listo para resolver cualquier problema técnico.
                             Completa el formulario y nos pondremos en contacto contigo lo antes posible.
                         </p>
 
@@ -245,14 +248,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                             <i class='bx bx-user me-2'></i>
                                             Nombre Completo
                                         </label>
-                                        <input 
-                                            type="text" 
-                                            class="form-control support-input" 
-                                            id="nombreSoporte" 
-                                            name="nombreSoporte" 
-                                            placeholder="Tu nombre completo" 
-                                            required
-                                        >
+                                        <input
+                                            type="text"
+                                            class="form-control support-input"
+                                            id="nombreSoporte"
+                                            name="nombreSoporte"
+                                            placeholder="Tu nombre completo"
+                                            required>
                                     </div>
                                 </div>
 
@@ -263,14 +265,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                             <i class='bx bx-envelope me-2'></i>
                                             Correo Electrónico
                                         </label>
-                                        <input 
-                                            type="email" 
-                                            class="form-control support-input" 
-                                            id="correoSoporte" 
-                                            name="correoSoporte" 
-                                            placeholder="tu@email.com" 
-                                            required
-                                        >
+                                        <input
+                                            type="email"
+                                            class="form-control support-input"
+                                            id="correoSoporte"
+                                            name="correoSoporte"
+                                            placeholder="tu@email.com"
+                                            required>
                                     </div>
                                 </div>
 
@@ -281,14 +282,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                             <i class='bx bx-phone me-2'></i>
                                             Número de Teléfono
                                         </label>
-                                        <input 
-                                            type="tel" 
-                                            class="form-control support-input" 
-                                            id="numeroSoporte" 
-                                            name="numeroSoporte" 
-                                            placeholder="+57 300 123 4567" 
-                                            required
-                                        >
+                                        <input
+                                            type="tel"
+                                            class="form-control support-input"
+                                            id="numeroSoporte"
+                                            name="numeroSoporte"
+                                            placeholder="+57 300 123 4567"
+                                            required>
                                     </div>
                                 </div>
 
@@ -299,14 +299,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                             <i class='bx bx-message-detail me-2'></i>
                                             Describe tu Problema
                                         </label>
-                                        <textarea 
-                                            class="form-control support-textarea" 
-                                            id="problema" 
-                                            name="problema" 
-                                            rows="6" 
+                                        <textarea
+                                            class="form-control support-textarea"
+                                            id="problema"
+                                            name="problema"
+                                            rows="6"
                                             placeholder="Describe detalladamente el problema que estás experimentando. Incluye pasos para reproducir el error, mensajes de error específicos, y cualquier información adicional que consideres relevante..."
-                                            required
-                                        ></textarea>
+                                            required></textarea>
                                         <div class="form-text">
                                             <i class='bx bx-info-circle me-1'></i>
                                             Mientras más detalles proporciones, mejor podremos ayudarte
@@ -354,7 +353,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         </div>
                         <h3 class="support-info-title">Recibimos tu Solicitud</h3>
                         <p class="support-info-text">
-                            Tu solicitud es registrada inmediatamente en nuestro sistema y 
+                            Tu solicitud es registrada inmediatamente en nuestro sistema y
                             asignada a un especialista según el tipo de problema.
                         </p>
                     </div>
@@ -369,7 +368,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         </div>
                         <h3 class="support-info-title">Análisis del Problema</h3>
                         <p class="support-info-text">
-                            Nuestro equipo técnico analiza tu problema y prepara una 
+                            Nuestro equipo técnico analiza tu problema y prepara una
                             solución personalizada basada en tu descripción.
                         </p>
                     </div>
@@ -384,7 +383,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         </div>
                         <h3 class="support-info-title">Solución y Seguimiento</h3>
                         <p class="support-info-text">
-                            Te contactamos con la solución y hacemos seguimiento para 
+                            Te contactamos con la solución y hacemos seguimiento para
                             asegurar que tu problema haya sido resuelto completamente.
                         </p>
                     </div>
@@ -418,7 +417,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                             </h2>
                             <div id="faq1" class="accordion-collapse collapse show" data-bs-parent="#supportAccordion">
                                 <div class="accordion-body support-accordion-body">
-                                    Nuestro tiempo promedio de respuesta es de menos de 2 horas durante horario laboral. 
+                                    Nuestro tiempo promedio de respuesta es de menos de 2 horas durante horario laboral.
                                     Para problemas críticos, respondemos inmediatamente.
                                 </div>
                             </div>
@@ -434,7 +433,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                             </h2>
                             <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#supportAccordion">
                                 <div class="accordion-body support-accordion-body">
-                                    Ofrecemos soporte 24/7 para problemas críticos. Para consultas generales, 
+                                    Ofrecemos soporte 24/7 para problemas críticos. Para consultas generales,
                                     nuestro horario es de lunes a viernes de 8:00 AM a 6:00 PM.
                                 </div>
                             </div>
@@ -450,7 +449,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                             </h2>
                             <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#supportAccordion">
                                 <div class="accordion-body support-accordion-body">
-                                    Incluye una descripción detallada del problema, pasos para reproducirlo, 
+                                    Incluye una descripción detallada del problema, pasos para reproducirlo,
                                     mensajes de error específicos, y el navegador/dispositivo que estás usando.
                                 </div>
                             </div>
@@ -466,7 +465,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                             </h2>
                             <div id="faq4" class="accordion-collapse collapse" data-bs-parent="#supportAccordion">
                                 <div class="accordion-body support-accordion-body">
-                                    Absolutamente. Toda la información compartida está protegida y se utiliza 
+                                    Absolutamente. Toda la información compartida está protegida y se utiliza
                                     únicamente para brindarte el mejor soporte técnico posible.
                                 </div>
                             </div>
@@ -559,4 +558,5 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
     </script>
 </body>
+
 </html>

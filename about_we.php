@@ -13,6 +13,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles/index.css">
+    <link rel="stylesheet" href="styles/header.css">
+
 </head>
 
 <body>
@@ -51,12 +53,12 @@
                         <!-- Stats -->
                         <div class="about-stats-container">
                             <div class="about-stat-item">
-                                <div class="about-stat-number">500+</div>
-                                <div class="about-stat-label">Estudiantes</div>
+                                <div class="about-stat-number">30.000</div>
+                                <div class="about-stat-label">Aprendices</div>
                             </div>
                             <div class="about-stat-item">
-                                <div class="about-stat-number">50+</div>
-                                <div class="about-stat-label">Docentes</div>
+                                <div class="about-stat-number">200</div>
+                                <div class="about-stat-label">Instructores</div>
                             </div>
                             <div class="about-stat-item">
                                 <div class="about-stat-number">100%</div>

@@ -1,6 +1,9 @@
 <?php
-require_once $_SERVER['DOCUMENT_ROOT'] . '/teamtalks/conexion/init.php';
-
+if (strpos($_SERVER['HTTP_HOST'], 'localhost') !== false || strpos($_SERVER['DOCUMENT_ROOT'], 'htdocs') !== false) {
+  require_once $_SERVER['DOCUMENT_ROOT'] . '/teamtalks/conexion/init.php';
+} else {
+  require_once $_SERVER['DOCUMENT_ROOT'] . '/conexion/init.php';
+}
 ?>
 
 <link rel="stylesheet" href="<?= BASE_URL ?>/styles/style_side.css">
@@ -50,27 +53,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/teamtalks/conexion/init.php';
             <span class="nav-label">Formaciones</span>
           </a>
         </li>
-        <li class="nav-item has-submenu">
-          <a href="#" class="sidebar-nav-link submenu-toggle" onclick="toggleSubmenu(this)" data-tooltip="Clases Inscritas">
-            <i class="side bi bi-people-fill nav-icon"></i>
-            <span class="nav-label">Clases Inscritas</span>
-            <i class="bi bi-chevron-down submenu-arrow"></i>
-          </a>
-          <ul class="submenu">
-            <li>
-              <a href="<?= BASE_URL ?>/aprendiz/" class="sidebar-nav-link small">
-                <i class="side bi bi-briefcase-fill nav-icon"></i>
-                <span class="nav-label">Actividades</span>
-              </a>
-            </li>
-            <li>
-              <a href="<?= BASE_URL ?>/aprendiz/" class="sidebar-nav-link small">
-                <i class="side bi bi-arrow-left-right nav-icon"></i>
-                <span class="nav-label">Transversales</span>
-              </a>
-            </li>
-          </ul>
-        </li>
+
         <li class="nav-item">
           <a href="<?= BASE_URL ?>/aprendiz/foros/foros.php" class="sidebar-nav-link" data-tooltip="Foros">
             <i class="side bi bi-pencil-square nav-icon"></i>
