@@ -1,6 +1,9 @@
 <?php
-require_once $_SERVER['DOCUMENT_ROOT'] . '/teamtalks/conexion/init.php';
-
+if (strpos($_SERVER['HTTP_HOST'], 'localhost') !== false || strpos($_SERVER['DOCUMENT_ROOT'], 'htdocs') !== false) {
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/teamtalks/conexion/init.php';
+} else {
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/conexion/init.php';
+}
 $usuario_logueado = isset($_SESSION['documento']);
 $id_usuario = $_SESSION['documento'] ?? null;
 $username = $_SESSION['nombres'] ?? 'Nombres';
@@ -16,9 +19,9 @@ if ($usuario_logueado && $rol) {
         header("Location: " . BASE_URL . "/index.php");
         exit;
     }
-    
+
     $current_path = parse_url($uri, PHP_URL_PATH);
-    
+
     // Definir las rutas correctas para cada rol (usando rutas relativas)
     $rutas_por_rol = [
         2 => '/admin/',           // Administrador
@@ -26,20 +29,22 @@ if ($usuario_logueado && $rol) {
         4 => '/aprendiz/',        // Aprendiz
         5 => '/transversal/'      // Transversal
     ];
-    
+
     // Verificar si el usuario está en la ruta correcta para su rol
     if (isset($rutas_por_rol[$rol])) {
         $ruta_correcta = $rutas_por_rol[$rol];
-        
+
         // Si no está en su ruta correcta y no está en páginas compartidas
-        if (!str_contains($current_path, $ruta_correcta) && 
+        if (
+            !str_contains($current_path, $ruta_correcta) &&
             !str_contains($current_path, '/mod/') &&
             !str_contains($current_path, '/ajax/') &&
             !str_contains($current_path, '/actions/') &&
             !str_contains($current_path, '/includes/') &&
             !str_contains($current_path, '/assets/') &&
-            !str_contains($current_path, '/uploads/')) {
-            
+            !str_contains($current_path, '/uploads/')
+        ) {
+
             // Redirigir a la página de inicio correspondiente
             $pagina_inicio = '';
             switch ($rol) {
@@ -56,7 +61,7 @@ if ($usuario_logueado && $rol) {
                     $pagina_inicio = BASE_URL . '/transversal/index.php';
                     break;
             }
-            
+
             if ($pagina_inicio) {
                 header("Location: $pagina_inicio");
                 exit;
@@ -148,7 +153,7 @@ if ($id_usuario) {
 
 <style>
     .btn-primary-modern {
-        background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+        background: var(--primary);
         border: none;
         border-radius: 12px;
         padding: 1rem 2rem;
@@ -167,7 +172,7 @@ if ($id_usuario) {
         transform: translateY(-2px);
         color: white;
         box-shadow: 0 8px 25px rgba(37, 99, 235, 0.3);
-        background: linear-gradient(135deg, #1e40af 0%, #1d4ed8 100%);
+        background: var(--primary);
     }
 
     .btn-secondary-modern {
@@ -465,7 +470,8 @@ if ($id_usuario) {
                         </li>
 
                         <!-- Nueva opción de Certificados solo para aprendices -->
-                        <?php if ($rol == 4): // Solo para aprendices ?>
+                        <?php if ($rol == 4): // Solo para aprendices 
+                        ?>
                             <li>
                                 <a class="dropdown-item" href="<?= BASE_URL ?>/aprendiz/certificados/index.php">
                                     <i class="bi bi-file-break-fill"></i>
@@ -661,14 +667,12 @@ if ($id_usuario) {
             document.body.classList.toggle('mobile-nav-active');
         }
     }
-
     // Close mobile menu when clicking on links
     document.querySelectorAll('.header-mobile-nav-link').forEach(link => {
         link.addEventListener('click', () => {
             document.body.classList.remove('mobile-nav-active');
         });
     });
-
     // Close mobile menu on window resize
     window.addEventListener('resize', () => {
         if (window.innerWidth > 768) {
@@ -696,7 +700,6 @@ if ($id_usuario) {
     function validarFormularioEditarPerfil() {
         return validarTodo();
     }
-
     document.addEventListener('DOMContentLoaded', function() {
         const email = document.getElementById("email");
         const telefono = document.getElementById("telefono");
@@ -716,7 +719,6 @@ if ($id_usuario) {
             }
             return true;
         }
-
         // NUEVA FUNCIÓN: Validación de teléfono - solo números y caracteres permitidos
         function validarTelefono() {
             const valor = telefono.value.trim();
@@ -747,7 +749,7 @@ if ($id_usuario) {
             const pass = password.value;
             eliminarError(password);
             if (pass !== "") {
-                const regex = /^(?=.[a-z])(?=.[A-Z])(?=.*\d).{8,}$/;
+                const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
                 if (!regex.test(pass)) {
                     mostrarError(password, "Mínimo 8 caracteres, una mayúscula, una minúscula y un número.");
                     return false;
@@ -764,20 +766,17 @@ if ($id_usuario) {
             }
             return true;
         }
-
         // FUNCIÓN ACTUALIZADA: Incluye validación de teléfono
         window.validarTodo = function() {
             const esValido = validarCorreo() && validarTelefono() && validarPassword() && validarConfirmacion() && validarAvatarActual();
             btnGuardar.disabled = !esValido;
             return esValido;
         };
-
         // Event listeners para validación en tiempo real
         email.addEventListener("input", validarTodo);
         telefono.addEventListener("input", validarTodo);
         password.addEventListener("input", validarTodo);
         confirmar.addEventListener("input", validarTodo);
-
         // NUEVO: Filtro de entrada para teléfono - previene escritura de caracteres no válidos
         telefono.addEventListener("keypress", function(e) {
             // Permitir: números (0-9), espacio, guión, paréntesis, signo +, backspace, delete, tab, escape, enter
@@ -797,7 +796,6 @@ if ($id_usuario) {
                 e.preventDefault();
             }
         });
-
         // NUEVO: Validación adicional en paste para teléfono
         telefono.addEventListener("paste", function(e) {
             // Permitir el paste pero validar después
@@ -812,12 +810,10 @@ if ($id_usuario) {
             }, 10);
         });
     });
-
     document.addEventListener("DOMContentLoaded", function() {
         const avatarInput = document.getElementById("avatar");
         const vistaPrevia = document.getElementById("vistaPreviaAvatar");
         const btnGuardar = document.querySelector('#modalEditarPerfil .btn.btn-primary-modern');
-
         window.validarAvatarActual = function() {
             const file = avatarInput.files[0];
             if (!file) {
@@ -837,7 +833,6 @@ if ($id_usuario) {
             }
             return true;
         };
-
         avatarInput.addEventListener("change", function() {
             const file = avatarInput.files[0];
             if (!file) return;
@@ -851,7 +846,7 @@ if ($id_usuario) {
                         btnGuardar.disabled = true;
                     } else {
                         eliminarError(avatarInput);
-                        vistaPrevia.innerHTML = <img src="${e.target.result}" alt="Vista previa" style="max-width:100px; max-height:100px; border-radius:50%;">;
+                        vistaPrevia.innerHTML = `<img src="${e.target.result}" alt="Vista previa" style="max-width:100px; max-height:100px; border-radius:50%;">`;
                         validarTodo();
                     }
                 };
@@ -860,7 +855,6 @@ if ($id_usuario) {
             reader.readAsDataURL(file);
         });
     });
-
     // Función para actualizar el contador del badge
     function actualizarBadgeNotificaciones() {
         const badgeElement = document.getElementById('notification-count');
@@ -872,6 +866,20 @@ if ($id_usuario) {
             } else {
                 badgeElement.textContent = count > 99 ? '99+' : count;
                 badgeElement.classList.remove('hidden');
+            }
+        }
+    }
+
+    // Función para verificar si deben mostrarse los botones de acción
+    function verificarBotonesAccion() {
+        const notificationActions = document.getElementById('notification-actions');
+        const remainingNotifications = document.querySelectorAll('.notification-item');
+
+        if (notificationActions) {
+            if (remainingNotifications.length === 0) {
+                notificationActions.style.display = 'none';
+            } else {
+                notificationActions.style.display = 'flex';
             }
         }
     }
@@ -903,7 +911,6 @@ if ($id_usuario) {
                 }, 100);
             });
         });
-
         // AJAX para marcar todas las notificaciones como leídas
         const markAllBtn = document.getElementById('marcar-todas-leidas');
         if (markAllBtn) {
@@ -937,10 +944,8 @@ if ($id_usuario) {
                             setTimeout(() => {
                                 this.innerHTML = originalContent;
                                 this.disabled = false;
-                                const hasUnread = document.querySelector('.notification-panel .notification-item.unread');
-                                if (!hasUnread) {
-                                    this.parentElement.style.display = 'none';
-                                }
+                                // NO ocultar los botones aquí, solo verificar si hay notificaciones
+                                verificarBotonesAccion();
                             }, 2000);
                         } else {
                             this.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error';
@@ -962,17 +967,20 @@ if ($id_usuario) {
             });
         }
 
-        // AJAX para eliminar todas las notificaciones
+        // AJAX para eliminar TODAS las notificaciones
         const deleteAllBtn = document.getElementById('eliminar-todas');
         if (deleteAllBtn) {
             deleteAllBtn.addEventListener('click', function(e) {
                 e.preventDefault();
-                if (!confirm('¿Estás seguro de que quieres eliminar todas las notificaciones?')) {
+
+                if (!confirm('¿Estás seguro de que quieres eliminar todas las notificaciones? Esta acción no se puede deshacer.')) {
                     return;
                 }
+
                 const originalContent = this.innerHTML;
                 this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Eliminando...';
                 this.disabled = true;
+
                 fetch('<?= BASE_URL ?>/ajax/eliminar_todas_notificaciones.php', {
                         method: 'POST',
                         headers: {
@@ -984,7 +992,8 @@ if ($id_usuario) {
                     .then(data => {
                         if (data.success) {
                             this.innerHTML = '<i class="fas fa-check"></i> ¡Eliminadas!';
-                            // Limpiar el panel de notificaciones
+
+                            // Eliminar todas las notificaciones del DOM
                             const notificationsList = document.querySelector('.notifications-list');
                             if (notificationsList) {
                                 notificationsList.innerHTML = `
@@ -997,17 +1006,18 @@ if ($id_usuario) {
                                 </div>
                             `;
                             }
-                            // Ocultar botones de acción
-                            const headerActions = document.querySelector('.header-actions');
-                            if (headerActions) {
-                                headerActions.style.display = 'none';
-                            }
+
                             // Actualizar badge del icono
                             actualizarBadgeNotificaciones();
+
+                            // Ocultar botones de acción
+                            verificarBotonesAccion();
+
                             setTimeout(() => {
                                 this.innerHTML = originalContent;
                                 this.disabled = false;
                             }, 2000);
+
                         } else {
                             this.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error';
                             setTimeout(() => {
@@ -1028,7 +1038,6 @@ if ($id_usuario) {
                     });
             });
         }
-
         // JavaScript para eliminar notificaciones individuales
         document.addEventListener('click', function(e) {
             if (e.target.closest('.btn-delete-individual')) {
@@ -1049,7 +1058,7 @@ if ($id_usuario) {
                             'X-Requested-With': 'XMLHttpRequest',
                             'Content-Type': 'application/x-www-form-urlencoded'
                         },
-                        body: id_notificacion=${notificationId}
+                        body: `id_notificacion=${notificationId}`
                     })
                     .then(response => response.json())
                     .then(data => {
@@ -1073,12 +1082,9 @@ if ($id_usuario) {
                                     </div>
                                 `;
                                     }
-                                    // Ocultar botones de acción
-                                    const headerActions = document.querySelector('.header-actions');
-                                    if (headerActions) {
-                                        headerActions.style.display = 'none';
-                                    }
                                 }
+                                // Verificar botones de cción
+                                verificarBotonesAccion();
                             }, 300);
                         } else {
                             btn.innerHTML = originalContent;
@@ -1094,80 +1100,5 @@ if ($id_usuario) {
                     });
             }
         });
-
-        // Sistema de notificaciones en tiempo real
-        let notificationInterval;
-
-        function iniciarSistemaNotificaciones() {
-            // Verificar nuevas notificaciones cada 30 segundos
-            notificationInterval = setInterval(verificarNuevasNotificaciones, 30000);
-            // También verificar al enfocar la ventana
-            window.addEventListener('focus', verificarNuevasNotificaciones);
-        }
-
-        function verificarNuevasNotificaciones() {
-            fetch('<?= BASE_URL ?>/ajax/verificar_notificaciones.php', {
-                    method: 'POST',
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest'
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success && data.nuevas_notificaciones > 0) {
-                        actualizarBadgeNotificaciones(data.total_no_leidas);
-                        // Mostrar notificación del navegador si está permitido
-                        if (Notification.permission === 'granted' && data.ultima_notificacion) {
-                            new Notification('Nueva respuesta en el foro', {
-                                body: data.ultima_notificacion.mensaje,
-                                icon: '<?= BASE_URL ?>/assets/img/logo.png'
-                            });
-                        }
-                    }
-                })
-                .catch(error => console.error('Error verificando notificaciones:', error));
-        }
-
-        function actualizarContadorNotificaciones(total) {
-            const badge = document.getElementById('notification-count');
-            if (badge) {
-                if (total > 0) {
-                    badge.textContent = total > 99 ? '99+' : total;
-                    badge.style.display = 'block';
-                } else {
-                    badge.style.display = 'none';
-                }
-            }
-        }
-
-        // Solicitar permisos de notificación
-        function solicitarPermisosNotificacion() {
-            if ('Notification' in window && Notification.permission === 'default') {
-                Notification.requestPermission();
-            }
-        }
-
-        // Inicializar sistema de notificaciones si hay usuario logueado
-        <?php if ($usuario_logueado): ?>
-            iniciarSistemaNotificaciones();
-            solicitarPermisosNotificacion();
-        <?php endif; ?>
     });
-
-    // Agregar estilos CSS para animaciones
-    const style = document.createElement('style');
-    style.textContent = `
-        @keyframes slideOutNotification {
-            from { opacity: 1; transform: translateX(0); }
-            to { opacity: 0; transform: translateX(100%); }
-        }
-        @keyframes fadeOut {
-            from { opacity: 1; }
-            to { opacity: 0; }
-        }
-        .notification-badge.hidden {
-            display: none !important;
-        }
-    `;
-    document.head.appendChild(style);
 </script>

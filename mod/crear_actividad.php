@@ -1,5 +1,9 @@
 <?php
-require_once $_SERVER['DOCUMENT_ROOT'] . '/conexion/init.php';
+if (strpos($_SERVER['HTTP_HOST'], 'localhost') !== false || strpos($_SERVER['DOCUMENT_ROOT'], 'htdocs') !== false) {
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/teamtalks/conexion/init.php';
+} else {
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/conexion/init.php';
+}
 include 'session.php';
 
 if ($_SESSION['rol'] !== 3 && $_SESSION['rol'] !== 5) {
@@ -108,17 +112,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmtNotif = $conex->prepare($sqlNotificacion);
 
         $mensajeNotif = "Se ha asignado una nueva actividad: " . $titulo;
-        $urlDestino = BASE_URL . "/aprendiz/actividades.php";
+        $urlDestino = BASE_URL . "/aprendiz/clase/detalle_actividad.php?id=" . $id_actividad;
         $idEmisor = $_SESSION['documento'];
 
         foreach ($aprendices as $aprendiz) {
-            $stmtNotif->execute([
-                'id_usuario'   => $aprendiz['id_user'],
-                'mensaje'      => $mensajeNotif,
-                'url_destino'  => $urlDestino,
-                'id_emisor'    => $idEmisor
+            // Verificar si ya existe una notificación para este aprendiz y esta actividad
+            $stmtCheck = $conex->prepare("
+        SELECT COUNT(*) FROM notificaciones
+        WHERE id_usuario = :id_usuario
+        AND url_destino = :url_destino
+        AND tipo = 'actividad'
+    ");
+            $stmtCheck->execute([
+                'id_usuario' => $aprendiz['id_user'],
+                'url_destino' => $urlDestino
             ]);
+
+            if ((int)$stmtCheck->fetchColumn() === 0) {
+                // Insertar solo si no existe
+                $stmtNotif->execute([
+                    'id_usuario'   => $aprendiz['id_user'],
+                    'mensaje'      => $mensajeNotif,
+                    'url_destino'  => $urlDestino,
+                    'id_emisor'    => $idEmisor
+                ]);
+            }
         }
+
 
         $_SESSION['actividad_creada'] = $titulo;
         header("Location: ../$subcarpeta/actividades.php?id=" . (int)$id_ficha);

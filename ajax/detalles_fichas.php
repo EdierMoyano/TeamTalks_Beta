@@ -1,6 +1,9 @@
 <?php
-require_once $_SERVER['DOCUMENT_ROOT'] . '/conexion/init.php';
-include 'session.php';
+if (strpos($_SERVER['HTTP_HOST'], 'localhost') !== false || strpos($_SERVER['DOCUMENT_ROOT'], 'htdocs') !== false) {
+  require_once $_SERVER['DOCUMENT_ROOT'] . '/teamtalks/conexion/init.php';
+} else {
+  require_once $_SERVER['DOCUMENT_ROOT'] . '/conexion/init.php';
+}include 'session.php';
 
 // Get ficha ID from URL, ensuring it's an integer
 $id_ficha = isset($_GET['id']) ? (int)$_GET['id'] : 0;
