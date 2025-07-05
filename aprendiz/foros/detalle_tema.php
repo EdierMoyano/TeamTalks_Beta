@@ -1,17 +1,30 @@
 <?php
 session_start();
-
 require_once '../clase/functions.php';
-
+if (strpos($_SERVER['HTTP_HOST'], 'localhost') !== false || strpos($_SERVER['DOCUMENT_ROOT'], 'htdocs') !== false) {
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/teamtalks/conexion/init.php';
+} else {
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/conexion/init.php';
+}
 // Verificar si el usuario ha iniciado sesión
 if (!isset($_SESSION['documento'])) {
     header('Location: ../login.php');
     exit;
 }
 
+// Marcar notificación como leída si viene por GET
+if (isset($_GET['id_notificacion'])) {
+    $id_notificacion = (int) $_GET['id_notificacion'];
+    $id_usuario = $_SESSION['documento'] ?? null;
+
+    if ($id_usuario && $id_notificacion) {
+        $stmt = $conex->prepare("UPDATE notificaciones SET leido = 1 WHERE id_notificacion = ? AND id_usuario = ?");
+        $stmt->execute([$id_notificacion, $id_usuario]);
+    }
+}
+
 // Obtener datos de sesión del usuario
 $datosSesion = obtenerDatosSesion();
-
 if (!$datosSesion) {
     die("Error: No se pudieron obtener los datos del usuario.");
 }
@@ -20,7 +33,6 @@ $id_usuario_actual = $datosSesion['id'];
 
 // Obtener el ID del tema desde la URL
 $id_tema = $_GET['id'] ?? null;
-
 if (!$id_tema) {
     header('Location: foros.php');
     exit;
@@ -28,7 +40,6 @@ if (!$id_tema) {
 
 // Obtener información del tema
 $tema = obtenerDetalleTema($id_tema);
-
 if (!$tema) {
     header('Location: foros.php');
     exit;
@@ -42,49 +53,37 @@ $respuestasHijas = $respuestasData['hijas'];
 // Verificar si el usuario puede participar en este foro
 $puedeParticipar = puedeParticiparForo($id_usuario_actual, $tema['id_materia_ficha']);
 
-// Procesar la creación de una nueva respuesta
-$mensaje = '';
-$tipoMensaje = '';
-
+// Procesar envío de respuesta
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['crear_respuesta']) && $puedeParticipar) {
     $descripcion = $_POST['descripcion'] ?? '';
-    $id_respuesta_padre = !empty($_POST['id_respuesta_padre']) ? $_POST['id_respuesta_padre'] : null;
+    $id_respuesta_padre = (!empty($_POST['id_respuesta_padre'])) ? (int) $_POST['id_respuesta_padre'] : null;
 
     if (empty($descripcion)) {
-        $mensaje = 'El contenido de la respuesta es obligatorio';
-        $tipoMensaje = 'danger';
+        $_SESSION['mensaje_foro'] = [
+            'tipo' => 'danger',
+            'texto' => 'El contenido de la respuesta es obligatorio'
+        ];
     } else {
-        $resultado = crearRespuestaAComentarioSesion($id_tema, $descripcion, $id_respuesta_padre);
-
+        $resultado = procesarRespuestaForo($id_tema, $descripcion, $id_respuesta_padre);
         if ($resultado['success']) {
-            $mensaje = 'Respuesta publicada exitosamente';
-            $tipoMensaje = 'success';
-            // Recargar respuestas
-            $respuestasData = obtenerRespuestasConJerarquia($id_tema);
-            $respuestasPrincipales = $respuestasData['principales'];
-            $respuestasHijas = $respuestasData['hijas'];
+            $_SESSION['mensaje_foro'] = [
+                'tipo' => 'success',
+                'texto' => $id_respuesta_padre
+                    ? 'Respuesta a comentario publicada exitosamente'
+                    : 'Respuesta al tema publicada exitosamente'
+            ];
+            header("Location: detalle_tema.php?id=" . $id_tema);
+            exit;
         } else {
-            $mensaje = $resultado['message'];
-            $tipoMensaje = 'danger';
+            $_SESSION['mensaje_foro'] = [
+                'tipo' => 'danger',
+                'texto' => $resultado['message']
+            ];
         }
     }
 }
-
-// Obtener información de la materia para el breadcrumb
-$stmt = $pdo->prepare("
-    SELECT m.materia, mf.id_materia_ficha
-    FROM materia_ficha mf
-    JOIN materias m ON mf.id_materia = m.id_materia
-    WHERE mf.id_ficha = ?
-    ORDER BY mf.id_materia_ficha ASC
-    LIMIT 1
-");
-$stmt->execute([$tema['id_ficha']]);
-$materiaPrincipalData = $stmt->fetch();
-
-$materiaPrincipal = $materiaPrincipalData ? $materiaPrincipalData['materia'] : 'Sin materia asignada';
-$idMateriaFicha = $materiaPrincipalData ? $materiaPrincipalData['id_materia_ficha'] : null;
 ?>
+
 
 <!DOCTYPE html>
 <html lang="es">
@@ -102,21 +101,22 @@ $idMateriaFicha = $materiaPrincipalData ? $materiaPrincipalData['id_materia_fich
         crossorigin="anonymous" referrerpolicy="no-referrer" />
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0">
+    <link rel="icon" href="../../assets/img/icon2.png">
     <link rel="stylesheet" href="../css/styles.css">
 
     <style>
-        /* Ajusta el margen izquierdo del contenido principal según el estado del sidebar */
-        body:not(.sidebar-collapsed) .main-content {
-            margin-left: 250px;
-            /* Ancho del sidebar abierto */
-            transition: margin-left 0.4s;
+        :root {
+            --primary-color: #0E4A86;
+            --primary-hover: #0d4077;
+            --surface-color: #ffffff;
+            --border-color: #e2e8f0;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --background-color: #f8fafc;
         }
 
         body.sidebar-collapsed .main-content {
             margin-left: 100px;
-            /* Ancho del sidebar colapsado */
-            transition: margin-left 0.4s;
         }
 
         .main-content .container-fluid {
@@ -126,215 +126,222 @@ $idMateriaFicha = $materiaPrincipalData ? $materiaPrincipalData['id_materia_fich
             padding-right: 12px;
         }
 
+        .breadcrumb-custom {
+            background: none;
+            padding: 0;
+            margin-bottom: 20px;
+        }
+
+        .breadcrumb-custom .breadcrumb-item a {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .breadcrumb-custom .breadcrumb-item a:hover {
+            text-decoration: underline;
+        }
+
         .tema-header {
-            background-color: #0E4A86;
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
             color: white;
-            padding: 16px;
+            padding: 2rem;
             border-radius: 12px;
-            margin-bottom: 30px;
-            font-size: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .tema-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
         }
 
         .tema-meta {
             display: flex;
             align-items: center;
-            gap: 15px;
-            margin-top: 15px;
+            gap: 1rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
         }
 
-        .tema-avatar {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background-color: rgba(255, 255, 255, 0.2);
+        .autor-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .autor-avatar {
+            width: 48px;
+            height: 48px;
+            background: rgba(255, 255, 255, 0.2);
             color: white;
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 600;
-            font-size: 1.2rem;
+            font-size: 1.1rem;
         }
 
-        .tema-autor {
+        .respuesta-form-principal {
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .respuesta-form-principal h3 {
+            color: var(--primary-color);
+            margin-bottom: 1.5rem;
+            font-size: 1.25rem;
             font-weight: 600;
-            margin-bottom: 2px;
         }
 
-        .tema-fecha {
-            font-size: 0.9rem;
-            opacity: 0.8;
+        .form-control {
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+            min-height: 120px;
         }
 
-        .respuesta-card {
-            border-radius: 10px;
-            margin-bottom: 12px;
-            font-size: 0.97rem;
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(14, 74, 134, 0.1);
+        }
+
+        .btn-enviar-principal {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-enviar-principal:hover {
+            background: var(--primary-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(14, 74, 134, 0.2);
+        }
+
+        .respuestas-section {
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
             overflow: hidden;
+        }
+
+        .respuestas-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            background: linear-gradient(135deg, var(--background-color), #f1f5f9);
+        }
+
+        .respuestas-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .respuesta-item {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
             transition: all 0.2s ease;
         }
 
-        .respuesta-card:hover {
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        .respuesta-item:last-child {
+            border-bottom: none;
+        }
+
+        .respuesta-item:hover {
+            background: linear-gradient(135deg, rgba(14, 74, 134, 0.02), rgba(14, 74, 134, 0.01));
         }
 
         .respuesta-header {
             display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 10px 14px;
+            align-items: flex-start;
+            gap: 1rem;
+            margin-bottom: 1rem;
         }
 
         .respuesta-avatar {
-            width: 32px;
-            height: 32px;
-            font-size: 1rem;
-            border-radius: 50%;
-            background-color: #0E4A86;
+            width: 40px;
+            height: 40px;
+            background: var(--primary-color);
             color: white;
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 600;
+            font-size: 0.875rem;
+            flex-shrink: 0;
         }
 
-        .respuesta-meta {
+        .respuesta-autor-info {
             flex: 1;
         }
 
         .respuesta-autor {
             font-weight: 600;
-            margin-bottom: 2px;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
         }
 
         .respuesta-fecha {
-            font-size: 0.85rem;
-            color: #666;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
         }
 
         .respuesta-content {
-            padding: 12px 14px;
+            margin-left: 3rem;
+            color: var(--text-primary);
+            line-height: 1.6;
+            margin-bottom: 1rem;
         }
 
         .respuesta-actions {
-            padding: 7px 14px;
-            gap: 6px;
-            background-color: #f8f9fa;
-            border-top: 1px solid #eee;
+            margin-left: 3rem;
+            padding-top: 0.75rem;
+            border-top: 1px solid var(--border-color);
         }
 
         .btn-responder {
-            background-color: #0E4A86 !important;
-            color: #fff !important;
-            border: none !important;
-            border-radius: 6px !important;
-            font-size: 0.97rem;
-            padding: 7px 18px;
-            font-weight: 500;
-            box-shadow: 0 2px 8px rgba(14, 74, 134, 0.08);
-            transition: background 0.2s, box-shadow 0.2s;
-            margin-right: 8px;
+            background: none;
+            border: none;
+            color: var(--primary-color);
+            font-size: 0.875rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+            cursor: pointer;
             display: inline-flex;
             align-items: center;
-            gap: 6px;
+            gap: 0.25rem;
         }
 
-        .btn-responder:hover,
-        .btn-responder:focus {
-            background-color: #1565c0 !important;
-            color: #fff !important;
-            box-shadow: 0 4px 16px rgba(21, 101, 192, 0.12);
-        }
-
-        .btn-link,
-        .btn.btn-link {
-            color: #0E4A86 !important;
-            background: none !important;
-            border: none !important;
-            text-decoration: underline !important;
-            font-weight: 500;
-            font-size: 0.97rem;
-            border-radius: 6px;
-            padding: 7px 12px;
-            transition: background 0.2s, color 0.2s;
-            margin-left: 0;
-            margin-right: 8px;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .btn-link:hover,
-        .btn-link:focus,
-        .btn.btn-link:hover,
-        .btn.btn-link:focus {
-            background-color: #e3f2fd !important;
-            color: #1565c0 !important;
-            text-decoration: underline !important;
-        }
-
-        .btn.btn-primary,
-        .btn.btn-primary:focus,
-        .btn.btn-primary:active {
-            background-color: #fff !important;
-            color: #0E4A86 !important;
-            border: 1.5px solid #0E4A86 !important;
-            box-shadow: none !important;
-            transition: background 0.2s, color 0.2s, border 0.2s;
-        }
-
-        .btn.btn-primary:hover {
-            background-color: #0E4A86 !important;
-            color: #fff !important;
-            border: 1.5px solid #0E4A86 !important;
-        }
-
-        .btn.btn-secondary,
-        .btn.btn-secondary:focus {
-            border-radius: 6px !important;
-            font-weight: 500;
-            color: #0E4A86 !important;
-            background: #e3f2fd !important;
-            border: 1px solid #b6d4fe !important;
-            transition: background 0.2s, color 0.2s;
-        }
-
-        .btn.btn-secondary:hover {
-            background: #bbdefb !important;
-            color: #1565c0 !important;
-            border-color: #90caf9 !important;
-        }
-
-        .respuesta-hija {
-            margin-left: 24px;
-            margin-top: 8px;
-            padding-left: 10px;
-            border-left: 3px solid #e9ecef;
-        }
-
-        .respuesta-hija .respuesta-card {
-            margin-bottom: 6px;
-            padding: 8px 10px;
-            font-size: 0.92rem;
-            background: #f8f9fa;
-            border-radius: 8px;
-            box-shadow: none;
-            border: 1px solid #e3e6ea;
-        }
-
-        .respuesta-hija .respuesta-header {
-            padding: 6px 8px;
-        }
-
-        .respuesta-hija .respuesta-content {
-            padding: 6px 8px;
+        .btn-responder:hover {
+            background: rgba(14, 74, 134, 0.1);
+            color: var(--primary-hover);
         }
 
         .form-respuesta-inline {
-            margin-top: 15px;
-            padding: 15px;
-            background-color: #f8f9fa;
+            margin-top: 1rem;
+            margin-left: 3rem;
+            padding: 1rem;
+            background: #f8f9fa;
             border-radius: 8px;
-            border: 1px solid #dee2e6;
+            border: 1px solid #e9ecef;
             display: none;
         }
 
@@ -355,92 +362,110 @@ $idMateriaFicha = $materiaPrincipalData ? $materiaPrincipalData['id_materia_fich
             }
         }
 
-        .breadcrumb-custom {
-            background: none;
-            padding: 0;
-            margin-bottom: 20px;
+        .respuesta-hija {
+            margin-left: 3rem;
+            margin-top: 1rem;
+            padding-left: 1rem;
+            border-left: 3px solid var(--primary-color);
+            background: rgba(14, 74, 134, 0.02);
+            border-radius: 0 8px 8px 0;
         }
 
-        .breadcrumb-custom .breadcrumb-item a {
-            color: #0E4A86;
-            text-decoration: none;
+        .respuesta-hija .respuesta-item {
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            border: 1px solid rgba(14, 74, 134, 0.1);
         }
 
-        .breadcrumb-custom .breadcrumb-item a:hover {
-            text-decoration: underline;
+        .respuesta-hija .respuesta-item:hover {
+            background: rgba(255, 255, 255, 0.95);
+            border-color: rgba(14, 74, 134, 0.2);
         }
 
-        .respuesta-form {
-            background-color: white;
-            border-radius: 12px;
-            padding: 14px;
-            margin-top: 18px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        .respuesta-contador {
-            font-size: 0.85rem;
-            color: #666;
-            margin-left: 5px;
-        }
-
-        textarea.form-control {
-            font-size: 0.97rem;
-            min-height: 60px;
-            max-height: 180px;
-        }
-
-        .btn-responder,
-        .btn.btn-primary,
-        .breadcrumb-custom .breadcrumb-item a,
-        .btn-link {
-            color: #0E4A86 !important;
-            border-color: #0E4A86 !important;
-        }
-
-        .btn-responder,
-        .btn.btn-primary {
-            background-color: #0E4A86 !important;
-        }
-
-        .btn-responder:hover,
-        .btn.btn-primary:hover,
-        .btn-link:hover {
-            background-color: #1565c0 !important;
-            color: #fff !important;
-        }
-
-        .btn-link {
-            background: none !important;
-            border: none !important;
-            text-decoration: underline;
-            padding: 0;
-        }
-
-        .breadcrumb-custom .breadcrumb-item a:hover {
-            color: #1565c0 !important;
-        }
-
-        .btn-enviar-respuesta {
-            background: #fff;
-            color: #0E4A86;
-            border: 1.5px solid #0E4A86;
-            border-radius: 6px;
-            padding: 8px 22px;
-            font-size: 1rem;
-            font-weight: 500;
+        .btn-toggle-respuestas {
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            color: var(--primary-color);
+            font-size: 0.875rem;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            transition: all 0.3s ease;
             cursor: pointer;
-            transition: background 0.2s, color 0.2s, border 0.2s;
-            outline: none;
-            box-shadow: none;
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-left: 3rem;
+            margin-top: 1rem;
         }
 
-        .btn-enviar-respuesta:hover,
-        .btn-enviar-respuesta:focus {
-            background: #0E4A86;
-            color: #fff;
-            border: 1.5px solid #0E4A86;
+        .btn-toggle-respuestas:hover {
+            background: rgba(14, 74, 134, 0.1);
+            border-color: var(--primary-color);
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(14, 74, 134, 0.15);
+        }
+
+        .btn.btn-primary {
+            background: var(--primary-color) !important;
+            border-color: var(--primary-color) !important;
+            color: white !important;
+        }
+
+        .btn.btn-primary:hover {
+            background: var(--primary-hover) !important;
+            border-color: var(--primary-hover) !important;
+        }
+
+        .empty-state {
+            padding: 4rem 2rem;
+            text-align: center;
+            color: var(--text-secondary);
+        }
+
+        .empty-state-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .empty-state h4 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+
+        .empty-state p {
+            font-size: 0.875rem;
+            margin: 0;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding-top: 120px;
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 0.75rem;
+            }
+
+            .tema-title {
+                font-size: 1.5rem;
+            }
+
+            .respuesta-content,
+            .respuesta-actions,
+            .form-respuesta-inline,
+            .btn-toggle-respuestas {
+                margin-left: 0;
+            }
+
+            .respuesta-hija {
+                margin-left: 1rem;
+                padding-left: 0.75rem;
+            }
         }
     </style>
 </head>
@@ -448,179 +473,165 @@ $idMateriaFicha = $materiaPrincipalData ? $materiaPrincipalData['id_materia_fich
 <body class="sidebar-collapsed">
     <!-- Header -->
     <?php include '../../includes/design/header.php'; ?>
-
     <!-- Sidebar -->
     <?php include '../../includes/design/sidebar.php'; ?>
 
     <!-- Contenido principal -->
     <main class="main-content">
         <div class="container-fluid">
-            <!-- Mensaje de resultado -->
-            <?php if ($mensaje): ?>
-                <div class="alert alert-<?php echo $tipoMensaje; ?> alert-dismissible fade show" role="alert">
-                    <?php echo $mensaje; ?>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            <!-- Breadcrumb -->
+            <nav class="breadcrumb-custom">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a href="temas_foro.php?id_foro=<?php echo $tema['id_foro']; ?>">
+                            <i class="bi bi-arrow-left me-1"></i>Volver al Foro
+                        </a>
+                    </li>
+                </ol>
+            </nav>
+
+            <!-- Mostrar mensajes de éxito o error -->
+            <?php if (isset($_SESSION['mensaje_foro'])): ?>
+                <div class="alert alert-<?php echo $_SESSION['mensaje_foro']['tipo']; ?> alert-dismissible fade show" role="alert">
+                    <?php echo htmlspecialchars($_SESSION['mensaje_foro']['texto']); ?>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
                 </div>
+                <?php unset($_SESSION['mensaje_foro']); ?>
             <?php endif; ?>
+
+
 
             <!-- Encabezado del tema -->
             <div class="tema-header">
-                <h1 class="h2 mb-3"><?php echo htmlspecialchars($tema['titulo']); ?></h1>
-                <?php if ($tema['descripcion']): ?>
-                    <p class="mb-3"><?php echo nl2br(htmlspecialchars($tema['descripcion'])); ?></p>
+                <h1 class="tema-title"><?php echo htmlspecialchars($tema['titulo']); ?></h1>
+                <?php if (!empty($tema['descripcion'])): ?>
+                    <p class="mb-0"><?php echo nl2br(htmlspecialchars($tema['descripcion'])); ?></p>
                 <?php endif; ?>
-
                 <div class="tema-meta">
-                    <div class="tema-avatar">
-                        <?php echo obtenerIniciales($tema['nombres'] . ' ' . $tema['apellidos']); ?>
-                    </div>
-                    <div>
-                        <p class="tema-autor"><?php echo htmlspecialchars($tema['nombres'] . ' ' . $tema['apellidos']); ?></p>
-                        <p class="tema-fecha"><?php echo formatearFecha($tema['fecha_creacion']); ?></p>
+                    <div class="autor-info">
+                        <div class="autor-avatar">
+                            <?php echo obtenerIniciales($tema['nombres'] . ' ' . $tema['apellidos']); ?>
+                        </div>
+                        <div>
+                            <div class="respuesta-autor"><?php echo htmlspecialchars($tema['nombres'] . ' ' . $tema['apellidos']); ?></div>
+                            <div class="respuesta-fecha"><?php echo formatearFecha($tema['fecha_creacion']); ?></div>
+                        </div>
                     </div>
                 </div>
-
-                <button type="button" class="btn btn-secondary btn-azul-custom" onclick="volverAClase()">
-                    <i class="fas fa-arrow-left"></i> Volver
-                </button>
             </div>
 
-            <!-- Respuestas -->
-            <h2 class="h4 mb-4">
-                Respuestas (<?php echo count($respuestasPrincipales); ?>)
-                <span class="respuesta-contador">
-                    <?php
-                    $totalRespuestas = count($respuestasPrincipales);
-                    foreach ($respuestasHijas as $hijas) {
-                        $totalRespuestas += count($hijas);
-                    }
-                    if ($totalRespuestas > count($respuestasPrincipales)) {
-                        echo '• ' . $totalRespuestas . ' total';
-                    }
-                    ?>
-                </span>
-            </h2>
+            <!-- Sección de respuestas -->
+            <div class="respuestas-section">
+                <div class="respuestas-header">
+                    <h3 class="respuestas-title">
+                        <i class="bi bi-chat-text me-2"></i>
+                        Respuestas (<?php echo count($respuestasPrincipales); ?>)
+                    </h3>
+                </div>
 
-            <?php if (count($respuestasPrincipales) > 0): ?>
-                <?php foreach ($respuestasPrincipales as $respuesta): ?>
-                    <div class="card respuesta-card shadow-sm">
-                        <div class="respuesta-header">
-                            <div class="respuesta-avatar">
-                                <?php echo obtenerIniciales($respuesta['nombres'] . ' ' . $respuesta['apellidos']); ?>
+                <?php if (count($respuestasPrincipales) > 0): ?>
+                    <?php foreach ($respuestasPrincipales as $respuesta): ?>
+                        <div class="respuesta-item">
+                            <div class="respuesta-header">
+                                <div class="respuesta-avatar">
+                                    <?php echo obtenerIniciales($respuesta['nombres'] . ' ' . $respuesta['apellidos']); ?>
+                                </div>
+                                <div class="respuesta-autor-info">
+                                    <div class="respuesta-autor"><?php echo htmlspecialchars($respuesta['nombres'] . ' ' . $respuesta['apellidos']); ?></div>
+                                    <div class="respuesta-fecha"><?php echo formatearFecha($respuesta['fecha_respuesta']); ?></div>
+                                </div>
                             </div>
-                            <div class="respuesta-meta">
-                                <p class="respuesta-autor"><?php echo htmlspecialchars($respuesta['nombres'] . ' ' . $respuesta['apellidos']); ?></p>
-                                <p class="respuesta-fecha"><?php echo formatearFecha($respuesta['fecha_respuesta']); ?></p>
+
+                            <div class="respuesta-content">
+                                <?php echo nl2br(htmlspecialchars($respuesta['descripcion'])); ?>
                             </div>
-                        </div>
 
-                        <div class="respuesta-content">
-                            <p><?php echo nl2br(htmlspecialchars($respuesta['descripcion'])); ?></p>
-                        </div>
+                            <?php if ($puedeParticipar): ?>
+                                <div class="respuesta-actions">
+                                    <button class="btn-responder" onclick="mostrarFormularioRespuesta(<?php echo $respuesta['id_respuesta_foro']; ?>)">
+                                        <i class="bi bi-reply"></i> Responder
+                                    </button>
+                                </div>
+                            <?php endif; ?>
 
-                        <?php if ($puedeParticipar): ?>
-                            <div class="respuesta-actions">
-                                <button class="btn btn-link btn-sm px-0" type="button"
-                                    onclick="mostrarFormularioRespuesta(<?php echo $respuesta['id_respuesta_foro']; ?>)">
-                                    <i class="bi bi-reply"></i> Responder
+                            <!-- Formulario de respuesta inline -->
+                            <div class="form-respuesta-inline" id="form-respuesta-<?php echo $respuesta['id_respuesta_foro']; ?>">
+                                <form method="POST" action="">
+                                    <input type="hidden" name="crear_respuesta" value="1">
+                                    <input type="hidden" name="id_respuesta_padre" value="<?php echo $respuesta['id_respuesta_foro']; ?>">
+                                    <div class="mb-3">
+                                        <label class="form-label">Responder a <?php echo htmlspecialchars($respuesta['nombres']); ?></label>
+                                        <textarea class="form-control" name="descripcion" rows="3" required
+                                            placeholder="Escribe tu respuesta..."></textarea>
+                                    </div>
+                                    <div class="d-flex gap-2">
+                                        <button type="submit" class="btn btn-primary btn-sm">
+                                            <i class="bi bi-send"></i> Responder
+                                        </button>
+                                        <button type="button" class="btn btn-secondary btn-sm"
+                                            onclick="ocultarFormularioRespuesta(<?php echo $respuesta['id_respuesta_foro']; ?>)">
+                                            Cancelar
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+
+                            <!-- Respuestas hijas -->
+                            <?php if (isset($respuestasHijas[$respuesta['id_respuesta_foro']])): ?>
+                                <button class="btn-toggle-respuestas" onclick="toggleRespuestasHijas(<?php echo $respuesta['id_respuesta_foro']; ?>)">
+                                    <i class="bi bi-chevron-down"></i>
+                                    Ver <?php echo count($respuestasHijas[$respuesta['id_respuesta_foro']]); ?> respuesta<?php echo count($respuestasHijas[$respuesta['id_respuesta_foro']]) > 1 ? 's' : ''; ?>
                                 </button>
 
-                                <?php if (isset($respuestasHijas[$respuesta['id_respuesta_foro']]) && count($respuestasHijas[$respuesta['id_respuesta_foro']]) > 0): ?>
-                                    <button class="btn btn-link btn-sm px-0" type="button"
-                                        onclick="toggleRespuestasHijas(<?php echo $respuesta['id_respuesta_foro']; ?>)">
-                                        <i class="bi bi-chat-right-text"></i>
-                                        Ver respuesta<?php echo count($respuestasHijas[$respuesta['id_respuesta_foro']]) > 1 ? 's' : ''; ?>
-                                        (<?php echo count($respuestasHijas[$respuesta['id_respuesta_foro']]); ?>)
-                                    </button>
-
-                                    <div class="respuesta-hija" id="respuestas-hija-<?php echo $respuesta['id_respuesta_foro']; ?>" style="display:none;">
-                                        <?php foreach ($respuestasHijas[$respuesta['id_respuesta_foro']] as $respuestaHija): ?>
-                                            <div class="card respuesta-card respuesta-card-hija">
-                                                <div class="respuesta-header">
-                                                    <div class="respuesta-avatar">
-                                                        <?php echo obtenerIniciales($respuestaHija['nombres'] . ' ' . $respuestaHija['apellidos']); ?>
-                                                    </div>
-                                                    <div class="respuesta-meta">
-                                                        <p class="respuesta-autor"><?php echo htmlspecialchars($respuestaHija['nombres'] . ' ' . $respuestaHija['apellidos']); ?></p>
-                                                        <p class="respuesta-fecha"><?php echo formatearFecha($respuestaHija['fecha_respuesta']); ?></p>
-                                                    </div>
+                                <div class="respuesta-hija" id="respuestas-hija-<?php echo $respuesta['id_respuesta_foro']; ?>" style="display:none;">
+                                    <?php foreach ($respuestasHijas[$respuesta['id_respuesta_foro']] as $respuestaHija): ?>
+                                        <div class="respuesta-item">
+                                            <div class="respuesta-header">
+                                                <div class="respuesta-avatar">
+                                                    <?php echo obtenerIniciales($respuestaHija['nombres'] . ' ' . $respuestaHija['apellidos']); ?>
                                                 </div>
-
-                                                <div class="respuesta-content">
-                                                    <p><?php echo nl2br(htmlspecialchars($respuestaHija['descripcion'])); ?></p>
-                                                </div>
-
-                                                <?php if ($puedeParticipar): ?>
-                                                    <div class="respuesta-actions">
-                                                        <button class="btn btn-link btn-sm px-0" type="button"
-                                                            onclick="mostrarFormularioRespuesta(<?php echo $respuestaHija['id_respuesta_foro']; ?>)">
-                                                            <i class="bi bi-reply"></i> Responder
-                                                        </button>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <!-- Formulario de respuesta inline para respuesta hija -->
-                                                <div class="form-respuesta-inline" id="form-respuesta-<?php echo $respuestaHija['id_respuesta_foro']; ?>">
-                                                    <form method="POST" action="">
-                                                        <input type="hidden" name="id_respuesta_padre" value="<?php echo $respuestaHija['id_respuesta_foro']; ?>">
-                                                        <div class="mb-3">
-                                                            <label class="form-label">Responder a <?php echo htmlspecialchars($respuestaHija['nombres']); ?></label>
-                                                            <textarea class="form-control" name="descripcion" rows="3" required placeholder="Escribe tu respuesta..."></textarea>
-                                                        </div>
-                                                        <div class="d-flex gap-2">
-                                                            <button type="submit" name="crear_respuesta" class="btn-enviar-respuesta">
-                                                                <i class="bi bi-send"></i> Responder
-                                                            </button>
-                                                            <button type="button" class="btn btn-secondary btn-sm" onclick="ocultarFormularioRespuesta(<?php echo $respuestaHija['id_respuesta_foro']; ?>)">
-                                                                Cancelar
-                                                            </button>
-                                                        </div>
-                                                    </form>
+                                                <div class="respuesta-autor-info">
+                                                    <div class="respuesta-autor"><?php echo htmlspecialchars($respuestaHija['nombres'] . ' ' . $respuestaHija['apellidos']); ?></div>
+                                                    <div class="respuesta-fecha"><?php echo formatearFecha($respuestaHija['fecha_respuesta']); ?></div>
                                                 </div>
                                             </div>
-                                        <?php endforeach; ?>
-                                    </div>
-                                <?php endif; ?>
-                            </div>
-                        <?php endif; ?>
-
-                        <!-- Formulario de respuesta inline -->
-                        <div class="form-respuesta-inline" id="form-respuesta-<?php echo $respuesta['id_respuesta_foro']; ?>">
-                            <form method="POST" action="">
-                                <input type="hidden" name="id_respuesta_padre" value="<?php echo $respuesta['id_respuesta_foro']; ?>">
-                                <div class="mb-3">
-                                    <label class="form-label">Responder a <?php echo htmlspecialchars($respuesta['nombres']); ?></label>
-                                    <textarea class="form-control" name="descripcion" rows="3" required placeholder="Escribe tu respuesta..."></textarea>
+                                            <div class="respuesta-content">
+                                                <?php echo nl2br(htmlspecialchars($respuestaHija['descripcion'])); ?>
+                                            </div>
+                                        </div>
+                                    <?php endforeach; ?>
                                 </div>
-                                <div class="d-flex gap-2">
-                                    <button type="submit" name="crear_respuesta" class="btn-enviar-respuesta">
-                                        <i class="bi bi-send"></i> Responder
-                                    </button>
-                                    <button type="button" class="btn btn-secondary btn-sm" onclick="ocultarFormularioRespuesta(<?php echo $respuesta['id_respuesta_foro']; ?>)">
-                                        Cancelar
-                                    </button>
-                                </div>
-                            </form>
+                            <?php endif; ?>
                         </div>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <div class="empty-state">
+                        <div class="empty-state-icon">
+                            <i class="bi bi-chat-slash"></i>
+                        </div>
+                        <h4>No hay respuestas aún</h4>
+                        <p>Sé el primero en participar en esta discusión</p>
                     </div>
-                <?php endforeach; ?>
-            <?php else: ?>
-                <div class="alert alert-info">
-                    <i class="bi bi-info-circle"></i>
-                    No hay respuestas en este tema. ¡Sé el primero en responder!
-                </div>
-            <?php endif; ?>
+                <?php endif; ?>
+            </div>
 
-            <!-- Formulario para responder al tema principal -->
+            <!-- FORMULARIO PRINCIPAL MOVIDO AL FINAL - Respuesta directa al tema -->
             <?php if ($puedeParticipar): ?>
-                <div class="respuesta-form">
-                    <h3 class="h5 mb-4">Responder al tema</h3>
+                <div class="respuesta-form-principal">
+                    <h3><i class="bi bi-chat-text me-2"></i>Responder al Tema</h3>
                     <form method="POST" action="">
+                        <input type="hidden" name="crear_respuesta" value="1">
+                        <!-- IMPORTANTE: Campo vacío para respuesta directa al tema -->
+                        <input type="hidden" name="id_respuesta_padre" value="">
+
                         <div class="mb-3">
-                            <label for="descripcion" class="form-label">Tu respuesta *</label>
-                            <textarea class="form-control" id="descripcion" name="descripcion" rows="5" required></textarea>
+                            <label for="descripcion_principal" class="form-label">Tu respuesta al tema *</label>
+                            <textarea class="form-control" id="descripcion_principal" name="descripcion" rows="4"
+                                required placeholder="Comparte tu opinión, experiencia o pregunta sobre este tema..."></textarea>
                         </div>
-                        <button type="submit" class="btn-enviar-respuesta">Enviar respuesta</button>
+                        <button type="submit" class="btn-enviar-principal">
+                            <i class="bi bi-send"></i> Publicar Respuesta
+                        </button>
                     </form>
                 </div>
             <?php endif; ?>
@@ -661,42 +672,41 @@ $idMateriaFicha = $materiaPrincipalData ? $materiaPrincipalData['id_materia_fich
             }
         }
 
-        // Función CORREGIDA para volver a la clase
-        window.volverAClase = () => {
-            // Obtener el ID de la clase desde la URL actual
-            const urlParams = new URLSearchParams(window.location.search);
-            const idClase = urlParams.get('id_clase') ||
-                document.querySelector("[data-id-clase]")?.getAttribute("data-id-clase") ||
-                <?php echo json_encode($idMateriaFicha); ?>;
+        // Función para mostrar/ocultar respuestas hijas
+        function toggleRespuestasHijas(id) {
+            const contenedor = document.getElementById('respuestas-hija-' + id);
+            const boton = document.querySelector(`[onclick="toggleRespuestasHijas(${id})"]`);
 
-            if (idClase) {
-                window.location.href = `../clase/index.php?id_clase=${idClase}`;
-            } else {
-                // Fallback: ir a la página de clases general
-                window.location.href = "../clase/index.php";
+            if (contenedor && boton) {
+                const icono = boton.querySelector('i');
+                if (contenedor.style.display === 'none' || !contenedor.style.display) {
+                    contenedor.style.display = 'block';
+                    icono.className = 'bi bi-chevron-up';
+                    boton.innerHTML = boton.innerHTML.replace('Ver', 'Ocultar');
+                } else {
+                    contenedor.style.display = 'none';
+                    icono.className = 'bi bi-chevron-down';
+                    boton.innerHTML = boton.innerHTML.replace('Ocultar', 'Ver');
+                }
             }
         }
 
         // Cerrar formularios al hacer clic fuera
         document.addEventListener('click', function(e) {
-            // Si NO se hizo clic dentro del formulario NI en un botón/link de responder
-            if (
-                !e.target.closest('.form-respuesta-inline') &&
-                !e.target.closest('.btn-link')
-            ) {
+            if (!e.target.closest('.form-respuesta-inline') && !e.target.closest('.btn-responder')) {
                 document.querySelectorAll('.form-respuesta-inline.show').forEach(form => {
                     form.classList.remove('show');
                 });
             }
         });
 
-        // Función para mostrar/ocultar respuestas hijas
-        function toggleRespuestasHijas(id) {
-            const contenedor = document.getElementById('respuestas-hija-' + id);
-            if (contenedor) {
-                contenedor.style.display = contenedor.style.display === 'none' ? 'block' : 'none';
-            }
-        }
+        // Auto-resize textareas
+        document.querySelectorAll('textarea').forEach(textarea => {
+            textarea.addEventListener('input', function() {
+                this.style.height = 'auto';
+                this.style.height = this.scrollHeight + 'px';
+            });
+        });
     </script>
 </body>
 

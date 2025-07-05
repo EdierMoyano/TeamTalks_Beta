@@ -76,6 +76,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($stmt->execute()) {
         $id_actividad = $conex->lastInsertId();
 
+        // Obtener nombre de la materia e instructor antes de usarlo
+        $sqlMateria = "
+            SELECT m.nombre_materia, u.nombres, u.apellidos
+            FROM materia_ficha mf
+            JOIN materias m ON m.id_materia = mf.id_materia
+            JOIN usuarios u ON u.id = mf.id_instructor
+            WHERE mf.id_materia_ficha = :id_materia_ficha
+            LIMIT 1
+        ";
+        $stmtMateria = $conex->prepare($sqlMateria);
+        $stmtMateria->execute(['id_materia_ficha' => $id_materia_ficha]);
+        $rowMateria = $stmtMateria->fetch(PDO::FETCH_ASSOC);
+
+        $nombreMateria = $rowMateria['nombre_materia'] ?? 'materia';
+        $nombreInstructor = trim($rowMateria['nombres'] . ' ' . $rowMateria['apellidos']);
+
         // Obtener aprendices asociados
         $sqlAprendices = "
             SELECT u.id AS id_user
@@ -89,6 +105,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $aprendices = $stmtAprendices->fetchAll(PDO::FETCH_ASSOC);
 
+        // Insertar registros en actividades_user
         $sqlInsertActividadUser = "
             INSERT INTO actividades_user 
             (id_actividad, id_estado_actividad, contenido, archivo1, archivo2, archivo3, fecha_entrega, id_user, nota, comentario_inst)
@@ -111,25 +128,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         ";
         $stmtNotif = $conex->prepare($sqlNotificacion);
 
-        $mensajeNotif = "Se ha asignado una nueva actividad: " . $titulo;
+        $mensajeNotif = "El instructor $nombreInstructor ha publicado la actividad \"$titulo\" en la materia $nombreMateria.";
         $urlDestino = BASE_URL . "/aprendiz/clase/detalle_actividad.php?id=" . $id_actividad;
         $idEmisor = $_SESSION['documento'];
 
         foreach ($aprendices as $aprendiz) {
             // Verificar si ya existe una notificación para este aprendiz y esta actividad
             $stmtCheck = $conex->prepare("
-        SELECT COUNT(*) FROM notificaciones
-        WHERE id_usuario = :id_usuario
-        AND url_destino = :url_destino
-        AND tipo = 'actividad'
-    ");
+                SELECT COUNT(*) FROM notificaciones
+                WHERE id_usuario = :id_usuario
+                AND url_destino = :url_destino
+                AND tipo = 'actividad'
+            ");
             $stmtCheck->execute([
                 'id_usuario' => $aprendiz['id_user'],
                 'url_destino' => $urlDestino
             ]);
 
             if ((int)$stmtCheck->fetchColumn() === 0) {
-                // Insertar solo si no existe
                 $stmtNotif->execute([
                     'id_usuario'   => $aprendiz['id_user'],
                     'mensaje'      => $mensajeNotif,
@@ -138,7 +154,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ]);
             }
         }
-
 
         $_SESSION['actividad_creada'] = $titulo;
         header("Location: ../$subcarpeta/actividades.php?id=" . (int)$id_ficha);

@@ -1,4 +1,4 @@
-    <?php
+<?php
     session_start();
 
 
@@ -1011,6 +1011,7 @@
                                 <div class="col-md-6 mb-3">
                                     <label for="password" class="form-label">Contraseña *</label>
                                     <input type="password" class="form-control" id="password" name="password" required>
+                                    <div id="passwordHelp" class="form-text text-danger"></div>
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <label for="id_rol" class="form-label">Rol *</label>
@@ -1399,8 +1400,71 @@
         });
         
         </script>
+        <script>
+$(document).ready(function() {
+    // Validación en tiempo real de contraseña
+    $('#password').on('input', function() {
+        const password = $(this).val();
+        const regex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[!@#$%^&*()_\-+=\[\]{};':"\\|,.<>\/?]).{6,20}$/;
+        if (password.length === 0) {
+            $('#passwordHelp').text('');
+        } else if (!regex.test(password)) {
+            $('#passwordHelp').text('La contraseña debe tener entre 6 y 20 caracteres, al menos 1 letra, 1 número y 1 caracter especial.');
+        } else {
+            $('#passwordHelp').text('');
+        }
+    });
 
+    // Validación en tiempo real de documento
+    $('#id').on('input', function() {
+        const doc = $(this).val();
+        if (doc.length === 0) {
+            $(this).removeClass('is-invalid');
+            $('#docHelp').text('');
+        } else if (doc.length < 8 || doc.length > 10) {
+            $(this).addClass('is-invalid');
+            $('#docHelp').text('El documento debe tener entre 8 y 10 caracteres.');
+        } else {
+            $(this).removeClass('is-invalid');
+            $('#docHelp').text('');
+        }
+    });
 
+    
+    // Validación final al enviar
+    $('#userForm').on('submit', function(e) {
+        const password = $('#password').val();
+        const regexPass = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[!@#$%^&*()_\-+=\[\]{};':"\\|,.<>\/?]).{6,20}$/;
+        const doc = $('#id').val();
+
+        let error = false;
+
+        if (password && !regexPass.test(password)) {
+            $('#passwordHelp').text('La contraseña debe tener entre 6 y 20 caracteres, al menos 1 letra, 1 número y 1 caracter especial.');
+            $('#password').focus();
+            error = true;
+        } else {
+            $('#passwordHelp').text('');
+        }
+
+        if (doc.length < 8 || doc.length > 10) {
+            $('#id').addClass('is-invalid');
+            $('#docHelp').text('El documento debe tener entre 8 y 10 caracteres.');
+            $('#id').focus();
+            error = true;
+        } else {
+            $('#id').removeClass('is-invalid');
+            $('#docHelp').text('');
+        }
+
+        if (error) {
+            e.preventDefault();
+            return false;
+        }
+    });
+});
+        </script>
 
     </body>
     </html>
+    

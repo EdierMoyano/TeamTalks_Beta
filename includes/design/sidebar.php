@@ -53,7 +53,21 @@ if (strpos($_SERVER['HTTP_HOST'], 'localhost') !== false || strpos($_SERVER['DOC
             <span class="nav-label">Formaciones</span>
           </a>
         </li>
-
+        <li class="nav-item has-submenu">
+          <a href="#" class="sidebar-nav-link submenu-toggle" onclick="toggleSubmenu(this)" data-tooltip="Clases Inscritas">
+            <i class="side bi bi-people-fill nav-icon"></i>
+            <span class="nav-label">Clases Inscritas</span>
+            <i class="bi bi-chevron-down submenu-arrow"></i>
+          </a>
+          <ul class="submenu">
+            <li>
+              <a href="<?= BASE_URL ?>/aprendiz/actividades_filtro/filtro_actividades.php" class="sidebar-nav-link small">
+                <i class="side bi bi-briefcase-fill nav-icon"></i>
+                <span class="nav-label">Actividades</span>
+              </a>
+            </li>
+          </ul>
+        </li>
         <li class="nav-item">
           <a href="<?= BASE_URL ?>/aprendiz/foros/foros.php" class="sidebar-nav-link" data-tooltip="Foros">
             <i class="side bi bi-pencil-square nav-icon"></i>

@@ -274,6 +274,7 @@ try {
     $alertType = "danger";
 }
 
+
 ?>
 
 <!DOCTYPE html>
@@ -1332,9 +1333,58 @@ try {
                 select.innerHTML = '<option value="">Primero seleccione una ficha</option>';
             });
         }
+
+
+        // Validar si ya existe horario para ficha y trimestre
+        async function validarHorarioFichaTrimestre() {
+            const idFicha = document.getElementById('id_ficha').value;
+            const idTrimestre = document.getElementById('id_trimestre').value;
+            const mensajeDiv = document.getElementById('mensajeHorarioExistente');
+
+            if (!idFicha || !idTrimestre) {
+                if (mensajeDiv) mensajeDiv.style.display = 'none';
+                return;
+            }
+
+            try {
+                const response = await fetch(`get_data.php?action=verificar_horario_ficha_trimestre&id_ficha=${idFicha}&id_trimestre=${idTrimestre}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.existe) {
+                        mensajeDiv.innerHTML = `<div class="alert alert-danger mt-2">
+                    Ya existe un horario para esta ficha y trimestre: <strong>${data.nombre_horario}</strong>
+                </div>`;
+                        mensajeDiv.style.display = 'block';
+                        document.getElementById('btnCrearHorario').disabled = true;
+                    } else {
+                        mensajeDiv.style.display = 'none';
+                        document.getElementById('btnCrearHorario').disabled = false;
+                    }
+                }
+            } catch (error) {
+                console.error('Error validando horario:', error);
+            }
+        }
+
+        // Mostrar mensaje debajo de los selects de ficha/trimestre
+        document.addEventListener('DOMContentLoaded', function() {
+            // Crear div para mensaje si no existe
+            if (!document.getElementById('mensajeHorarioExistente')) {
+                const row = document.querySelector('.row.mb-3');
+                const mensajeDiv = document.createElement('div');
+                mensajeDiv.id = 'mensajeHorarioExistente';
+                mensajeDiv.style.display = 'none';
+                row.parentNode.insertBefore(mensajeDiv, row.nextSibling);
+            }
+
+            // Validar al cambiar ficha o trimestre
+            document.getElementById('id_trimestre').addEventListener('change', validarHorarioFichaTrimestre);
+            document.getElementById('id_ficha').addEventListener('change', validarHorarioFichaTrimestre);
+            document.getElementById('buscar_ficha').addEventListener('change', validarHorarioFichaTrimestre);
+        });
     </script>
 
-    
+
 </body>
 
 </html>

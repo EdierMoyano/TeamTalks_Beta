@@ -156,6 +156,7 @@ function obtenerIniciales($nombre_completo)
 
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <title>Clases - <?php echo htmlspecialchars($materiaActual['materia']); ?></title>
@@ -170,6 +171,7 @@ function obtenerIniciales($nombre_completo)
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0">
+    <link rel="icon" href="../../assets/img/icon2.png">
     <link rel="stylesheet" href="../css/styles.css">
     <link rel="stylesheet" href="../css/validacion-notas.css">
 
@@ -385,9 +387,11 @@ function obtenerIniciales($nombre_completo)
             0% {
                 transform: scale(1);
             }
+
             50% {
                 transform: scale(1.1);
             }
+
             100% {
                 transform: scale(1);
             }
@@ -893,4 +897,5 @@ function obtenerIniciales($nombre_completo)
         });
     </script>
 </body>
+
 </html>

@@ -17,8 +17,7 @@ if (!$datosSesion) {
 $id_usuario_actual = $datosSesion['id'];
 
 // Obtener el ID del foro desde la URL
-$id_foro = $_GET['id'] ?? null;
-
+$id_foro = $_GET['id_foro'] ?? null;
 if (!$id_foro) {
     header('Location: foros.php');
     exit;
@@ -31,53 +30,11 @@ if (!$foro) {
     exit;
 }
 
-// Obtener temas del foro
-$temas = obtenerTemasForo($id_foro);
-
 // Verificar si el usuario puede participar en este foro
 $puedeParticipar = puedeParticiparForo($id_usuario_actual, $foro['id_materia_ficha']);
 
-// Verificar si el usuario es instructor
-$esInstructor = esInstructorMateriaFicha($id_usuario_actual, $foro['id_materia_ficha']);
-
-// Procesar la creación de un nuevo tema (solo para instructores)
-$mensaje = '';
-$tipoMensaje = '';
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['crear_tema']) && $esInstructor) {
-    $titulo = $_POST['titulo'] ?? '';
-    $descripcion = $_POST['descripcion'] ?? '';
-
-    if (empty($titulo)) {
-        $mensaje = 'El título del tema es obligatorio';
-        $tipoMensaje = 'danger';
-    } else {
-        $resultado = crearTemaForoSesion($id_foro, $titulo, $descripcion);
-
-        if ($resultado['success']) {
-            $mensaje = 'Tema creado exitosamente';
-            $tipoMensaje = 'success';
-            $temas = obtenerTemasForo($id_foro);
-        } else {
-            $mensaje = $resultado['message'];
-            $tipoMensaje = 'danger';
-        }
-    }
-}
-
-// Obtener información de la materia para el breadcrumb
-$stmt = $pdo->prepare("
-    SELECT m.materia, mf.id_materia_ficha
-    FROM materia_ficha mf
-    JOIN materias m ON mf.id_materia = m.id_materia
-    WHERE mf.id_ficha = ?
-    ORDER BY mf.id_materia_ficha ASC
-    LIMIT 1
-");
-$stmt->execute([$foro['id_ficha']]);
-$materiaPrincipalData = $stmt->fetch();
-$materiaPrincipal = $materiaPrincipalData ? $materiaPrincipalData['materia'] : 'Sin materia asignada';
-$idMateriaFicha = $materiaPrincipalData ? $materiaPrincipalData['id_materia_ficha'] : null;
+// Obtener temas del foro
+$temas = obtenerTemasForo($id_foro);
 ?>
 
 <!DOCTYPE html>
@@ -85,9 +42,8 @@ $idMateriaFicha = $materiaPrincipalData ? $materiaPrincipalData['id_materia_fich
 
 <head>
     <meta charset="UTF-8">
-    <title>Temas del Foro - TeamTalks</title>
+    <title><?php echo htmlspecialchars($foro['titulo'] ?? 'Sin título'); ?> - Temas</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <!-- Bootstrap y fuentes -->
     <link rel="stylesheet" href="../../styles/header.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -97,109 +53,29 @@ $idMateriaFicha = $materiaPrincipalData ? $materiaPrincipalData['id_materia_fich
         crossorigin="anonymous" referrerpolicy="no-referrer" />
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0">
-
+    <link rel="icon" href="../../assets/img/icon2.png">
     <link rel="stylesheet" href="../css/styles.css">
 
     <style>
+        :root {
+            --primary-color: #0E4A86;
+            --primary-hover: #0d4077;
+            --surface-color: #ffffff;
+            --border-color: #e2e8f0;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --background-color: #f8fafc;
+        }
+
         body.sidebar-collapsed .main-content {
             margin-left: 100px;
         }
 
-        .main-content {
-            padding: 20px;
-        }
-
-        .tema-card {
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-            border-radius: 12px;
-            overflow: hidden;
-            margin-bottom: 20px;
-        }
-
-        .tema-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        .tema-header {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            padding: 15px 20px;
-            border-bottom: 1px solid #eee;
-        }
-
-        .tema-avatar {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background-color: #0E4A86;
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 600;
-            font-size: 1.2rem;
-        }
-
-        .tema-meta {
-            flex: 1;
-        }
-
-        .tema-autor {
-            font-weight: 600;
-            margin-bottom: 2px;
-        }
-
-        .tema-fecha {
-            font-size: 0.9rem;
-            color: #666;
-        }
-
-        .tema-content {
-            padding: 20px;
-        }
-
-        .tema-title {
-            font-size: 1.25rem;
-            font-weight: 600;
-            margin-bottom: 10px;
-        }
-
-        .tema-description {
-            color: #555;
-            margin-bottom: 15px;
-        }
-
-        .tema-footer {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px 20px;
-            background-color: #f8f9fa;
-            border-top: 1px solid #eee;
-        }
-
-        .tema-stats {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .stat-item {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            color: #666;
-        }
-
-        .foro-header {
-            background-color: #0E4A86;
-            color: white;
-            padding: 25px;
-            border-radius: 12px;
-            margin-bottom: 30px;
+        .main-content .container-fluid {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding-left: 12px;
+            padding-right: 12px;
         }
 
         .breadcrumb-custom {
@@ -209,7 +85,7 @@ $idMateriaFicha = $materiaPrincipalData ? $materiaPrincipalData['id_materia_fich
         }
 
         .breadcrumb-custom .breadcrumb-item a {
-            color: #0E4A86;
+            color: var(--primary-color);
             text-decoration: none;
         }
 
@@ -217,150 +93,306 @@ $idMateriaFicha = $materiaPrincipalData ? $materiaPrincipalData['id_materia_fich
             text-decoration: underline;
         }
 
-        .btn-azul-custom {
-            background-color: #0E4A86 !important;
-            border-color: #0E4A86 !important;
-            color: #fff !important;
-            transition: background 0.2s, color 0.2s;
+        .foro-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
+            color: white;
+            padding: 2rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
         }
 
-        .btn-azul-custom:hover,
-        .btn-azul-custom:focus {
-            background-color: #08325a !important;
-            border-color: #08325a !important;
-            color: #fff !important;
+        .foro-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .foro-meta {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .instructor-info {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .instructor-avatar {
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+
+        .temas-section {
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .temas-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            background: linear-gradient(135deg, var(--background-color), #f1f5f9);
+        }
+
+        .temas-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .tema-item {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .tema-item:last-child {
+            border-bottom: none;
+        }
+
+        .tema-item:hover {
+            background: linear-gradient(135deg, rgba(14, 74, 134, 0.02), rgba(14, 74, 134, 0.01));
+        }
+
+        .tema-header-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 0.75rem;
+        }
+
+        .tema-titulo {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0;
+            text-decoration: none;
+        }
+
+        .tema-titulo:hover {
+            color: var(--primary-color);
+        }
+
+        .tema-stats {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .stat-badge {
+            background: var(--primary-color);
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .tema-meta {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .autor-info {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .autor-avatar {
+            width: 32px;
+            height: 32px;
+            background: var(--primary-color);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.75rem;
+        }
+
+        .tema-descripcion {
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 0.75rem;
+        }
+
+        .tema-fecha {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .empty-state {
+            padding: 4rem 2rem;
+            text-align: center;
+            color: var(--text-secondary);
+        }
+
+        .empty-state-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .empty-state h4 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+
+        .empty-state p {
+            font-size: 0.875rem;
+            margin: 0;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding-top: 120px;
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 0.75rem;
+            }
+
+            .foro-title {
+                font-size: 1.5rem;
+            }
+
+            .tema-header-info {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+
+            .tema-meta {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
         }
     </style>
 </head>
 
 <body class="sidebar-collapsed">
-
     <!-- Header -->
     <?php include '../../includes/design/header.php'; ?>
-
     <!-- Sidebar -->
     <?php include '../../includes/design/sidebar.php'; ?>
 
     <!-- Contenido principal -->
     <main class="main-content">
         <div class="container-fluid">
+            <!-- Breadcrumb -->
+            <nav class="breadcrumb-custom">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a href="foros.php">
+                            <i class="bi bi-arrow-left me-1"></i>Volver a Foros
+                        </a>
+                    </li>
+                </ol>
+            </nav>
 
             <!-- Encabezado del foro -->
             <div class="foro-header">
-                <h1 class="h2 mb-3">Foro: <?php echo htmlspecialchars($foro['materia']); ?></h1>
-                <p class="mb-0">
-                    <i class="fas fa-user-tie"></i>
-                    Instructor: <?php echo htmlspecialchars($foro['nombres'] . ' ' . $foro['apellidos']); ?>
-                </p>
+                <?php if (!empty($foro['descripcion'])): ?>
+                    <p class="mb-0"><?php echo nl2br(htmlspecialchars($foro['descripcion'])); ?></p>
+                <?php endif; ?>
+                <div class="foro-meta">
+                    <div class="instructor-info">
+                        <div class="instructor-avatar">
+                            <?php echo obtenerIniciales($foro['nombres'] . ' ' . $foro['apellidos']); ?>
+                        </div>
+                        <div>
+                            <strong><?php echo htmlspecialchars($foro['nombres'] . ' ' . $foro['apellidos']); ?></strong>
+                            <br>
+                            <small><?php echo htmlspecialchars($foro['materia']); ?></small>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <!-- Mensaje de resultado -->
-            <?php if ($mensaje): ?>
-                <div class="alert alert-<?php echo $tipoMensaje; ?> alert-dismissible fade show" role="alert">
-                    <?php echo $mensaje; ?>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            <?php endif; ?>
-
-            <!-- Botón para crear nuevo tema (solo para instructores) -->
-            <?php if ($esInstructor): ?>
-                <div class="mb-4">
-                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalCrearTema">
-                        <i class="bi bi-plus-circle"></i> Crear nuevo tema
-                    </button>
-                </div>
-            <?php endif; ?>
-
             <!-- Lista de temas -->
-            <div class="row">
-                <div class="col-12">
-                    <?php if (count($temas) > 0): ?>
-                        <?php foreach ($temas as $tema): ?>
-                            <div class="card tema-card shadow-sm">
-                                <div class="tema-header">
-                                    <div class="tema-avatar">
-                                        <?php echo obtenerIniciales($tema['nombres'] . ' ' . $tema['apellidos']); ?>
-                                    </div>
-                                    <div class="tema-meta">
-                                        <p class="tema-autor"><?php echo htmlspecialchars($tema['nombres'] . ' ' . $tema['apellidos']); ?></p>
-                                        <p class="tema-fecha"><?php echo formatearFecha($tema['fecha_creacion']); ?></p>
-                                    </div>
-                                </div>
-                                <div class="tema-content">
-                                    <h3 class="tema-title"><?php echo htmlspecialchars($tema['titulo']); ?></h3>
-                                    <?php if ($tema['descripcion']): ?>
-                                        <p class="tema-description"><?php echo nl2br(htmlspecialchars($tema['descripcion'])); ?></p>
-                                    <?php endif; ?>
-                                    <a href="detalle_tema.php?id=<?php echo $tema['id_tema_foro']; ?>" class="btn btn-outline-primary btn-azul-custom">
-                                        <i class="bi bi-chat-text"></i> Ver discusión
+            <div class="temas-section">
+                <div class="temas-header">
+                    <h3 class="temas-title">
+                        <i class="bi bi-chat-dots me-2"></i>
+                        Temas de Discusión (<?php echo count($temas); ?>)
+                    </h3>
+                </div>
+
+                <?php if (count($temas) > 0): ?>
+                    <?php foreach ($temas as $tema): ?>
+                        <div class="tema-item" onclick="window.location.href='detalle_tema.php?id=<?php echo $tema['id_tema_foro']; ?>'">
+                            <div class="tema-header-info">
+                                <h4 class="tema-titulo">
+                                    <a href="detalle_tema.php?id=<?php echo $tema['id_tema_foro']; ?>" class="tema-titulo">
+                                        <?php echo htmlspecialchars($tema['titulo'] ?? 'Sin título'); ?>
                                     </a>
-                                </div>
-                                <div class="tema-footer">
-                                    <div class="tema-stats">
-                                        <div class="stat-item">
-                                            <i class="bi bi-chat"></i>
-                                            <span><?php echo $tema['cantidad_respuestas']; ?> respuestas</span>
-                                        </div>
-                                    </div>
+                                </h4>
+                                <div class="tema-stats">
+                                    <span class="stat-badge"><?php echo $tema['cantidad_respuestas']; ?> respuestas</span>
                                 </div>
                             </div>
-                        <?php endforeach; ?>
-                    <?php else: ?>
-                        <div class="alert alert-info">
-                            <i class="bi bi-info-circle"></i>
-                            No hay temas en este foro.
-                            <?php if ($esInstructor): ?>
-                                ¡Sé el primero en crear uno!
+
+                            <div class="tema-meta">
+                                <div class="autor-info">
+                                    <div class="autor-avatar">
+                                        <?php echo obtenerIniciales($tema['nombres'] . ' ' . $tema['apellidos']); ?>
+                                    </div>
+                                    <span>
+                                        <strong><?php echo htmlspecialchars($tema['nombres'] . ' ' . $tema['apellidos']); ?></strong>
+                                    </span>
+                                </div>
+                                <div class="tema-fecha">
+                                    <i class="bi bi-clock me-1"></i>
+                                    <?php echo formatearFecha($tema['fecha_creacion']); ?>
+                                </div>
+                            </div>
+
+                            <?php if (!empty($tema['descripcion'])): ?>
+                                <div class="tema-descripcion">
+                                    <?php echo nl2br(htmlspecialchars(substr($tema['descripcion'], 0, 200))); ?>
+                                    <?php if (strlen($tema['descripcion']) > 200): ?>...<?php endif; ?>
+                                </div>
                             <?php endif; ?>
                         </div>
-                    <?php endif; ?>
-                </div>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <div class="empty-state">
+                        <div class="empty-state-icon">
+                            <i class="bi bi-chat-slash"></i>
+                        </div>
+                        <h4>No hay temas de discusión</h4>
+                        <p>Aún no se han creado temas en este foro</p>
+                    </div>
+                <?php endif; ?>
             </div>
         </div>
     </main>
 
-    <!-- Modal para crear nuevo tema (solo para instructores) -->
-    <?php if ($esInstructor): ?>
-        <div class="modal fade" id="modalCrearTema" tabindex="-1" aria-labelledby="modalCrearTemaLabel" aria-hidden="true">
-            <div class="modal-dialog modal-lg">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="modalCrearTemaLabel">Crear nuevo tema</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <form method="POST" action="">
-                        <div class="modal-body">
-                            <div class="mb-3">
-                                <label for="titulo" class="form-label">Título del tema *</label>
-                                <input type="text" class="form-control" id="titulo" name="titulo" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="descripcion" class="form-label">Descripción (opcional)</label>
-                                <textarea class="form-control" id="descripcion" name="descripcion" rows="5"></textarea>
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                            <button type="submit" name="crear_tema" class="btn btn-primary">Crear tema</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    <?php endif; ?>
-
     <script src="../js/script.js"></script>
-
-    <script>
-        // Función corregida para volver a la clase
-        function volverAClase() {
-            <?php if ($idMateriaFicha): ?>
-                window.location.href = `index.php?id_clase=<?php echo $idMateriaFicha; ?>`;
-            <?php else: ?>
-                window.location.href = '../index.php';
-            <?php endif; ?>
-        }
-    </script>
 </body>
 
 </html>

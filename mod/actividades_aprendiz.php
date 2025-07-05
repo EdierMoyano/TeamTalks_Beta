@@ -276,9 +276,7 @@ function mapEstadoToClass($estado)
                                             <h4 class="detail-title">Fecha Límite</h4>
                                         </div>
                                         <p class="detail-value large"><?= date('d/m/Y', strtotime($act['fecha_entrega'])) ?></p>
-                                        <p class="detail-value" style="font-size: 0.75rem; color: var(--text-muted);">
-                                            <?= date('H:i', strtotime($act['fecha_entrega'])) ?> hrs
-                                        </p>
+                                        
                                     </div>
 
                                     <!-- Estado -->

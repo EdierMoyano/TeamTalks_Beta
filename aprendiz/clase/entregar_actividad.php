@@ -23,13 +23,6 @@ if (!$id_actividad || !$id_usuario) {
 }
 
 try {
-    // Verificar si ya existe una entrega para esta actividad y usuario
-    $entregaExistente = verificarEntregaExistente($id_actividad, $id_usuario);
-
-    if ($entregaExistente) {
-        echo json_encode(['success' => false, 'message' => 'Ya has entregado esta actividad']);
-        exit;
-    }
 
     // Crear directorio por usuario si no existe
     $directorioBase = 'uploads/';

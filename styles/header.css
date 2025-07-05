@@ -947,7 +947,7 @@ body:has(.user-section-logged).mobile-nav-active .mobile-nav-overlay {
 .modal-editar-perfil .modal-title {
   font-size: 1.75rem;
   font-weight: 700;
-  color: #1f2937;
+  color: white;
   margin: 0;
   display: flex;
   align-items: center;
@@ -955,7 +955,6 @@ body:has(.user-section-logged).mobile-nav-active .mobile-nav-overlay {
 }
 
 .modal-editar-perfil .modal-title::before {
-  content: "👤";
   font-size: 1.5rem;
 }
 
