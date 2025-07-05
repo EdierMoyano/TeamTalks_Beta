@@ -4,38 +4,32 @@ if (session_status() == PHP_SESSION_NONE) {
     session_start();
 }
 
-$nombreUsuario = "Usuario"; // Valor por defecto
-if (isset($_SESSION['documento'])) {
-    // Conexión a la base de datos
-    // Asumiendo que conexion.php está en la raíz del proyecto
-    $conexion = new mysqli("localhost", "root", "", "u148394603_teamtalks");
-    
-    // Verificar conexión
-    if ($conexion->connect_error) {
-        die("Error de conexión: " . $conexion->connect_error);
-    }
-    
-    // Consultar SOLO el nombre del usuario (sin apellido)
+// Carga la conexión de forma universal (local y hosting)
+if (strpos($_SERVER['HTTP_HOST'], 'localhost') !== false || strpos($_SERVER['DOCUMENT_ROOT'], 'htdocs') !== false) {
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/teamtalks/conexion/init.php';
+} else {
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/conexion/init.php';
+}
+
+$nombreUsuario = "Usuario";
+if (isset($_SESSION['documento']) && isset($conexion)) {
     $id_user = $_SESSION['documento'];
-    $sql = "SELECT nombres FROM usuarios WHERE id = ?";
-    $stmt = $conexion->prepare($sql);
-    $stmt->bind_param("i", $id_user);
-    $stmt->execute();
-    $resultado = $stmt->get_result();
-    
-    if ($fila = $resultado->fetch_assoc()) {
-        $nombreUsuario = $fila['nombres']; // Solo el nombre, sin apellido
+    $stmt = $conex->prepare("SELECT nombres FROM usuarios WHERE id = ?");
+    $stmt->execute([$id_user]);
+    if ($fila = $stmt->fetch(PDO::FETCH_ASSOC)) {
+        $nombreUsuario = $fila['nombres'];
     }
-    
-    $stmt->close();
-    $conexion->close();
 }
 
 // Obtener la URL actual para marcar el elemento activo
 $currentPage = basename($_SERVER['PHP_SELF']);
 
-// Definir la ruta base para todas las URLs (ajustar según tu estructura)
-$baseUrl = "/teamtalks/admin/"; // Asegúrate de que esta ruta sea correcta
+// Definir la ruta base para todas las URLs de forma dinámica
+if (strpos($_SERVER['HTTP_HOST'], 'localhost') !== false) {
+    $baseUrl = "/teamtalks/admin/";
+} else {
+    $baseUrl = "/admin/";
+}
 ?>
 
 <!DOCTYPE html>

@@ -229,7 +229,7 @@ if ($data):
                 </div>
                 <div class="d-flex flex-wrap gap-3">
                     <?php foreach ($archivos as $archivo): ?>
-                        <a href="../uploads/<?= $archivo ?>" target="_blank" class="btn-outline-link flex-fill text-truncate" style="flex: 1 1 calc(33.333% - 0.5rem); min-width: 150px;">
+                        <a href="../aprendiz/clase/<?= $archivo ?>" target="_blank" class="btn-outline-link flex-fill text-truncate" style="flex: 1 1 calc(33.333% - 0.5rem); min-width: 150px;">
                             <i class="bi bi-file-earmark-arrow-down"></i>
                             <span class="archivo-nombre"><?= htmlspecialchars($archivo) ?></span>
                         </a>

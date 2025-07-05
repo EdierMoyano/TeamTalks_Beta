@@ -219,7 +219,7 @@ $estados_actividades = [
               <div class="form-group">
                 <label class="form-label">Competencias</label>
                 <select class="form-select" name="materia_filtro" id="materia_filtro">
-                  <option value="">🎯 Todas las competencias</option>
+                  <option value="">🎯 Todas las Materias</option>
                   <?php foreach ($materias as $materia): ?>
                     <option value="<?= $materia['id_materia'] ?>">
                       <?= htmlspecialchars($materia['materia']) ?>
@@ -234,7 +234,6 @@ $estados_actividades = [
                   <option value="apellidos">👤 Apellidos</option>
                   <option value="nombres">📝 Nombres</option>
                   <option value="documento">🆔 Documento</option>
-                  <option value="actividades_pendientes">⏰ Act. Pendientes</option>
                 </select>
               </div>
             </div>

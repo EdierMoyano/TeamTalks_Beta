@@ -17,7 +17,7 @@ class Database
         if ($isLocal) {
             // XAMPP local
             $this->hostname = 'localhost';
-            $this->database = 'u148394603_teamtalks'; // cambia si tu BD local tiene otro nombre
+            $this->database = 'u148394603_teamtalks';
             $this->username = 'root';
             $this->password = '';
         } else {
@@ -40,7 +40,6 @@ class Database
 
             $pdo = new PDO($conexion, $this->username, $this->password, $options);
 
-            // Zona horaria compatible con local y hosting
             $pdo->exec("SET time_zone = '-05:00'");
 
             return $pdo;

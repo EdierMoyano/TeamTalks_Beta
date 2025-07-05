@@ -58,21 +58,16 @@ $_SESSION['recovery_user_id'] = $userId;
 // 8) Envío con PHPMailer
 $mail = new PHPMailer(true);
 try {
-    // SMTP Hostinger/Titan :contentReference[oaicite:0]{index=0}
+    // Configurar el servidor SMTP de Gmail
     $mail->isSMTP();
-    $mail->Host       = 'smtp.hostinger.com';
+    $mail->Host       = 'smtp.gmail.com';
     $mail->SMTPAuth   = true;
-    $mail->Username   = 'recovery_password@teamtalks.com.co';
-    $mail->Password   = 'n=As;!mqhi"4P)H';    // revisa que sea la del buzón
-    // Debug: descomenta para ver respuesta SMTP
-    // $mail->SMTPDebug  = SMTP::DEBUG_SERVER;
-    // $mail->Debugoutput= 'html';
+    $mail->Username   = 'teamtalks39@gmail.com';
+    $mail->Password   = 'vjpz udnq kacd gwyl';
+    $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+    $mail->Port       = 587;
 
-    // Usa TLS+587 (a veces SSL/465 falla en autenticación)
-    $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS; // STARTTLS :contentReference[oaicite:1]{index=1}
-    $mail->Port       = 587;                            // Puerto TLS :contentReference[oaicite:2]{index=2}
-
-    $mail->setFrom('recovery_password@teamtalks.com.co', 'Recuperación TeamTalks');
+    $mail->setFrom('teamtalks39@gmail.com', 'Recuperación TeamTalks');
     $mail->addAddress($correo);
 
     $mail->isHTML(true);

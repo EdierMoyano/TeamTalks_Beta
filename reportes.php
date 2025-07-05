@@ -20,16 +20,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $mail->isSMTP();
     $mail->Host = 'smtp.gmail.com';
     $mail->SMTPAuth = true;
-    $mail->Username = 'teamtalks39@gmail.com'; // Cambia esto por tu correo
-    $mail->Password = 'vjpz udnq kacd gwyl'; // Cambia esto por tu contraseña o una contraseña de aplicación
+    $mail->Username = 'teamtalks39@gmail.com';
+    $mail->Password = 'vjpz udnq kacd gwyl';
     $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
     $mail->Port = 587;
 
-    // Remitente y destinatario
+    // Remitente y destinatario (equipo)
     $mail->setFrom('teamtalks39@gmail.com', 'Sistema de Reportes');
-    $mail->addAddress('teamtalks39@gmail.com', 'Equipo de Reportes'); // Cambia esto por el correo de la empresa
+    $mail->addAddress('teamtalks39@gmail.com', 'Equipo de Reportes');
 
-    // Contenido del correo
+    // Contenido del correo al equipo
     $mail->isHTML(true);
     $mail->Subject = 'Nuevo Reporte de Usuario - ' . $tipoReporte;
     $mail->Body    = "
@@ -181,9 +181,44 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         </html>
         ";
 
-    // Enviar el correo
+    // Enviar correo al equipo
     if ($mail->send()) {
-      // Establecer una variable para mostrar el modal en el frontend
+      // Ahora enviar correo de confirmación al usuario
+      $mail2 = new PHPMailer(true);
+      $mail2->isSMTP();
+      $mail2->Host = 'smtp.gmail.com';
+      $mail2->SMTPAuth = true;
+      $mail2->Username = 'teamtalks39@gmail.com';
+      $mail2->Password = 'vjpz udnq kacd gwyl';
+      $mail2->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+      $mail2->Port = 587;
+
+      $mail2->setFrom('teamtalks39@gmail.com', 'TeamTalks Soporte');
+      $mail2->addAddress($correo, $nombre ?: 'Usuario');
+
+      $mail2->isHTML(true);
+      $mail2->Subject = 'Confirmación de reporte recibido - TeamTalks';
+      $mail2->Body = "
+        <html>
+        <body style='font-family: Inter, Arial, sans-serif; background: #f8fafc; color: #1e293b;'>
+          <div style='max-width: 600px; margin: 0 auto; background: #fff; border-radius: 12px; box-shadow: 0 2px 8px #0001; padding: 2rem;'>
+            <h2 style='color: #16a34a;'>¡Hemos recibido tu reporte!</h2>
+            <p>Hola <strong>" . htmlspecialchars($nombre ?: 'Usuario') . "</strong>,</p>
+            <p>Gracias por contactarnos. Tu reporte ha sido recibido correctamente y nuestro equipo lo revisará lo antes posible.</p>
+            <div style='margin: 1.5rem 0; padding: 1rem; background: #f1f5f9; border-left: 4px solid #16a34a; border-radius: 8px;'>
+              <strong>Resumen de tu reporte:</strong><br>
+              <b>Tipo:</b> " . htmlspecialchars($tipoReporte) . "<br>
+              <b>Descripción:</b> " . nl2br(htmlspecialchars($descripcion)) . "
+            </div>
+            <p>Te mantendremos informado sobre cualquier actualización.</p>
+            <p style='color: #64748b; font-size: 0.95em;'>Este es un mensaje automático, por favor no respondas a este correo.</p>
+            <p style='margin-top:2rem; color: #64748b; font-size: 0.95em;'>TeamTalks - Soporte Técnico</p>
+          </div>
+        </body>
+        </html>
+      ";
+      $mail2->send();
+
       $successMessage = "Tu reporte ha sido enviado exitosamente.";
       echo '<script>var showModal = true;</script>';
     } else {

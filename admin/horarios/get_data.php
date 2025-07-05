@@ -60,6 +60,38 @@ switch ($action) {
         }
         break;
 
+    case 'verificar_horario_ficha_trimestre':
+        $idFicha = $_GET['id_ficha'] ?? null;
+        $idTrimestre = $_GET['id_trimestre'] ?? null;
+        if (!$idFicha || !$idTrimestre) {
+            http_response_code(400);
+            echo json_encode(['error' => 'ID de ficha y trimestre requeridos']);
+            exit;
+        }
+
+        try {
+            $stmt = $conexion->prepare("
+                SELECT nombre_horario 
+                FROM horario 
+                WHERE id_ficha = :id_ficha AND id_trimestre = :id_trimestre
+                LIMIT 1
+            ");
+            $stmt->bindParam(':id_ficha', $idFicha, PDO::PARAM_INT);
+            $stmt->bindParam(':id_trimestre', $idTrimestre, PDO::PARAM_INT);
+            $stmt->execute();
+            $horario = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if ($horario) {
+                echo json_encode(['existe' => true, 'nombre_horario' => $horario['nombre_horario']]);
+            } else {
+                echo json_encode(['existe' => false]);
+            }
+        } catch (PDOException $e) {
+            http_response_code(500);
+            echo json_encode(['error' => 'Error al verificar horario: ' . $e->getMessage()]);
+        }
+        break;
+
     default:
         http_response_code(400);
         echo json_encode(['error' => 'Acción no válida']);

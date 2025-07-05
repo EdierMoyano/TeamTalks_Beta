@@ -62,7 +62,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             if ($autor_padre && $autor_padre['id_user'] != $id_user) {
                 $mensaje = 'Han respondido a tu comentario en el foro.';
-                $url = BASE_URL . "/mod/ver_respuestas.php?id_tema=$id_tema_foro";
+                $url = BASE_URL . "/aprendiz/foros/detalle_tema.php?id=$id_tema_foro";
 
                 $stmt = $conex->prepare("
             INSERT INTO notificaciones (id_usuario, tipo, mensaje, url_destino, leido, fecha, id_emisor, id_respuesta_foro)

@@ -1,9 +1,14 @@
 <?php
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
 if (strpos($_SERVER['HTTP_HOST'], 'localhost') !== false || strpos($_SERVER['DOCUMENT_ROOT'], 'htdocs') !== false) {
     require_once $_SERVER['DOCUMENT_ROOT'] . '/teamtalks/conexion/init.php';
 } else {
     require_once $_SERVER['DOCUMENT_ROOT'] . '/conexion/init.php';
 }
+
 $usuario_logueado = isset($_SESSION['documento']);
 $id_usuario = $_SESSION['documento'] ?? null;
 $username = $_SESSION['nombres'] ?? 'Nombres';
@@ -44,7 +49,6 @@ if ($usuario_logueado && $rol) {
             !str_contains($current_path, '/assets/') &&
             !str_contains($current_path, '/uploads/')
         ) {
-
             // Redirigir a la página de inicio correspondiente
             $pagina_inicio = '';
             switch ($rol) {
@@ -105,41 +109,142 @@ if ($id_usuario) {
     $user = null;
 }
 
-// Cargar notificaciones
+// Cargar notificaciones - CONSULTA CORREGIDA SEGÚN LA ESTRUCTURA REAL
 $notificaciones = [];
 if ($id_usuario) {
     $stmt = $conex->prepare("
-        SELECT
-        n.id_notificacion,
-        n.mensaje,
-        n.url_destino,
-        n.leido,
-        n.fecha,
-        u.nombres AS autor_nombres,
-        ro.rol,
-        u.apellidos AS autor_apellidos,
-        r.descripcion AS contenido
-    FROM notificaciones n
-    JOIN usuarios u ON n.id_emisor = u.id
-    JOIN roles ro ON u.id_rol = ro.id_rol 
-    LEFT JOIN respuesta_foro r ON n.id_respuesta_foro = r.id_respuesta_foro
-    WHERE n.id_usuario = ?
-    ORDER BY n.fecha DESC
-    LIMIT 10
+        SELECT 
+            n.id_notificacion,
+            n.tipo,
+            n.url_destino,
+            n.leido,
+            n.fecha,
+            n.id_respuesta_foro,
+            u.nombres AS autor_nombres,
+            u.apellidos AS autor_apellidos,
+            ro.rol,
+            r.descripcion AS contenido_respuesta,
+            r.id_respuesta_padre,
+            padre.descripcion AS comentario_original
+        FROM notificaciones n
+        JOIN usuarios u ON n.id_emisor = u.id
+        JOIN roles ro ON u.id_rol = ro.id_rol 
+        LEFT JOIN respuesta_foro r ON n.id_respuesta_foro = r.id_respuesta_foro
+        LEFT JOIN respuesta_foro padre ON r.id_respuesta_padre = padre.id_respuesta_foro
+        WHERE n.id_usuario = ?
+        ORDER BY n.fecha DESC
+        LIMIT 10
     ");
     $stmt->execute([$id_usuario]);
     $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
     foreach ($rows as $row) {
-        $notificaciones[] = [
-            'id_notificacion' => $row['id_notificacion'],
-            'mensaje' => $row['mensaje'],
-            'url_destino' => $row['url_destino'],
-            'leido' => $row['leido'],
-            'fecha' => $row['fecha'],
-            'autor' => trim(($row['autor_nombres'] ?? 'Usuario') . ' ' . ($row['autor_apellidos'] ?? 'Anónimo')),
-            'contenido' => $row['contenido'] ? mb_strimwidth($row['contenido'], 0, 100, '...') : 'Sin contenido disponible'
-        ];
+    $nombre_autor = trim(($row['autor_nombres'] ?? 'Usuario') . ' ' . ($row['autor_apellidos'] ?? 'Anónimo'));
+    $mensaje = '';
+    $respuesta_contenido = '';
+
+    // 🟦 1. Notificación de tipo "actividad"
+    if ($row['tipo'] === 'actividad') {
+    // Intentar extraer el id_actividad desde la URL
+    $id_actividad = null;
+
+    // Buscar primero id_actividad
+    if (preg_match('/id_actividad=(\d+)/', $row['url_destino'], $match1)) {
+        $id_actividad = (int)$match1[1];
     }
+    // Si no se encontró, buscar id=
+    elseif (preg_match('/id=(\d+)/', $row['url_destino'], $match2)) {
+        $id_actividad = (int)$match2[1];
+    }
+
+
+    $materia_nombre = '';
+
+    if ($id_actividad) {
+        // Consulta para traer el nombre de la materia relacionada
+        $stmt_materia = $conex->prepare("
+            SELECT m.materia 
+            FROM actividades a
+            JOIN materia_ficha mf ON a.id_materia_ficha = mf.id_materia_ficha
+            JOIN materias m ON mf.id_materia = m.id_materia
+            WHERE a.id_actividad = ?
+        ");
+        $stmt_materia->execute([$id_actividad]);
+        $materia_data = $stmt_materia->fetch(PDO::FETCH_ASSOC);
+
+        if ($materia_data && !empty($materia_data['materia'])) {
+            $materia_nombre = $materia_data['materia'];
+        }
+    }
+
+    // Construir mensaje final con la materia (si existe)
+    if ($materia_nombre) {
+        $mensaje = "El instructor {$nombre_autor} ha publicado una nueva actividad en {$materia_nombre}.";
+    } else {
+        $mensaje = "El instructor {$nombre_autor} ha publicado una nueva actividad.";
+    }
+
+    $respuesta_contenido = ''; // No aplica para actividades
+}
+     else {
+        // Construcción base
+        $mensaje = "{$nombre_autor} ha respondido a tu comentario";
+
+        // Obtener comentario original (comentario padre)
+        $comentario_original = '';
+        if (!empty($row['comentario_original']) && trim($row['comentario_original']) !== '') {
+            $comentario_original = trim($row['comentario_original']);
+        } elseif (!empty($row['id_respuesta_padre'])) {
+            $stmt_padre = $conex->prepare("SELECT descripcion FROM respuesta_foro WHERE id_respuesta_foro = ?");
+            $stmt_padre->execute([$row['id_respuesta_padre']]);
+            $padre_data = $stmt_padre->fetch(PDO::FETCH_ASSOC);
+            if ($padre_data && !empty($padre_data['descripcion'])) {
+                $comentario_original = trim($padre_data['descripcion']);
+            }
+        }
+
+        if (!empty($comentario_original)) {
+            $comentario_corto = mb_strimwidth(strip_tags($comentario_original), 0, 60, '...');
+            $mensaje .= ': "' . $comentario_corto . '"';
+        }
+
+        // Obtener contenido de la respuesta
+        $contenido_respuesta = '';
+        if (!empty($row['contenido_respuesta']) && trim($row['contenido_respuesta']) !== '') {
+            $contenido_respuesta = trim($row['contenido_respuesta']);
+        } elseif (!empty($row['id_respuesta_foro'])) {
+            $stmt_respuesta = $conex->prepare("SELECT descripcion FROM respuesta_foro WHERE id_respuesta_foro = ?");
+            $stmt_respuesta->execute([$row['id_respuesta_foro']]);
+            $respuesta_data = $stmt_respuesta->fetch(PDO::FETCH_ASSOC);
+            if ($respuesta_data && !empty($respuesta_data['descripcion'])) {
+                $contenido_respuesta = trim($respuesta_data['descripcion']);
+            }
+        }
+
+        // Añadir respuesta al mensaje
+        if (!empty($contenido_respuesta)) {
+            $respuesta_corta = mb_strimwidth(strip_tags($contenido_respuesta), 0, 80, '...');
+            $mensaje .= ' con: "' . $respuesta_corta . '"';
+        }
+
+        $respuesta_contenido = !empty($contenido_respuesta)
+            ? mb_strimwidth(strip_tags($contenido_respuesta), 0, 80, '...')
+            : 'Sin contenido disponible';
+    }
+
+    // Agregar notificación final al array
+    $notificaciones[] = [
+        'id_notificacion' => $row['id_notificacion'],
+        'texto' => $mensaje,
+        'tipo' => $row['tipo'],
+        'url_destino' => $row['url_destino'],
+        'leido' => $row['leido'],
+        'fecha' => $row['fecha'],
+        'autor' => $nombre_autor,
+        'contenido' => $respuesta_contenido
+    ];
+}
+
 }
 
 // Contar notificaciones no leídas
@@ -153,7 +258,7 @@ if ($id_usuario) {
 
 <style>
     .btn-primary-modern {
-        background: var(--primary);
+        background: #0E4A86;
         border: none;
         border-radius: 12px;
         padding: 1rem 2rem;
@@ -172,7 +277,7 @@ if ($id_usuario) {
         transform: translateY(-2px);
         color: white;
         box-shadow: 0 8px 25px rgba(37, 99, 235, 0.3);
-        background: var(--primary);
+        background: #0E4A86;
     }
 
     .btn-secondary-modern {
@@ -205,7 +310,7 @@ if ($id_usuario) {
     }
 
     .modal-editar-perfil .modal-header {
-        background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+        background: linear-gradient(135deg, #0E4A86 0%, #1e40af 100%);
         color: white;
         border-radius: 16px 16px 0 0;
         padding: 1.5rem 2rem;
@@ -327,7 +432,6 @@ if ($id_usuario) {
                     <i class="fas fa-times"></i>
                 </button>
             </div>
-
             <?php if (!empty($notificaciones)): ?>
                 <div class="header-actions">
                     <button type="button" id="marcar-todas-leidas" class="btn-mark-all">
@@ -364,8 +468,7 @@ if ($id_usuario) {
                                 <a href="<?= htmlspecialchars($noti['url_destino']) . '&id_notificacion=' . $noti['id_notificacion'] ?>"
                                     class="notification-body" style="text-decoration: none; color: inherit;">
                                     <div class="notification-message">
-                                        <strong><?= htmlspecialchars($noti['autor']) ?></strong>
-                                        <span class="action-text">respondió a tu comentario</span>
+                                        <?= htmlspecialchars($noti['texto']) ?>
                                     </div>
                                     <?php if (!empty($noti['contenido']) && $noti['contenido'] !== 'Sin contenido disponible'): ?>
                                         <div class="notification-preview">
@@ -430,7 +533,6 @@ if ($id_usuario) {
                     <i class="fas fa-bars mobile-toggle-icon"></i>
                 </button>
             </div>
-
         <?php else: ?>
             <!-- User Section - Para usuarios logueados -->
             <div class="user-section-logged">
@@ -468,7 +570,6 @@ if ($id_usuario) {
                                 Editar perfil
                             </a>
                         </li>
-
                         <!-- Nueva opción de Certificados solo para aprendices -->
                         <?php if ($rol == 4): // Solo para aprendices 
                         ?>
@@ -479,7 +580,6 @@ if ($id_usuario) {
                                 </a>
                             </li>
                         <?php endif; ?>
-
                         <li>
                             <hr class="dropdown-divider">
                         </li>
@@ -522,7 +622,7 @@ if ($id_usuario) {
 <?php if ($usuario_logueado): ?>
     <script>
         (function() {
-            const timeoutInSeconds = <?= $timeout ?? 500000000000 ?>; // Tiempo de inactividad en segundos
+            const timeoutInSeconds = <?= $timeout ?? 600 ?>; // Tiempo de inactividad en segundos
             const timeoutMillis = timeoutInSeconds * 1000; // Tiempo en milisegundos
             let timeoutId;
 
@@ -559,7 +659,7 @@ if ($id_usuario) {
     <div class="modal-dialog modal-dialog-centered modal-md">
         <form action="<?= BASE_URL ?>/actions/editar_perfil.php" method="POST" enctype="multipart/form-data" class="modal-content" onsubmit="return validarFormularioEditarPerfil();">
             <div class="modal-header">
-                <h5 class="modal-title" id="modalEditarPerfilLabel">Editar Perfil</h5>
+                <h5 class="modal-title" id="modalEditarPerfilLabel" style="color:white;">Editar Perfil</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar">
                     <i class="fas fa-times"></i>
                 </button>
@@ -625,39 +725,6 @@ if ($id_usuario) {
     </div>
 </div>
 
-<!-- Modal Configuración -->
-<div class="modal fade" id="modalConfiguracion" tabindex="-1" aria-labelledby="modalConfiguracionLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <form action="<?= BASE_URL ?>/actions/config_guardar.php" method="POST" class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="modalConfiguracionLabel">Configuración</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-            </div>
-            <div class="modal-body">
-                <!-- Puedes agregar aquí más opciones configurables -->
-                <div class="mb-3">
-                    <label for="tema" class="form-label">Tema de interfaz</label>
-                    <select name="tema" id="tema" class="form-select">
-                        <option value="claro">Claro</option>
-                        <option value="oscuro">Oscuro</option>
-                    </select>
-                </div>
-                <div class="mb-3">
-                    <label for="notificaciones" class="form-label">Notificaciones</label>
-                    <select name="notificaciones" id="notificaciones" class="form-select">
-                        <option value="activadas">Activadas</option>
-                        <option value="desactivadas">Desactivadas</option>
-                    </select>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="submit" class="btn btn-primary">Guardar configuración</button>
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-            </div>
-        </form>
-    </div>
-</div>
-
 <script>
     // Mobile menu toggle - MODIFICADO PARA USUARIOS LOGUEADOS
     function toggleMobileMenu() {
@@ -667,12 +734,14 @@ if ($id_usuario) {
             document.body.classList.toggle('mobile-nav-active');
         }
     }
+
     // Close mobile menu when clicking on links
     document.querySelectorAll('.header-mobile-nav-link').forEach(link => {
         link.addEventListener('click', () => {
             document.body.classList.remove('mobile-nav-active');
         });
     });
+
     // Close mobile menu on window resize
     window.addEventListener('resize', () => {
         if (window.innerWidth > 768) {
@@ -700,6 +769,7 @@ if ($id_usuario) {
     function validarFormularioEditarPerfil() {
         return validarTodo();
     }
+
     document.addEventListener('DOMContentLoaded', function() {
         const email = document.getElementById("email");
         const telefono = document.getElementById("telefono");
@@ -719,6 +789,7 @@ if ($id_usuario) {
             }
             return true;
         }
+
         // NUEVA FUNCIÓN: Validación de teléfono - solo números y caracteres permitidos
         function validarTelefono() {
             const valor = telefono.value.trim();
@@ -766,22 +837,26 @@ if ($id_usuario) {
             }
             return true;
         }
+
         // FUNCIÓN ACTUALIZADA: Incluye validación de teléfono
         window.validarTodo = function() {
             const esValido = validarCorreo() && validarTelefono() && validarPassword() && validarConfirmacion() && validarAvatarActual();
             btnGuardar.disabled = !esValido;
             return esValido;
         };
+
         // Event listeners para validación en tiempo real
         email.addEventListener("input", validarTodo);
         telefono.addEventListener("input", validarTodo);
         password.addEventListener("input", validarTodo);
         confirmar.addEventListener("input", validarTodo);
+
         // NUEVO: Filtro de entrada para teléfono - previene escritura de caracteres no válidos
         telefono.addEventListener("keypress", function(e) {
             // Permitir: números (0-9), espacio, guión, paréntesis, signo +, backspace, delete, tab, escape, enter
             const allowedKeys = [8, 9, 27, 13, 46]; // backspace, tab, escape, enter, delete
             const allowedChars = /[\d\s\-()+ ]/;
+
             // Si es una tecla especial, permitir
             if (allowedKeys.indexOf(e.keyCode) !== -1 ||
                 // Permitir Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X
@@ -791,11 +866,13 @@ if ($id_usuario) {
                 (e.keyCode === 88 && e.ctrlKey === true)) {
                 return;
             }
+
             // Si el carácter no está permitido, prevenir la entrada
             if (!allowedChars.test(e.key)) {
                 e.preventDefault();
             }
         });
+
         // NUEVO: Validación adicional en paste para teléfono
         telefono.addEventListener("paste", function(e) {
             // Permitir el paste pero validar después
@@ -810,10 +887,12 @@ if ($id_usuario) {
             }, 10);
         });
     });
+
     document.addEventListener("DOMContentLoaded", function() {
         const avatarInput = document.getElementById("avatar");
         const vistaPrevia = document.getElementById("vistaPreviaAvatar");
         const btnGuardar = document.querySelector('#modalEditarPerfil .btn.btn-primary-modern');
+
         window.validarAvatarActual = function() {
             const file = avatarInput.files[0];
             if (!file) {
@@ -821,21 +900,26 @@ if ($id_usuario) {
                 vistaPrevia.innerHTML = "";
                 return true;
             }
+
             if (!file.type.startsWith('image/')) {
                 mostrarError(avatarInput, "Solo se permiten archivos de imagen.");
                 vistaPrevia.innerHTML = "";
                 return false;
             }
+
             if (file.size > 1024 * 1024) {
                 mostrarError(avatarInput, "El archivo no debe superar 1MB.");
                 vistaPrevia.innerHTML = "";
                 return false;
             }
+
             return true;
         };
+
         avatarInput.addEventListener("change", function() {
             const file = avatarInput.files[0];
             if (!file) return;
+
             const reader = new FileReader();
             reader.onload = function(e) {
                 const img = new Image();
@@ -855,11 +939,13 @@ if ($id_usuario) {
             reader.readAsDataURL(file);
         });
     });
+
     // Función para actualizar el contador del badge
     function actualizarBadgeNotificaciones() {
         const badgeElement = document.getElementById('notification-count');
         const unreadItems = document.querySelectorAll('.notification-panel .notification-item.unread');
         const count = unreadItems.length;
+
         if (badgeElement) {
             if (count === 0) {
                 badgeElement.classList.add('hidden');
@@ -890,35 +976,42 @@ if ($id_usuario) {
         document.querySelectorAll('.notification-panel .notification-item').forEach(item => {
             item.addEventListener('click', function(e) {
                 const notificationId = this.dataset.notificationId;
+
                 // Marcar visualmente como leída
                 this.classList.remove('unread');
                 this.classList.add('read');
+
                 // Remover indicador de no leída
                 const indicator = this.querySelector('.unread-indicator');
                 if (indicator) {
                     indicator.style.animation = 'fadeOut 0.3s ease forwards';
                     setTimeout(() => indicator.remove(), 300);
                 }
+
                 // Remover badge "Nuevo"
                 const badge = this.querySelector('.notification-badge');
                 if (badge) {
                     badge.style.animation = 'fadeOut 0.3s ease forwards';
                     setTimeout(() => badge.remove(), 300);
                 }
+
                 // Actualizar badge del icono
                 setTimeout(() => {
                     actualizarBadgeNotificaciones();
                 }, 100);
             });
         });
+
         // AJAX para marcar todas las notificaciones como leídas
         const markAllBtn = document.getElementById('marcar-todas-leidas');
         if (markAllBtn) {
             markAllBtn.addEventListener('click', function(e) {
                 e.preventDefault();
+
                 const originalContent = this.innerHTML;
                 this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Marcando...';
                 this.disabled = true;
+
                 fetch('<?= BASE_URL ?>/ajax/marcar_todas_leidas.php', {
                         method: 'POST',
                         headers: {
@@ -930,6 +1023,7 @@ if ($id_usuario) {
                     .then(data => {
                         if (data.success) {
                             this.innerHTML = '<i class="fas fa-check-double"></i> ¡Marcadas!';
+
                             // Actualizar notificaciones en el panel
                             document.querySelectorAll('.notification-panel .notification-item.unread').forEach(item => {
                                 item.classList.remove('unread');
@@ -939,8 +1033,10 @@ if ($id_usuario) {
                                 if (badge) badge.remove();
                                 if (indicator) indicator.remove();
                             });
+
                             // Actualizar badge del icono
                             actualizarBadgeNotificaciones();
+
                             setTimeout(() => {
                                 this.innerHTML = originalContent;
                                 this.disabled = false;
@@ -1017,7 +1113,6 @@ if ($id_usuario) {
                                 this.innerHTML = originalContent;
                                 this.disabled = false;
                             }, 2000);
-
                         } else {
                             this.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error';
                             setTimeout(() => {
@@ -1038,20 +1133,25 @@ if ($id_usuario) {
                     });
             });
         }
+
         // JavaScript para eliminar notificaciones individuales
         document.addEventListener('click', function(e) {
             if (e.target.closest('.btn-delete-individual')) {
                 e.preventDefault();
                 e.stopPropagation();
+
                 const btn = e.target.closest('.btn-delete-individual');
                 const notificationId = btn.dataset.notificationId;
                 const notificationItem = btn.closest('.notification-item');
+
                 if (!confirm('¿Eliminar esta notificación?')) {
                     return;
                 }
+
                 const originalContent = btn.innerHTML;
                 btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
                 btn.disabled = true;
+
                 fetch('<?= BASE_URL ?>/ajax/eliminar_notificacion_individual.php', {
                         method: 'POST',
                         headers: {
@@ -1067,6 +1167,7 @@ if ($id_usuario) {
                             setTimeout(() => {
                                 notificationItem.remove();
                                 actualizarBadgeNotificaciones();
+
                                 // Verificar si quedan notificaciones
                                 const remainingNotifications = document.querySelectorAll('.notification-item');
                                 if (remainingNotifications.length === 0) {
@@ -1083,7 +1184,8 @@ if ($id_usuario) {
                                 `;
                                     }
                                 }
-                                // Verificar botones de cción
+
+                                // Verificar botones de acción
                                 verificarBotonesAccion();
                             }, 300);
                         } else {

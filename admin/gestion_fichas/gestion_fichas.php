@@ -29,7 +29,6 @@ $alertType = '';
 $db = new Database();
 $conexion = $db->connect();
 
-// Verificar que la conexión sea válida
 if (!$conexion || !($conexion instanceof PDO)) {
     die("Error: No se pudo establecer la conexión a la base de datos");
 }
@@ -53,14 +52,24 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
             $alertMessage = "Esta materia ya está asignada a la ficha en este trimestre";
             $alertType = "warning";
         } else {
-            // Insertar nueva asignación
+            // Insertar nueva asignación de materia
             $stmt = $conexion->prepare("
                 INSERT INTO materia_ficha (id_materia, id_ficha, id_instructor, id_trimestre) 
                 VALUES (?, ?, ?, ?)
             ");
             $stmt->execute([$id_materia, $id_ficha, $id_instructor, $id_trimestre]);
 
-            $alertMessage = "Materia asignada correctamente a la ficha";
+            $id_materia_ficha = $conexion->lastInsertId();
+
+            // Insertar foro automáticamente
+            $stmtForo = $conexion->prepare("
+                INSERT INTO foros (id_materia_ficha, fecha_foro) 
+                VALUES (?, ?)
+            ");
+            $fecha_foro = date('Y-m-d');
+            $stmtForo->execute([$id_materia_ficha, $fecha_foro]);
+
+            $alertMessage = "Materia asignada correctamente y foro creado automáticamente";
             $alertType = "success";
         }
     } catch (PDOException $e) {
@@ -114,42 +123,23 @@ $stats = [
 ];
 
 try {
-    // Contar fichas activas
     $stmt = $conexion->query("SELECT COUNT(*) as total FROM fichas WHERE id_estado = 1");
-    if ($stmt) {
-        $result = $stmt->fetch(PDO::FETCH_ASSOC);
-        $stats['fichas_activas'] = $result['total'];
-    }
+    $stats['fichas_activas'] = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
 
-    // Contar materias disponibles
     $stmt = $conexion->query("SELECT COUNT(*) as total FROM materias");
-    if ($stmt) {
-        $result = $stmt->fetch(PDO::FETCH_ASSOC);
-        $stats['materias_disponibles'] = $result['total'];
-    }
+    $stats['materias_disponibles'] = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
 
-    // Contar instructores
     $stmt = $conexion->query("SELECT COUNT(*) as total FROM usuarios WHERE id_rol = 3 AND id_estado = 1");
-    if ($stmt) {
-        $result = $stmt->fetch(PDO::FETCH_ASSOC);
-        $stats['instructores'] = $result['total'];
-    }
+    $stats['instructores'] = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
 
-    // Contar asignaciones totales
     $stmt = $conexion->query("SELECT COUNT(*) as total FROM materia_ficha");
-    if ($stmt) {
-        $result = $stmt->fetch(PDO::FETCH_ASSOC);
-        $stats['asignaciones_totales'] = $result['total'];
-    }
+    $stats['asignaciones_totales'] = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
 
-    // Contar aprendices totales
     $stmt = $conexion->query("SELECT COUNT(*) as total FROM usuarios WHERE id_rol = 4 AND id_estado = 1");
-    if ($stmt) {
-        $result = $stmt->fetch(PDO::FETCH_ASSOC);
-        $stats['aprendices_totales'] = $result['total'];
-    }
+    $stats['aprendices_totales'] = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
+
 } catch (PDOException $e) {
-    // En caso de error, mantener valores por defecto
+    // valores por defecto
 }
 
 // Obtener todas las fichas con información completa
@@ -178,27 +168,23 @@ try {
         GROUP BY f.id_ficha, fo.nombre, tf.tipo_formacion, j.jornada, e.estado, f.fecha_creac, u.nombres, u.apellidos
         ORDER BY (COUNT(DISTINCT mf.id_materia_ficha) + COUNT(DISTINCT uf.id_user)) DESC, f.id_ficha DESC
     ");
-    if ($stmt) {
-        $fichas = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
+    $fichas = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
     $alertMessage = "Error al cargar fichas: " . $e->getMessage();
     $alertType = "danger";
 }
 
-// Obtener materias disponibles
+// Materias disponibles
 $materias = [];
 try {
     $stmt = $conexion->query("SELECT * FROM materias ORDER BY materia");
-    if ($stmt) {
-        $materias = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
+    $materias = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
     $alertMessage = "Error al cargar materias: " . $e->getMessage();
     $alertType = "danger";
 }
 
-// Obtener instructores disponibles (para la carga inicial)
+// Instructores disponibles
 $instructores = [];
 try {
     $stmt = $conexion->query("
@@ -207,23 +193,18 @@ try {
         WHERE id_rol = 3 AND id_estado = 1 
         ORDER BY nombres
     ");
-    if ($stmt) {
-        $instructores = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
+    $instructores = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
     $alertMessage = "Error al cargar instructores: " . $e->getMessage();
     $alertType = "danger";
 }
 
-// Obtener trimestres
+// Trimestres
 $trimestres = [];
 try {
     $stmt = $conexion->query("SELECT * FROM trimestre ORDER BY id_trimestre");
-    if ($stmt) {
-        $trimestres = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
+    $trimestres = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
-    // Trimestres por defecto si hay error
     $trimestres = [
         ['id_trimestre' => 1, 'trimestre' => 'Primer'],
         ['id_trimestre' => 2, 'trimestre' => 'Segundo'],
@@ -233,8 +214,8 @@ try {
         ['id_trimestre' => 6, 'trimestre' => 'Sexto']
     ];
 }
-
 ?>
+
 
 <!DOCTYPE html>
 <html lang="es">
@@ -247,6 +228,7 @@ try {
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link rel="stylesheet" href="../styles/sidebard.css">
     <link rel="stylesheet" href="../styles/main.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 
 <body>
@@ -398,10 +380,17 @@ try {
                                         </div>
                                         <div class="card-footer bg-transparent">
                                             <div class="d-grid gap-2">
-                                                <button class="btn btn-primary btn-sm ver-detalles"
-                                                    data-ficha="<?php echo $ficha['id_ficha']; ?>">
-                                                    <i class="bi bi-eye"></i> Ver Detalles
-                                                </button>
+                                                <div class="btn-group" role="group">
+                                                    <button class="btn btn-primary btn-sm ver-detalles"
+                                                        data-ficha="<?php echo $ficha['id_ficha']; ?>">
+                                                        <i class="bi bi-eye"></i> Detalle
+                                                    </button>
+                                                    <button class="btn btn-success btn-sm btn-reportes-ficha"
+                                                        data-ficha="<?php echo $ficha['id_ficha']; ?>"
+                                                        data-programa="<?php echo htmlspecialchars($ficha['programa']); ?>">
+                                                        <i class="bi bi-file-earmark-text"></i> Reportes
+                                                    </button>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -456,9 +445,11 @@ try {
                             <select class="form-select" id="id_materia" name="id_materia" required>
                                 <option value="">Seleccione una materia</option>
                                 <?php foreach ($materias as $materia): ?>
-                                    <option value="<?php echo $materia['id_materia']; ?>">
-                                        <?php echo htmlspecialchars($materia['materia']); ?>
-                                    </option>
+                                    <?php if ($materia['id_materia'] != 2): ?>
+                                        <option value="<?php echo $materia['id_materia']; ?>">
+                                            <?php echo htmlspecialchars($materia['materia']); ?>
+                                        </option>
+                                    <?php endif; ?>
                                 <?php endforeach; ?>
                             </select>
                         </div>
@@ -508,10 +499,102 @@ try {
                 <div class="modal-body" id="detallesFichaContent">
                     <!-- El contenido se cargará dinámicamente -->
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Modal para reportes de ficha -->
+    <div class="modal fade" id="reportesFichaModal" tabindex="-1" aria-labelledby="reportesFichaModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title" id="reportesFichaModalLabel">
+                        <i class="bi bi-file-earmark-text"></i> Reportes de Ficha
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <div class="alert alert-info">
+                                <i class="bi bi-info-circle"></i>
+                                <strong>Ficha:</strong> <span id="fichaNumeroReporte"></span> - <span id="programaReporte"></span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row g-3">
+                        <!-- Historia de Materias -->
+                        <div class="col-md-6">
+                            <div class="card h-70 border-primary">
+                                <div class="card-header bg-primary text-white">
+                                    <h6 class="mb-0">
+                                        <i class="bi bi-clock-history"></i> Historia de Materias
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <p class="card-text">Historial completo de materias asignadas a la ficha, incluyendo cambios de instructores y fechas.</p>
+                                    <button class="btn btn-primary btn-sm w-100" onclick="generarReporteFicha('historia_materias')">
+                                        <i class="bi bi-download"></i> Generar Reporte
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Horarios Actuales -->
+                        <div class="col-md-6">
+                            <div class="card h-70 border-primary">
+                                <div class="card-header bg-primary text-white">
+                                    <h6 class="mb-0">
+                                        <i class="bi bi-clock-history"></i> Horarios Actuales
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <p class="card-text">Horarios de clases actuales de la ficha con materias, instructores y horarios detallados.</p>
+                                    <button class="btn btn-primary btn-sm w-100" onclick="generarReporteFicha('horarios')">
+                                        <i class="bi bi-download"></i> Generar Reporte
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Aprendices Asignados -->
+                        <div class="col-md-6">
+                            <div class="card h-98 border-primary">
+                                <div class="card-header bg-primary text-white">
+                                    <h6 class="mb-0">
+                                        <i class="bi bi-clock-history"></i> Aprendices Asignados
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <p class="card-text">Lista completa de aprendices asignados a la ficha con información de contacto.</p>
+                                    <button class="btn btn-primary btn-sm w-100" onclick="generarReporteFicha('aprendices')">
+                                        <i class="bi bi-download"></i> Generar Reporte
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Reporte Completo -->
+                        <div class="col-md-6">
+                            <div class="card h-70 border-primary">
+                                <div class="card-header bg-primary text-white">
+                                    <h6 class="mb-0">
+                                        <i class="bi bi-file-earmark-spreadsheet"></i> Reporte Completo
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <p class="card-text">Reporte completo con toda la información de la ficha: materias, horarios, aprendices e instructores.</p>
+                                    <button class="btn btn-primary btn-sm w-100" onclick="generarReporteFicha('completo')">
+                                        <i class="bi bi-download"></i> Generar Reporte
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
         </div>
     </div>
 
@@ -554,57 +637,12 @@ try {
         </div>
     </div>
 
-    <!-- Modal para mostrar contacto de aprendiz -->
-    <div class="modal fade" id="contactoAprendizModal" tabindex="-1" aria-labelledby="contactoAprendizModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header bg-info text-white">
-                    <h5 class="modal-title" id="contactoAprendizModalLabel">Datos de Contacto del Aprendiz</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="row">
-                        <div class="col-12">
-                            <div class="card border-info">
-                                <div class="card-body">
-                                    <h6 class="card-title text-info" id="contacto_nombre"></h6>
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <p><strong><i class="bi bi-person-badge"></i> Documento:</strong><br>
-                                                <span id="contacto_documento"></span>
-                                            </p>
-
-                                            <p><strong><i class="bi bi-envelope"></i> Correo Electrónico:</strong><br>
-                                                <a href="#" id="contacto_correo_link"><span id="contacto_correo"></span></a>
-                                            </p>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <p><strong><i class="bi bi-telephone"></i> Teléfono:</strong><br>
-                                                <a href="#" id="contacto_telefono_link"><span id="contacto_telefono"></span></a>
-                                            </p>
-
-                                            <p><strong><i class="bi bi-geo-alt"></i> Dirección:</strong><br>
-                                                <span id="contacto_direccion"></span>
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- SCRIPTS -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="../gestion_fichas/js/modal-pagination.js"></script>
+    <script src="js/modal-pagination.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="../js/sidebard.js"></script>
+    <script src="reportes-fichas-handler.js"></script>
 
     <script>
         // Variables para paginación
@@ -772,29 +810,6 @@ try {
                     document.body.appendChild(form);
                     form.submit();
                 }
-            }
-        });
-
-        // Manejar visualización de contacto de aprendiz
-        document.addEventListener('click', function(event) {
-            if (event.target.closest('.ver-contacto-aprendiz')) {
-                const button = event.target.closest('.ver-contacto-aprendiz');
-                const documento = button.getAttribute('data-id');
-                const nombre = button.getAttribute('data-nombre');
-                const correo = button.getAttribute('data-correo');
-                const telefono = button.getAttribute('data-telefono') || 'No registrado';
-                const direccion = button.getAttribute('data-direccion') || 'No registrada';
-
-                document.getElementById('contacto_documento').textContent = documento;
-                document.getElementById('contacto_nombre').textContent = nombre;
-                document.getElementById('contacto_correo').textContent = correo;
-                document.getElementById('contacto_correo_link').href = `mailto:${correo}`;
-                document.getElementById('contacto_telefono').textContent = telefono;
-                document.getElementById('contacto_telefono_link').href = `tel:${telefono}`;
-                document.getElementById('contacto_direccion').textContent = direccion;
-
-                const modal = new bootstrap.Modal(document.getElementById('contactoAprendizModal'));
-                modal.show();
             }
         });
 

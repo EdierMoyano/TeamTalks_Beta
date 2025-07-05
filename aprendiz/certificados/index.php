@@ -49,6 +49,7 @@ if (!$trimestre_actual) {
 
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <title>Certificados y Boletines - TeamTalks</title>
@@ -60,6 +61,7 @@ if (!$trimestre_actual) {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <link rel="icon" href="../../assets/img/icon2.png">
     <link rel="stylesheet" href="../css/styles.css">
 
     <style>
@@ -67,9 +69,11 @@ if (!$trimestre_actual) {
         body.sidebar-collapsed .main-content {
             margin-left: 100px;
         }
+
         .main-content {
             padding: 20px;
         }
+
         .certificados-header {
             background: linear-gradient(135deg, #0E4A86 0%, #1a5490 100%);
             color: white;
@@ -77,12 +81,14 @@ if (!$trimestre_actual) {
             border-radius: 12px;
             margin-bottom: 30px;
         }
+
         .certificados-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
             gap: 20px;
             margin-bottom: 30px;
         }
+
         .certificado-card {
             background: white;
             border-radius: 12px;
@@ -94,10 +100,12 @@ if (!$trimestre_actual) {
             flex-direction: column;
             height: 100%;
         }
+
         .certificado-card:hover {
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         }
+
         .certificado-icon {
             width: 60px;
             height: 60px;
@@ -110,25 +118,30 @@ if (!$trimestre_actual) {
             font-size: 1.5rem;
             margin-bottom: 20px;
         }
+
         .certificado-card h3 {
             color: #0E4A86;
             font-size: 1.25rem;
             font-weight: 600;
             margin-bottom: 10px;
         }
+
         .certificado-card p {
             color: #666;
             margin-bottom: 20px;
         }
+
         .certificado-content {
             flex: 1;
             display: flex;
             flex-direction: column;
         }
+
         .certificado-info {
             flex: 1;
             margin-bottom: 20px;
         }
+
         .info-item {
             display: flex;
             align-items: center;
@@ -137,10 +150,12 @@ if (!$trimestre_actual) {
             font-size: 0.9rem;
             margin-bottom: 8px;
         }
+
         .info-item i {
             color: #0E4A86;
             width: 16px;
         }
+
         .promedio-display {
             background: #f8f9fa;
             border: 1px solid #dee2e6;
@@ -149,24 +164,30 @@ if (!$trimestre_actual) {
             text-align: center;
             margin-bottom: 20px;
         }
+
         .promedio-valor {
             font-size: 2rem;
             font-weight: 700;
             margin-bottom: 5px;
         }
+
         .promedio-valor.alto {
             color: #28a745;
         }
+
         .promedio-valor.medio {
             color: #ffc107;
         }
+
         .promedio-valor.bajo {
             color: #dc3545;
         }
+
         .promedio-label {
             color: #666;
             font-size: 0.9rem;
         }
+
         .btn-certificado {
             background-color: #0E4A86;
             color: white;
@@ -184,15 +205,18 @@ if (!$trimestre_actual) {
             justify-content: center;
             margin-top: auto;
         }
+
         .btn-certificado:hover {
             background-color: #08325a;
             color: white;
             text-decoration: none;
         }
+
         .btn-certificado:disabled {
             background-color: #6c757d;
             cursor: not-allowed;
         }
+
         .btn-volver-azul {
             background: #fff !important;
             color: #0E4A86 !important;
@@ -207,37 +231,45 @@ if (!$trimestre_actual) {
             align-items: center;
             gap: 8px;
         }
+
         .btn-volver-azul:hover,
         .btn-volver-azul:focus {
             background: #0E4A86 !important;
             color: #fff !important;
             border: 1.5px solid #fff !important;
         }
+
         .breadcrumb-custom {
             background: none;
             padding: 0;
             margin-bottom: 20px;
         }
+
         .breadcrumb-custom .breadcrumb-item a {
             color: #0E4A86;
             text-decoration: none;
         }
+
         .breadcrumb-custom .breadcrumb-item a:hover {
             text-decoration: underline;
         }
+
         /* Modal styles */
         .modal-header {
             background-color: #0E4A86;
             color: white;
         }
+
         .modal-title {
             display: flex;
             align-items: center;
             gap: 10px;
         }
+
         .btn-close {
             filter: invert(1);
         }
+
         .materia-item {
             background: white;
             border: 1px solid #dee2e6;
@@ -248,28 +280,34 @@ if (!$trimestre_actual) {
             justify-content: space-between;
             align-items: center;
         }
+
         .materia-nombre {
             font-weight: 500;
             color: #333;
         }
+
         .materia-promedio {
             font-weight: 600;
             padding: 4px 12px;
             border-radius: 4px;
             font-size: 0.9rem;
         }
+
         .materia-promedio.alto {
             background-color: #d4edda;
             color: #155724;
         }
+
         .materia-promedio.medio {
             background-color: #fff3cd;
             color: #856404;
         }
+
         .materia-promedio.bajo {
             background-color: #f8d7da;
             color: #721c24;
         }
+
         .trimestre-badge {
             background-color: #0E4A86;
             color: white;
@@ -280,27 +318,33 @@ if (!$trimestre_actual) {
             margin-bottom: 15px;
             display: inline-block;
         }
+
         .trimestre-selector {
             margin-bottom: 20px;
         }
+
         .form-select {
             border: 2px solid #0E4A86;
             border-radius: 8px;
         }
+
         .form-select:focus {
             border-color: #0E4A86;
             box-shadow: 0 0 0 0.2rem rgba(14, 74, 134, 0.25);
         }
+
         .alert-warning {
             background-color: #fff3cd;
             border-color: #ffeaa7;
             color: #856404;
         }
+
         .alert-info {
             background-color: #d1ecf1;
             border-color: #bee5eb;
             color: #0c5460;
         }
+
         .debug-info {
             background: #f8f9fa;
             border: 1px solid #dee2e6;
@@ -310,6 +354,7 @@ if (!$trimestre_actual) {
             font-family: monospace;
             font-size: 0.9rem;
         }
+
         /* Alerta para trimestre actual */
         .trimestre-actual-warning {
             background-color: #fff3cd;
@@ -935,4 +980,5 @@ if (!$trimestre_actual) {
         }
     </script>
 </body>
+
 </html>

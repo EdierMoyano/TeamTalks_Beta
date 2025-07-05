@@ -6,148 +6,133 @@ if ($_SESSION['rol'] !== 2) {
     exit;
 }
 
-// Mostrar mensaje después de redireccionar tras editar
-if (isset($_SESSION['alertMessage'])) {
-    $alertMessage = $_SESSION['alertMessage'];
-    $alertType = $_SESSION['alertType'];
-    unset($_SESSION['alertMessage'], $_SESSION['alertType']);
-} else {
-    $alertMessage = '';
-    $alertType = '';
-}
+// Mensajes flash
+$alertMessage = $_SESSION['alertMessage'] ?? '';
+$alertType = $_SESSION['alertType'] ?? '';
+unset($_SESSION['alertMessage'], $_SESSION['alertType']);
 
-// Crear instancia de la conexión
 $db = new Database();
 $conexion = $db->connect();
 
-// Procesar el formulario de creación/edición de ficha
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    if (isset($_POST['action'])) {
-        if ($_POST['action'] == 'crear') {
-            // Recopilar datos del formulario
-            $id_formacion = $_POST['id_formacion'];
-            $id_instructor = $_POST['id_instructor'];
-            $id_jornada = $_POST['id_jornada'];
-            $id_tipo_ficha = $_POST['id_tipo_ficha'];
-            $fecha_creac = $_POST['fecha_creac'];
-            $id_estado = 1; // Por defecto activo
+// CREAR FICHA
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'crear') {
+    $id_formacion = $_POST['id_formacion'];
+    $id_instructor = $_POST['id_instructor'];
+    $id_jornada = $_POST['id_jornada'];
+    $id_tipo_ficha = $_POST['id_tipo_ficha'];
+    $fecha_creac = $_POST['fecha_creac'];
+    $id_estado = 1;
+    $id_trimestre = 1; // Por defecto
+    $id_materia_tecnica = 2;
 
-            if (empty($id_formacion) || empty($id_instructor) || empty($id_jornada) || empty($id_tipo_ficha)) {
-                $alertMessage = "Todos los campos marcados con * son requeridos";
-                $alertType = "danger";
-            } else {
-                try {
-                    $stmt = $conexion->prepare("INSERT INTO fichas (id_formacion, id_instructor, id_jornada, id_tipo_ficha, fecha_creac, id_estado) VALUES (:id_formacion, :id_instructor, :id_jornada, :id_tipo_ficha, :fecha_creac, :id_estado)");
-                    $stmt->bindParam(':id_formacion', $id_formacion, PDO::PARAM_INT);
-                    $stmt->bindParam(':id_instructor', $id_instructor, PDO::PARAM_INT);
-                    $stmt->bindParam(':id_jornada', $id_jornada, PDO::PARAM_INT);
-                    $stmt->bindParam(':id_tipo_ficha', $id_tipo_ficha, PDO::PARAM_INT);
-                    $stmt->bindParam(':fecha_creac', $fecha_creac, PDO::PARAM_STR);
-                    $stmt->bindParam(':id_estado', $id_estado, PDO::PARAM_INT);
+    if (empty($id_formacion) || empty($id_instructor) || empty($id_jornada) || empty($id_tipo_ficha)) {
+        $alertMessage = "Todos los campos marcados con * son requeridos";
+        $alertType = "danger";
+    } else {
+        try {
+            $conexion->beginTransaction();
 
-                    if ($stmt->execute()) {
-                        $alertMessage = "Ficha creada exitosamente";
-                        $alertType = "success";
-                    } else {
-                        $alertMessage = "Error al crear la ficha";
-                        $alertType = "danger";
-                    }
-                } catch (PDOException $e) {
-                    $alertMessage = "Error: " . $e->getMessage();
-                    $alertType = "danger";
-                }
+            // Insertar ficha
+            $stmt = $conexion->prepare("INSERT INTO fichas (id_formacion, id_instructor, id_jornada, id_tipo_ficha, fecha_creac, id_estado, id_trimestre) VALUES (?, ?, ?, ?, ?, ?, ?)");
+            $stmt->execute([$id_formacion, $id_instructor, $id_jornada, $id_tipo_ficha, $fecha_creac, $id_estado, $id_trimestre]);
+            $id_ficha_nueva = $conexion->lastInsertId();
+
+            // Verificar si el instructor es gerente
+            $stmtRol = $conexion->prepare("SELECT id_rol FROM usuarios WHERE id = ?");
+            $stmtRol->execute([$id_instructor]);
+            $rolInstructor = $stmtRol->fetchColumn();
+
+            if ($rolInstructor == 3) {
+                // Crear materia_ficha
+                $stmtMF = $conexion->prepare("INSERT INTO materia_ficha (id_materia, id_ficha, id_instructor, id_trimestre, id_estado) VALUES (?, ?, ?, ?, ?)");
+                $stmtMF->execute([$id_materia_tecnica, $id_ficha_nueva, $id_instructor, $id_trimestre, 1]);
+                $id_materia_ficha_nueva = $conexion->lastInsertId();
+
+                // Crear foro
+                $stmtForo = $conexion->prepare("INSERT INTO foros (id_materia_ficha, fecha_foro) VALUES (?, ?)");
+                $stmtForo->execute([$id_materia_ficha_nueva, date('Y-m-d')]);
             }
-        }
-        // --- EDICIÓN ---
-        elseif ($_POST['action'] == 'editar') {
-            $id = isset($_POST['id']) ? $_POST['id'] : null;
-            $id_formacion = $_POST['id_formacion'];
-            $id_instructor = $_POST['id_instructor'];
-            $id_jornada = $_POST['id_jornada'];
-            $id_tipo_ficha = $_POST['id_tipo_ficha'];
-            $fecha_creac = $_POST['fecha_creac'];
-            $id_estado = $_POST['id_estado']; // Ahora se puede cambiar el estado
 
-            if (empty($id_formacion) || empty($id_instructor) || empty($id_jornada) || empty($id_tipo_ficha)) {
-                $alertMessage = "Todos los campos marcados con * son requeridos";
-                $alertType = "danger";
-            } else {
-                try {
-                    $stmt = $conexion->prepare("UPDATE fichas SET id_formacion = :id_formacion, id_instructor = :id_instructor, id_jornada = :id_jornada, id_tipo_ficha = :id_tipo_ficha, fecha_creac = :fecha_creac, id_estado = :id_estado WHERE id_ficha = :id");
-                    $stmt->bindParam(':id_formacion', $id_formacion, PDO::PARAM_INT);
-                    $stmt->bindParam(':id_instructor', $id_instructor, PDO::PARAM_INT);
-                    $stmt->bindParam(':id_jornada', $id_jornada, PDO::PARAM_INT);
-                    $stmt->bindParam(':id_tipo_ficha', $id_tipo_ficha, PDO::PARAM_INT);
-                    $stmt->bindParam(':fecha_creac', $fecha_creac, PDO::PARAM_STR);
-                    $stmt->bindParam(':id_estado', $id_estado, PDO::PARAM_INT);
-                    $stmt->bindParam(':id', $id, PDO::PARAM_INT);
-
-                    if ($stmt->execute()) {
-                        // REDIRECT para limpiar ?edit=... y no reabrir el modal
-                        $_SESSION['alertMessage'] = "Ficha actualizada exitosamente";
-                        $_SESSION['alertType'] = "success";
-                        header('Location: ' . strtok($_SERVER['REQUEST_URI'], '?'));
-                        exit;
-                    } else {
-                        $alertMessage = "Error al actualizar la ficha";
-                        $alertType = "danger";
-                    }
-                } catch (PDOException $e) {
-                    $alertMessage = "Error: " . $e->getMessage();
-                    $alertType = "danger";
-                }
-            }
-        }
-        // --- ELIMINAR ---
-        elseif ($_POST['action'] == 'eliminar') {
-            $id = $_POST['id'];
-            $stmt = $conexion->prepare("SELECT COUNT(*) as count FROM user_ficha WHERE id_ficha = :id");
-            $stmt->bindParam(':id', $id, PDO::PARAM_INT);
-            $stmt->execute();
-            $row = $stmt->fetch(PDO::FETCH_ASSOC);
-
-            if ($row['count'] > 0) {
-                $alertMessage = "No se puede eliminar la ficha porque tiene aprendices asociados";
-                $alertType = "danger";
-            } else {
-                try {
-                    $stmt = $conexion->prepare("DELETE FROM fichas WHERE id_ficha = :id");
-                    $stmt->bindParam(':id', $id, PDO::PARAM_INT);
-
-                    if ($stmt->execute()) {
-                        $alertMessage = "Ficha eliminada exitosamente";
-                        $alertType = "success";
-                    } else {
-                        $alertMessage = "Error al eliminar la ficha";
-                        $alertType = "danger";
-                    }
-                } catch (PDOException $e) {
-                    $alertMessage = "Error: " . $e->getMessage();
-                    $alertType = "danger";
-                }
-            }
+            $conexion->commit();
+            $alertMessage = "Ficha creada exitosamente";
+            $alertType = "success";
+        } catch (PDOException $e) {
+            $conexion->rollBack();
+            $alertMessage = "Error al crear ficha: " . $e->getMessage();
+            $alertType = "danger";
         }
     }
 }
 
-// Obtener todas las fichas con información relacionada y conteo de usuarios
-$fichas = [];
+// EDITAR FICHA
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_POST['action'] === 'editar') {
+    $id = $_POST['id'];
+    $id_formacion = $_POST['id_formacion'];
+    $id_instructor = $_POST['id_instructor'];
+    $id_jornada = $_POST['id_jornada'];
+    $id_tipo_ficha = $_POST['id_tipo_ficha'];
+    $fecha_creac = $_POST['fecha_creac'];
+    $id_estado = $_POST['id_estado'];
+
+    if (empty($id_formacion) || empty($id_instructor) || empty($id_jornada) || empty($id_tipo_ficha)) {
+        $alertMessage = "Todos los campos marcados con * son requeridos";
+        $alertType = "danger";
+    } else {
+        try {
+            $stmt = $conexion->prepare("UPDATE fichas SET id_formacion = ?, id_instructor = ?, id_jornada = ?, id_tipo_ficha = ?, fecha_creac = ?, id_estado = ? WHERE id_ficha = ?");
+            $stmt->execute([$id_formacion, $id_instructor, $id_jornada, $id_tipo_ficha, $fecha_creac, $id_estado, $id]);
+
+            $_SESSION['alertMessage'] = "Ficha actualizada exitosamente";
+            $_SESSION['alertType'] = "success";
+            header("Location: " . strtok($_SERVER["REQUEST_URI"], '?'));
+            exit;
+        } catch (PDOException $e) {
+            $alertMessage = "Error al actualizar ficha: " . $e->getMessage();
+            $alertType = "danger";
+        }
+    }
+}
+
+// ELIMINAR FICHA
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_POST['action'] === 'eliminar') {
+    $id = $_POST['id'];
+
+    try {
+        $stmt = $conexion->prepare("SELECT COUNT(*) FROM user_ficha WHERE id_ficha = ?");
+        $stmt->execute([$id]);
+        $count = $stmt->fetchColumn();
+
+        if ($count > 0) {
+            $alertMessage = "No se puede eliminar la ficha porque tiene aprendices asociados";
+            $alertType = "danger";
+        } else {
+            $stmt = $conexion->prepare("DELETE FROM fichas WHERE id_ficha = ?");
+            $stmt->execute([$id]);
+
+            $alertMessage = "Ficha eliminada exitosamente";
+            $alertType = "success";
+        }
+    } catch (PDOException $e) {
+        $alertMessage = "Error al eliminar ficha: " . $e->getMessage();
+        $alertType = "danger";
+    }
+}
+
+// CONSULTAR FICHAS
 try {
-    $query = "SELECT f.id_ficha, fo.nombre as nombre_formacion, u.nombres as instructor_nombre, 
-            j.jornada, tf.tipo_ficha, f.fecha_creac, f.id_formacion, f.id_instructor, f.id_jornada, 
-            f.id_tipo_ficha, f.id_estado, e.estado as estado_nombre,
-            COUNT(uf.id_user) as total_usuarios,
-            COUNT(CASE WHEN uf.id_estado = 1 THEN 1 END) as usuarios_activos,
-            COUNT(CASE WHEN uf.id_estado = 2 THEN 1 END) as usuarios_inactivos
-            FROM fichas f
-            LEFT JOIN formacion fo ON f.id_formacion = fo.id_formacion
-            LEFT JOIN usuarios u ON f.id_instructor = u.id
-            LEFT JOIN jornada j ON f.id_jornada = j.id_jornada
-            LEFT JOIN tipo_ficha tf ON f.id_tipo_ficha = tf.id_tipo_ficha
-            LEFT JOIN estado e ON f.id_estado = e.id_estado
-            LEFT JOIN user_ficha uf ON f.id_ficha = uf.id_ficha
-            GROUP BY f.id_ficha
-            ORDER BY f.fecha_creac DESC";
+    $query = "SELECT f.id_ficha, fo.nombre AS nombre_formacion, u.nombres AS instructor_nombre, j.jornada, tf.tipo_ficha, f.fecha_creac, f.id_formacion, f.id_instructor, f.id_jornada, f.id_tipo_ficha, f.id_estado, e.estado AS estado_nombre,
+        COUNT(uf.id_user) AS total_usuarios,
+        COUNT(CASE WHEN uf.id_estado = 1 THEN 1 END) AS usuarios_activos,
+        COUNT(CASE WHEN uf.id_estado = 2 THEN 1 END) AS usuarios_inactivos
+        FROM fichas f
+        LEFT JOIN formacion fo ON f.id_formacion = fo.id_formacion
+        LEFT JOIN usuarios u ON f.id_instructor = u.id
+        LEFT JOIN jornada j ON f.id_jornada = j.id_jornada
+        LEFT JOIN tipo_ficha tf ON f.id_tipo_ficha = tf.id_tipo_ficha
+        LEFT JOIN estado e ON f.id_estado = e.id_estado
+        LEFT JOIN user_ficha uf ON f.id_ficha = uf.id_ficha
+        GROUP BY f.id_ficha
+        ORDER BY f.fecha_creac DESC";
     $stmt = $conexion->query($query);
     $fichas = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
@@ -155,71 +140,35 @@ try {
     $alertType = "danger";
 }
 
-// Obtener ficha para editar si se solicita
+// FICHA PARA EDICIÓN
 $fichaEdit = null;
 if (isset($_GET['edit'])) {
-    $id = $_GET['edit'];
     try {
-        $stmt = $conexion->prepare("SELECT * FROM fichas WHERE id_ficha = :id");
-        $stmt->bindParam(':id', $id, PDO::PARAM_INT);
-        $stmt->execute();
+        $stmt = $conexion->prepare("SELECT * FROM fichas WHERE id_ficha = ?");
+        $stmt->execute([$_GET['edit']]);
         $fichaEdit = $stmt->fetch(PDO::FETCH_ASSOC);
     } catch (PDOException $e) {
-        $alertMessage = "Error al cargar la ficha: " . $e->getMessage();
+        $alertMessage = "Error al cargar ficha para edición: " . $e->getMessage();
         $alertType = "danger";
     }
 }
 
-// Obtener formaciones para el select
-$formaciones = [];
-try {
-    $stmt = $conexion->query("SELECT id_formacion, nombre FROM formacion WHERE id_estado = 1 ORDER BY nombre");
-    $formaciones = $stmt->fetchAll(PDO::FETCH_ASSOC);
-} catch (PDOException $e) {
-    $alertMessage = "Error al cargar formaciones: " . $e->getMessage();
-    $alertType = "danger";
+// SELECTS AUXILIARES
+function cargarOpciones($conexion, $query) {
+    try {
+        return $conexion->query($query)->fetchAll(PDO::FETCH_ASSOC);
+    } catch (PDOException $e) {
+        return [];
+    }
 }
 
-// Obtener instructores para el select
-$instructores = [];
-try {
-    $stmt = $conexion->query("SELECT id, nombres, apellidos FROM usuarios WHERE id_rol = 3 AND id_estado = 1 ORDER BY nombres"); // Rol 3 es instructor
-    $instructores = $stmt->fetchAll(PDO::FETCH_ASSOC);
-} catch (PDOException $e) {
-    $alertMessage = "Error al cargar instructores: " . $e->getMessage();
-    $alertType = "danger";
-}
-
-// Obtener jornadas para el select
-$jornadas = [];
-try {
-    $stmt = $conexion->query("SELECT id_jornada, jornada FROM jornada ORDER BY jornada");
-    $jornadas = $stmt->fetchAll(PDO::FETCH_ASSOC);
-} catch (PDOException $e) {
-    $alertMessage = "Error al cargar jornadas: " . $e->getMessage();
-    $alertType = "danger";
-}
-
-// Obtener tipos de ficha para el select
-$tiposFicha = [];
-try {
-    $stmt = $conexion->query("SELECT id_tipo_ficha, tipo_ficha FROM tipo_ficha ORDER BY tipo_ficha");
-    $tiposFicha = $stmt->fetchAll(PDO::FETCH_ASSOC);
-} catch (PDOException $e) {
-    $alertMessage = "Error al cargar tipos de ficha: " . $e->getMessage();
-    $alertType = "danger";
-}
-
-// Obtener estados para el select
-$estados = [];
-try {
-    $stmt = $conexion->query("SELECT id_estado, estado FROM estado ORDER BY estado");
-    $estados = $stmt->fetchAll(PDO::FETCH_ASSOC);
-} catch (PDOException $e) {
-    $alertMessage = "Error al cargar estados: " . $e->getMessage();
-    $alertType = "danger";
-}
+$formaciones = cargarOpciones($conexion, "SELECT id_formacion, nombre FROM formacion WHERE id_estado = 1 ORDER BY nombre");
+$instructores = cargarOpciones($conexion, "SELECT id, nombres, apellidos FROM usuarios WHERE id_rol = 3 AND id_estado = 1 ORDER BY nombres");
+$jornadas = cargarOpciones($conexion, "SELECT id_jornada, jornada FROM jornada ORDER BY jornada");
+$tiposFicha = cargarOpciones($conexion, "SELECT id_tipo_ficha, tipo_ficha FROM tipo_ficha ORDER BY tipo_ficha");
+$estados = cargarOpciones($conexion, "SELECT id_estado, estado FROM estado ORDER BY estado");
 ?>
+
 
 <!DOCTYPE html>
 <html lang="es">

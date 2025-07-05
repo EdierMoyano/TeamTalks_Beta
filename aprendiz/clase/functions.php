@@ -1,15 +1,18 @@
 <?php
 require_once 'config.php';
-
+if (strpos($_SERVER['HTTP_HOST'], 'localhost') !== false || strpos($_SERVER['DOCUMENT_ROOT'], 'htdocs') !== false) {
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/teamtalks/conexion/init.php';
+} else {
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/conexion/init.php';
+}
 // Función para obtener datos de sesión del usuario
 function obtenerDatosSesion()
 {
     if (!isset($_SESSION['documento'])) {
         return null;
     }
-
     global $pdo;
-    
+
     $stmt = $pdo->prepare("
         SELECT u.id, u.nombres, u.apellidos, uf.id_ficha, mf.id_materia_ficha, mf.id_materia
         FROM usuarios u
@@ -25,7 +28,6 @@ function obtenerDatosSesion()
 function obtenerFichaActivaDeUsuario($id_usuario)
 {
     global $pdo;
-
     $stmt = $pdo->prepare("
         SELECT f.*
         FROM user_ficha uf
@@ -41,7 +43,6 @@ function obtenerFichaActivaDeUsuario($id_usuario)
 function obtenerFicha($id_ficha)
 {
     global $pdo;
-
     $stmt = $pdo->prepare("
         SELECT f.*, fo.nombre as nombre_formacion, j.jornada, a.ambiente
         FROM fichas f
@@ -58,7 +59,6 @@ function obtenerFicha($id_ficha)
 function obtenerMateriaPrincipal($id_ficha)
 {
     global $pdo;
-
     $stmt = $pdo->prepare("
         SELECT m.materia, mf.id_materia_ficha, mf.id_materia
         FROM materia_ficha mf
@@ -74,14 +74,13 @@ function obtenerMateriaPrincipal($id_ficha)
 function obtenerDetalleActividad($id_actividad)
 {
     global $pdo;
-
     $stmt = $pdo->prepare("
-        SELECT a.*, m.materia, 
-               u.nombres as instructor_nombres, u.apellidos as instructor_apellidos,
+        SELECT a.*, m.materia,
+                u.nombres as instructor_nombres, u.apellidos as instructor_apellidos,
                mf.id_ficha, mf.id_materia_ficha,
                a.archivo1 as archivo_instructor_1,
-               a.archivo2 as archivo_instructor_2, 
-               a.archivo3 as archivo_instructor_3
+               a.archivo2 as archivo_instructor_2,
+                a.archivo3 as archivo_instructor_3
         FROM actividades a
         JOIN materia_ficha mf ON a.id_materia_ficha = mf.id_materia_ficha
         JOIN materias m ON mf.id_materia = m.id_materia
@@ -96,7 +95,6 @@ function obtenerDetalleActividad($id_actividad)
 function obtenerTodasActividadesConEstado($id_materia_ficha, $id_usuario)
 {
     global $pdo;
-
     $stmt = $pdo->prepare("
         SELECT a.*, m.materia, u.nombres, u.apellidos,
                au.id_actividad_user as entrega_id,
@@ -115,23 +113,23 @@ function obtenerTodasActividadesConEstado($id_materia_ficha, $id_usuario)
     ");
     $stmt->execute([$id_usuario, $id_materia_ficha]);
     $actividades = $stmt->fetchAll();
-    
+
     // Procesar cada actividad para determinar su estado correctamente
     foreach ($actividades as &$actividad) {
         // Crear objeto DateTime para la fecha de entrega
         $fechaEntrega = new DateTime($actividad['fecha_entrega']);
-        
+
         // Si la fecha de entrega no tiene hora específica (es 00:00:00), 
         // ajustarla al final del día (23:59:59)
         if ($fechaEntrega->format('H:i:s') === '00:00:00') {
             $fechaEntrega->setTime(23, 59, 59);
         }
-        
+
         $fechaActual = new DateTime();
-        
+
         // Determinar si está vencida comparando fechas
         $estaVencida = $fechaEntrega < $fechaActual;
-        
+
         // Determinar el estado basado en la lógica correcta
         if ($actividad['id_estado_actividad'] == 8) {
             $estado = 'entregada';
@@ -142,10 +140,10 @@ function obtenerTodasActividadesConEstado($id_materia_ficha, $id_usuario)
         } else {
             $estado = 'pendiente'; // Estado por defecto
         }
-        
+
         $actividad['estado_entrega'] = $estado;
     }
-    
+
     return $actividades;
 }
 
@@ -153,7 +151,6 @@ function obtenerTodasActividadesConEstado($id_materia_ficha, $id_usuario)
 function verificarEntregaExistente($id_actividad, $id_usuario)
 {
     global $pdo;
-
     $stmt = $pdo->prepare("
         SELECT COUNT(*) as count
         FROM actividades_user 
@@ -161,7 +158,6 @@ function verificarEntregaExistente($id_actividad, $id_usuario)
     ");
     $stmt->execute([$id_actividad, $id_usuario]);
     $result = $stmt->fetch();
-
     return $result['count'] > 0;
 }
 
@@ -169,18 +165,11 @@ function verificarEntregaExistente($id_actividad, $id_usuario)
 function guardarEntregaActividad($id_actividad, $id_usuario, $contenido, $archivos)
 {
     global $pdo;
-
     try {
-        // Verificar si la actividad está vencida
         if (actividadEstaVencida($id_actividad)) {
             return ['success' => false, 'message' => 'No se puede entregar esta actividad porque ya está vencida.'];
         }
 
-        // Verificar si ya existe una entrega
-        if (verificarEntregaExistente($id_actividad, $id_usuario)) {
-            return ['success' => false, 'message' => 'Ya has entregado esta actividad anteriormente.'];
-        }
-        
         if (count($archivos) > 3) {
             return ['success' => false, 'message' => 'Solo se permiten hasta 3 archivos por entrega.'];
         }
@@ -190,24 +179,42 @@ function guardarEntregaActividad($id_actividad, $id_usuario, $contenido, $archiv
         $archivo2 = isset($archivos[1]) ? $archivos[1] : null;
         $archivo3 = isset($archivos[2]) ? $archivos[2] : null;
 
-        // Insertar la entrega en actividades_user con estado "Entregado" (id_estado = 8)
-        $stmt = $pdo->prepare("
-            INSERT INTO actividades_user (
-                id_actividad, id_user, contenido, archivo1, archivo2, archivo3, 
-                fecha_entrega, id_estado_actividad
-            ) VALUES (?, ?, ?, ?, ?, ?, NOW(), 8)
-        ");
-
-        $stmt->execute([
-            $id_actividad,
-            $id_usuario,
-            $contenido,
-            $archivo1,
-            $archivo2,
-            $archivo3
-        ]);
-
-        return ['success' => true, 'message' => 'Entrega guardada exitosamente'];
+        // Verificar si ya existe una entrega
+        if (verificarEntregaExistente($id_actividad, $id_usuario)) {
+            // ACTUALIZAR la entrega existente
+            $stmt = $pdo->prepare("
+                UPDATE actividades_user
+                SET contenido = ?, archivo1 = ?, archivo2 = ?, archivo3 = ?, 
+                    fecha_entrega = NOW(), id_estado_actividad = 8
+                WHERE id_actividad = ? AND id_user = ?
+            ");
+            $stmt->execute([
+                $contenido,
+                $archivo1,
+                $archivo2,
+                $archivo3,
+                $id_actividad,
+                $id_usuario
+            ]);
+            return ['success' => true, 'message' => 'Entrega actualizada exitosamente'];
+        } else {
+            // INSERTAR nueva entrega
+            $stmt = $pdo->prepare("
+                INSERT INTO actividades_user (
+                    id_actividad, id_user, contenido, archivo1, archivo2, archivo3, 
+                    fecha_entrega, id_estado_actividad
+                ) VALUES (?, ?, ?, ?, ?, ?, NOW(), 8)
+            ");
+            $stmt->execute([
+                $id_actividad,
+                $id_usuario,
+                $contenido,
+                $archivo1,
+                $archivo2,
+                $archivo3
+            ]);
+            return ['success' => true, 'message' => 'Entrega guardada exitosamente'];
+        }
     } catch (PDOException $e) {
         return ['success' => false, 'message' => 'Error al guardar la entrega: ' . $e->getMessage()];
     }
@@ -217,7 +224,6 @@ function guardarEntregaActividad($id_actividad, $id_usuario, $contenido, $archiv
 function actividadEstaVencida($id_actividad)
 {
     global $pdo;
-
     $stmt = $pdo->prepare("
         SELECT fecha_entrega 
         FROM actividades 
@@ -232,15 +238,15 @@ function actividadEstaVencida($id_actividad)
 
     // Crear objeto DateTime para la fecha de entrega
     $fechaEntrega = new DateTime($actividad['fecha_entrega']);
-    
+
     // Si la fecha de entrega no tiene hora específica (es 00:00:00), 
     // ajustarla al final del día (23:59:59)
     if ($fechaEntrega->format('H:i:s') === '00:00:00') {
         $fechaEntrega->setTime(23, 59, 59);
     }
-    
+
     $fechaActual = new DateTime();
-    
+
     return $fechaEntrega < $fechaActual;
 }
 
@@ -248,7 +254,6 @@ function actividadEstaVencida($id_actividad)
 function obtenerEntregaUsuario($id_actividad, $id_usuario)
 {
     global $pdo;
-
     $stmt = $pdo->prepare("
         SELECT * FROM actividades_user
         WHERE id_actividad = ? AND id_user = ?
@@ -257,13 +262,12 @@ function obtenerEntregaUsuario($id_actividad, $id_usuario)
     return $stmt->fetch();
 }
 
-function eliminarEntregaActividad($id_actividad, $id_usuario) {
+function eliminarEntregaActividad($id_actividad, $id_usuario)
+{
     global $pdo;
-
     try {
         $stmt = $pdo->prepare("DELETE FROM actividades_user WHERE id_actividad = ? AND id_user = ?");
         $stmt->execute([$id_actividad, $id_usuario]);
-
         return ['success' => true];
     } catch (PDOException $e) {
         return [
@@ -277,7 +281,6 @@ function eliminarEntregaActividad($id_actividad, $id_usuario) {
 function obtenerTemasForoRecientes($id_materia_ficha)
 {
     global $pdo;
-
     $stmt = $pdo->prepare("
         SELECT tf.*, u.nombres, u.apellidos, f.fecha_foro
         FROM temas_foro tf
@@ -296,7 +299,6 @@ function obtenerTemasForoRecientes($id_materia_ficha)
 function obtenerInstructoresFicha($id_ficha, $id_materia = null)
 {
     global $pdo;
-
     if ($id_materia) {
         $stmt = $pdo->prepare("
             SELECT DISTINCT u.id, u.nombres, u.apellidos, u.correo, m.materia
@@ -317,7 +319,6 @@ function obtenerInstructoresFicha($id_ficha, $id_materia = null)
         ");
         $stmt->execute([$id_ficha]);
     }
-
     return $stmt->fetchAll();
 }
 
@@ -325,11 +326,10 @@ function obtenerInstructoresFicha($id_ficha, $id_materia = null)
 function obtenerAnunciosRecientes($id_materia_ficha = null)
 {
     global $pdo;
-
     if ($id_materia_ficha) {
         $stmt = $pdo->prepare("
-            SELECT ai.id_anuncio, ai.titulo, ai.contenido as descripcion, ai.fecha_creacion, 
-                   u.nombres, u.apellidos
+            SELECT ai.id_anuncio, ai.titulo, ai.contenido as descripcion, ai.fecha_creacion,
+                    u.nombres, u.apellidos
             FROM anuncios_instructor ai
             JOIN materia_ficha mf ON ai.id_materia_ficha = mf.id_materia_ficha
             JOIN usuarios u ON mf.id_instructor = u.id
@@ -340,8 +340,8 @@ function obtenerAnunciosRecientes($id_materia_ficha = null)
         $stmt->execute([$id_materia_ficha]);
     } else {
         $stmt = $pdo->prepare("
-            SELECT ai.id_anuncio, ai.titulo, ai.contenido as descripcion, ai.fecha_creacion, 
-                   u.nombres, u.apellidos
+            SELECT ai.id_anuncio, ai.titulo, ai.contenido as descripcion, ai.fecha_creacion,
+                    u.nombres, u.apellidos
             FROM anuncios_instructor ai
             JOIN materia_ficha mf ON ai.id_materia_ficha = mf.id_materia_ficha
             JOIN usuarios u ON mf.id_instructor = u.id
@@ -351,7 +351,6 @@ function obtenerAnunciosRecientes($id_materia_ficha = null)
         ");
         $stmt->execute();
     }
-
     return $stmt->fetchAll();
 }
 
@@ -359,7 +358,6 @@ function obtenerAnunciosRecientes($id_materia_ficha = null)
 function esInstructorMateriaFicha($id_usuario, $id_materia_ficha)
 {
     global $pdo;
-
     $stmt = $pdo->prepare("
         SELECT COUNT(*) as count
         FROM materia_ficha mf
@@ -367,7 +365,6 @@ function esInstructorMateriaFicha($id_usuario, $id_materia_ficha)
     ");
     $stmt->execute([$id_usuario, $id_materia_ficha]);
     $result = $stmt->fetch();
-
     return $result['count'] > 0;
 }
 
@@ -378,9 +375,8 @@ function obtenerForosSesion()
     if (!$datosSesion) {
         return [];
     }
-
     global $pdo;
-    
+
     $stmt = $pdo->prepare("
         SELECT f.*, mf.id_materia_ficha, m.materia, u.nombres, u.apellidos,
                (SELECT COUNT(*) FROM temas_foro WHERE id_foro = f.id_foro) as cantidad_temas
@@ -398,7 +394,6 @@ function obtenerForosSesion()
 function obtenerForoDetalle($id_foro)
 {
     global $pdo;
-
     $stmt = $pdo->prepare("
         SELECT f.*, mf.id_materia_ficha, mf.id_ficha, m.materia, u.nombres, u.apellidos
         FROM foros f
@@ -414,10 +409,9 @@ function obtenerForoDetalle($id_foro)
 function obtenerTemasForo($id_foro)
 {
     global $pdo;
-
     $stmt = $pdo->prepare("
-        SELECT tf.*, u.nombres, u.apellidos, 
-               (SELECT COUNT(*) FROM respuesta_foro WHERE id_tema_foro = tf.id_tema_foro) as cantidad_respuestas
+        SELECT tf.*, u.nombres, u.apellidos,
+                (SELECT COUNT(*) FROM respuesta_foro WHERE id_tema_foro = tf.id_tema_foro) as cantidad_respuestas
         FROM temas_foro tf
         JOIN usuarios u ON tf.id_user = u.id
         WHERE tf.id_foro = ?
@@ -430,7 +424,6 @@ function obtenerTemasForo($id_foro)
 function obtenerDetalleTema($id_tema)
 {
     global $pdo;
-
     $stmt = $pdo->prepare("
         SELECT tf.*, u.nombres, u.apellidos, f.id_foro, f.id_materia_ficha, mf.id_ficha, m.materia
         FROM temas_foro tf
@@ -447,7 +440,6 @@ function obtenerDetalleTema($id_tema)
 function obtenerRespuestasTema($id_tema)
 {
     global $pdo;
-
     $stmt = $pdo->prepare("
         SELECT rf.*, u.nombres, u.apellidos
         FROM respuesta_foro rf
@@ -465,9 +457,7 @@ function crearTemaForoSesion($id_foro, $titulo, $descripcion)
     if (!$datosSesion) {
         return ['success' => false, 'message' => 'Usuario no autenticado'];
     }
-
     global $pdo;
-
     try {
         $stmt = $pdo->prepare("
             INSERT INTO temas_foro (id_foro, titulo, descripcion, fecha_creacion, id_user)
@@ -480,7 +470,8 @@ function crearTemaForoSesion($id_foro, $titulo, $descripcion)
     }
 }
 
-function crearRespuestaForoSesion($id_tema, $descripcion)
+// FUNCIÓN CORREGIDA para crear respuesta directa al tema o a comentario
+function crearRespuestaForoSesion($id_tema, $descripcion, $id_respuesta_padre = null)
 {
     $datosSesion = obtenerDatosSesion();
     if (!$datosSesion) {
@@ -488,23 +479,94 @@ function crearRespuestaForoSesion($id_tema, $descripcion)
     }
 
     global $pdo;
-
     try {
+        // Verificar que el tema existe
+        $stmt = $pdo->prepare("SELECT id_tema_foro FROM temas_foro WHERE id_tema_foro = ?");
+        $stmt->execute([$id_tema]);
+        if (!$stmt->fetch()) {
+            return ['success' => false, 'message' => 'El tema no existe'];
+        }
+
+        // Si es respuesta a comentario, verificar que existe
+        if ($id_respuesta_padre !== null) {
+            $stmt = $pdo->prepare("SELECT id_respuesta_foro, id_user FROM respuesta_foro WHERE id_respuesta_foro = ? AND id_tema_foro = ?");
+            $stmt->execute([$id_respuesta_padre, $id_tema]);
+            $respuesta_padre = $stmt->fetch();
+
+            if (!$respuesta_padre) {
+                return ['success' => false, 'message' => 'El comentario al que intentas responder no existe'];
+            }
+        }
+
+        // Insertar la respuesta
         $stmt = $pdo->prepare("
-            INSERT INTO respuesta_foro (id_tema_foro, descripcion, fecha_respuesta, id_user)
-            VALUES (?, ?, NOW(), ?)
+            INSERT INTO respuesta_foro (id_tema_foro, descripcion, fecha_respuesta, id_user, id_respuesta_padre)
+            VALUES (?, ?, NOW(), ?, ?)
         ");
-        $stmt->execute([$id_tema, $descripcion, $datosSesion['id']]);
-        return ['success' => true, 'id_respuesta' => $pdo->lastInsertId()];
+        $stmt->execute([$id_tema, $descripcion, $datosSesion['id'], $id_respuesta_padre]);
+        $id_respuesta = $pdo->lastInsertId();
+
+        // Notificación solo si hay comentario padre (respuesta hija)
+        if ($id_respuesta_padre !== null) {
+            $id_autor_padre = $respuesta_padre['id_user'];
+
+            // No notificar si se responde a uno mismo
+            if ($id_autor_padre != $datosSesion['id']) {
+                // Obtener id_rol del autor del comentario padre
+                $stmt = $pdo->prepare("SELECT id_rol FROM usuarios WHERE id = ?");
+                $stmt->execute([$id_autor_padre]);
+                $datos_autor_padre = $stmt->fetch();
+
+                $id_rol_autor_padre = $datos_autor_padre['id_rol'] ?? null;
+
+                // Definir ruta según el rol
+                if ($id_rol_autor_padre == 3 || $id_rol_autor_padre == 5) {
+                    // Gerente o Transversal
+                    $url = BASE_URL . "/mod/ver_respuestas.php?id_tema=$id_tema";
+                } else {
+                    // Aprendiz u otro
+                    $url = BASE_URL . "/aprendiz/foros/detalle_tema.php?id=$id_tema";
+                }
+
+                // Insertar notificación
+                $stmt = $pdo->prepare("
+                    INSERT INTO notificaciones (id_usuario, tipo, mensaje, url_destino, leido, fecha, id_emisor)
+                    VALUES (?, 'respuesta_comentario', 'Han respondido a tu comentario', ?, 0, NOW(), ?)
+                ");
+                $stmt->execute([
+                    $id_autor_padre,
+                    $url,
+                    $datosSesion['id']
+                ]);
+            }
+        }
+
+        return ['success' => true, 'id_respuesta' => $id_respuesta];
     } catch (PDOException $e) {
         return ['success' => false, 'message' => 'Error al crear la respuesta: ' . $e->getMessage()];
     }
 }
 
+
+// FUNCIÓN CORREGIDA para procesar respuestas desde formularios
+function procesarRespuestaForo($id_tema, $descripcion, $id_respuesta_padre = null)
+{
+    // Validaciones
+    if (empty($descripcion)) {
+        return ['success' => false, 'message' => 'La descripción no puede estar vacía'];
+    }
+
+    if (strlen($descripcion) > 1000) {
+        return ['success' => false, 'message' => 'La respuesta no puede exceder 1000 caracteres'];
+    }
+
+    // Crear la respuesta
+    return crearRespuestaForoSesion($id_tema, $descripcion, $id_respuesta_padre);
+}
+
 function puedeParticiparForo($id_usuario, $id_materia_ficha)
 {
     global $pdo;
-
     // Verificar si es instructor de la materia
     $esInstructor = esInstructorMateriaFicha($id_usuario, $id_materia_ficha);
     if ($esInstructor) {
@@ -520,15 +582,14 @@ function puedeParticiparForo($id_usuario, $id_materia_ficha)
     ");
     $stmt->execute([$id_usuario, $id_materia_ficha]);
     $result = $stmt->fetch();
-
     return $result['count'] > 0;
 }
 
 // Funciones de utilidad
 if (!function_exists('formatearFecha')) {
-    function formatearFecha($fecha) {
+    function formatearFecha($fecha)
+    {
         if (!$fecha) return 'Sin fecha';
-
         $fechaObj = new DateTime($fecha);
         $ahora = new DateTime();
         $diferencia = $ahora->diff($fechaObj);
@@ -546,7 +607,8 @@ if (!function_exists('formatearFecha')) {
 }
 
 if (!function_exists('obtenerIniciales')) {
-    function obtenerIniciales($nombre) {
+    function obtenerIniciales($nombre)
+    {
         $palabras = explode(' ', $nombre);
         $iniciales = '';
         foreach ($palabras as $palabra) {
@@ -558,16 +620,14 @@ if (!function_exists('obtenerIniciales')) {
     }
 }
 
-// Función para crear respuesta a un comentario específico
+// FUNCIÓN CORREGIDA para crear respuesta a un comentario específico
 function crearRespuestaAComentarioSesion($id_tema, $descripcion, $id_respuesta_padre = null)
 {
     $datosSesion = obtenerDatosSesion();
     if (!$datosSesion) {
         return ['success' => false, 'message' => 'Usuario no autenticado'];
     }
-
     global $pdo;
-
     try {
         $stmt = $pdo->prepare("
             INSERT INTO respuesta_foro (id_tema_foro, descripcion, fecha_respuesta, id_user, id_respuesta_padre)
@@ -584,7 +644,6 @@ function crearRespuestaAComentarioSesion($id_tema, $descripcion, $id_respuesta_p
 function obtenerRespuestasConJerarquia($id_tema)
 {
     global $pdo;
-
     $stmt = $pdo->prepare("
         SELECT rf.*, u.nombres, u.apellidos,
                (SELECT COUNT(*) FROM respuesta_foro WHERE id_respuesta_padre = rf.id_respuesta_foro) as tiene_respuestas
@@ -595,11 +654,11 @@ function obtenerRespuestasConJerarquia($id_tema)
     ");
     $stmt->execute([$id_tema]);
     $todasRespuestas = $stmt->fetchAll();
-    
+
     // Organizar respuestas en jerarquía
     $respuestasPrincipales = [];
     $respuestasHijas = [];
-    
+
     foreach ($todasRespuestas as $respuesta) {
         if (is_null($respuesta['id_respuesta_padre'])) {
             $respuestasPrincipales[] = $respuesta;
@@ -610,7 +669,6 @@ function obtenerRespuestasConJerarquia($id_tema)
             $respuestasHijas[$respuesta['id_respuesta_padre']][] = $respuesta;
         }
     }
-    
+
     return ['principales' => $respuestasPrincipales, 'hijas' => $respuestasHijas];
 }
-?>
